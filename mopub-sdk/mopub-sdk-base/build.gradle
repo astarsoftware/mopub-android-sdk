@@ -8,11 +8,12 @@ repositories {
 }
 
 dependencies {
-    api 'com.mopub.volley:mopub-volley:1.1.0'
+	implementation 'com.mopub.volley:mopub-volley:1.1.0'
+	implementation project(':Libraries:Java:Android:libAndroid')
 
     def avidEnabled = project.hasProperty("mopub.avidEnabled") ? project.getProperty("mopub.avidEnabled").toBoolean() : true
     if (avidEnabled) {
-        compile('com.mopub:libAvid-mopub:3.6.4')
+        api 'com.mopub:libAvid-mopub:3.6.4'
     }
     def moatEnabled = project.hasProperty("mopub.moatEnabled") ? project.getProperty("mopub.moatEnabled").toBoolean() : true
     if (moatEnabled) {

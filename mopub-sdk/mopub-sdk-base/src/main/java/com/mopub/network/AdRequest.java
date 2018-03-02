@@ -6,7 +6,11 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 
+import com.astarsoftware.dependencies.DependencyInjector;
+import com.astarsoftware.notification.NotificationCenter;
+import com.janoside.exception.ExceptionHandler;
 import com.mopub.common.AdFormat;
 import com.mopub.common.AdType;
 import com.mopub.common.DataKeys;
@@ -34,6 +38,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
@@ -336,6 +341,31 @@ public class AdRequest extends Request<AdResponse> {
             builder.setRewardedDuration(rewardedDuration);
             builder.setShouldRewardOnClick(shouldRewardOnClick);
         }
+
+		try {
+            MoPubLog.d("AdConfiguration: Sending AdResponseReceivedFromMopub notification");
+
+			NotificationCenter notificationCenter = (NotificationCenter) DependencyInjector.getObjectWithGlobalId("NotificationCenter");
+            
+            final Map<String, String> finalHeaders = headers;
+            final String finalRequestId = requestId;
+			notificationCenter.postNotification("AdResponseReceivedFromMopub", new HashMap<String, Object>() {{
+                put("HttpHeaders", finalHeaders);
+                put("RequestId", finalRequestId);
+			}});
+
+		} catch (Throwable t) {
+			Log.e("AdConfiguration", "Error", t);
+
+			try {
+				ExceptionHandler exceptionHandler = (ExceptionHandler) DependencyInjector.getObjectWithGlobalId("ExceptionHandler");
+
+				exceptionHandler.handleException(t);
+
+			} catch (Throwable t2) {
+				Log.e("AdConfiguration", "Error2", t2);
+			}
+		}
 
         AdResponse adResponse = builder.build();
         logScribeEvent(adResponse, networkResponse, location);

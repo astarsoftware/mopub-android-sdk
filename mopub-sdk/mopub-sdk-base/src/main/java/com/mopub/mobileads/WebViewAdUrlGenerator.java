@@ -2,6 +2,7 @@ package com.mopub.mobileads;
 
 import android.content.Context;
 
+import com.astarsoftware.android.AndroidUtils;
 import com.mopub.common.AdUrlGenerator;
 import com.mopub.common.ClientMetadata;
 import com.mopub.common.Constants;
@@ -29,6 +30,20 @@ public class WebViewAdUrlGenerator extends AdUrlGenerator {
 
         setExternalStoragePermission(mIsStorePictureSupported);
 
+		if (AndroidUtils.isDebugBuild()) {
+			if (mAdUnitId.startsWith("ASTAR")) {
+				if (mAdUnitId.startsWith("ASTAR-MRAIDTEST")) {
+					return String.format(
+						"https://%s%s?v=%s&udid=%s&id=%s&nv=%s",
+						"mraid-testing.astar.mobi",
+						"/mraid.php",
+						"6",
+						"astar_test_udid",
+						mAdUnitId,
+						clientMetadata.getSdkVersion());
+				}
+			}
+		}
         enableViewability(ViewabilityVendor.getEnabledVendorKey());
 
         return getFinalUrlString();

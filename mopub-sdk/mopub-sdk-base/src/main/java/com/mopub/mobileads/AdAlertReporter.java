@@ -9,17 +9,20 @@ import android.util.Base64;
 import android.view.View;
 import android.widget.Toast;
 
+import com.astarsoftware.android.AndroidUtils;
 import com.mopub.common.AdReport;
 import com.mopub.common.util.DateAndTime;
 import com.mopub.common.util.Intents;
 import com.mopub.exceptions.IntentNotResolvableException;
+import com.mopub.mobileads.base.R;
 
 import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 public class AdAlertReporter {
-    private static final String EMAIL_RECIPIENT = "creative-review@mopub.com";
+	private static final String EMAIL_SCHEME = "mailto:";
+	private static final String[] EMAIL_RECIPIENTS = new String[]{"creative-review@mopub.com",  AndroidUtils.getResourceString(R.string.feedback_email_address) };
     private static final String DATE_FORMAT_PATTERN = "M/d/yy hh:mm:ss a z";
     private static final int IMAGE_QUALITY = 25;
     private static final String BODY_SEPARATOR = "\n=================\n";
@@ -62,11 +65,16 @@ public class AdAlertReporter {
     }
 
     private void initEmailIntent() {
-        mEmailIntent = new Intent(Intent.ACTION_SENDTO);
+		Uri emailScheme = Uri.parse(EMAIL_SCHEME);
+		mEmailIntent = new Intent(Intent.ACTION_SEND_MULTIPLE, emailScheme);
+		mEmailIntent.setType("plain/text");
+		mEmailIntent.putExtra(Intent.EXTRA_EMAIL, EMAIL_RECIPIENTS);
+//MoPub Original:  
+//mEmailIntent = new Intent(Intent.ACTION_SENDTO);
         // Should not set type since that either overrides (via setType) or conflicts with
         // (via setDataAndType) the data, resulting in NO applications being able to handle this
         // intent.
-        mEmailIntent.setData(Uri.parse("mailto:" + EMAIL_RECIPIENT));
+       // mEmailIntent.setData(Uri.parse("mailto:" + EMAIL_RECIPIENT));
     }
 
     private Bitmap takeScreenShot() {
