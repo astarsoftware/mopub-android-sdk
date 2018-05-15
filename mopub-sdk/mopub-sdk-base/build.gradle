@@ -7,7 +7,7 @@ repositories {
 }
 
 dependencies {
-	implementation 'com.mopub.volley:mopub-volley:1.1.0'
+    api 'com.mopub.volley:mopub-volley:2.0.0'
 	implementation project(':Libraries:Java:Android:libAndroid')
 
     def avidEnabled = project.hasProperty("mopub.avidEnabled") ? project.getProperty("mopub.avidEnabled").toBoolean() : true
