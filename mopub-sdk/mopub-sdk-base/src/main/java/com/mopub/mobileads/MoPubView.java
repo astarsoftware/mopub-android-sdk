@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.mobileads;
 
 import android.app.Activity;
@@ -136,8 +140,12 @@ public class MoPubView extends FrameLayout {
         }
     }
 
-    Integer getAdTimeoutDelay() {
-        return (mAdViewController != null) ? mAdViewController.getAdTimeoutDelay() : null;
+    @NonNull
+    Integer getAdTimeoutDelay(int defaultValue) {
+        if (mAdViewController == null) {
+            return defaultValue;
+        }
+        return mAdViewController.getAdTimeoutDelay(defaultValue);
     }
 
     protected boolean loadFailUrl(@NonNull final MoPubErrorCode errorCode) {
@@ -252,8 +260,10 @@ public class MoPubView extends FrameLayout {
         }
     }
 
-    protected void nativeAdLoaded() {
-        if (mAdViewController != null) mAdViewController.scheduleRefreshTimerIfEnabled();
+    protected void creativeDownloaded() {
+        if (mAdViewController != null) {
+            mAdViewController.creativeDownloadSuccess();
+        }
         adLoaded();
     }
 
@@ -329,6 +339,30 @@ public class MoPubView extends FrameLayout {
     public void setAutorefreshEnabled(boolean enabled) {
         if (mAdViewController != null) {
             mAdViewController.setShouldAllowAutoRefresh(enabled);
+        }
+    }
+
+    void pauseAutorefresh() {
+        if (mAdViewController != null) {
+            mAdViewController.pauseRefresh();
+        }
+    }
+
+    void resumeAutorefresh() {
+        if (mAdViewController != null) {
+            mAdViewController.resumeRefresh();
+        }
+    }
+
+    void expand() {
+        if (mAdViewController != null) {
+            mAdViewController.expand();
+        }
+    }
+
+    void collapse() {
+        if (mAdViewController != null) {
+            mAdViewController.collapse();
         }
     }
 

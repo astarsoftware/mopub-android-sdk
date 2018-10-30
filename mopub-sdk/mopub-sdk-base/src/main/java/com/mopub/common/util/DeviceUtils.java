@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.common.util;
 
 import android.annotation.TargetApi;
@@ -248,8 +252,14 @@ public class DeviceUtils {
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(permission);
 
-        return ContextCompat.checkSelfPermission(context, permission) ==
-                PackageManager.PERMISSION_GRANTED;
+        // Bug in ContextCompat where it can return a RuntimeException in rare circumstances.
+        // If this happens, then we return false.
+        try {
+            return ContextCompat.checkSelfPermission(context, permission) ==
+                    PackageManager.PERMISSION_GRANTED;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**

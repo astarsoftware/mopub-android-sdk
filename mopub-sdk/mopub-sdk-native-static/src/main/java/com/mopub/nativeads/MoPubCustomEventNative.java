@@ -1,8 +1,13 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.nativeads;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.view.View;
 
 import com.mopub.common.DataKeys;
@@ -26,12 +31,17 @@ import static com.mopub.common.util.Numbers.parseDouble;
 import static com.mopub.nativeads.NativeImageHelper.preCacheImages;
 
 public class MoPubCustomEventNative extends CustomEventNative {
+    private MoPubStaticNativeAd moPubStaticNativeAd;
 
     @Override
     protected void loadNativeAd(@NonNull final Context context,
-            @NonNull final CustomEventNativeListener customEventNativeListener,
-            @NonNull final Map<String, Object> localExtras,
-            @NonNull final Map<String, String> serverExtras) {
+                                @NonNull final CustomEventNativeListener customEventNativeListener,
+                                @NonNull final Map<String, Object> localExtras,
+                                @NonNull final Map<String, String> serverExtras) {
+
+        if (moPubStaticNativeAd != null && !moPubStaticNativeAd.isInvalidated()) {
+            return;
+        }
 
         Object json = localExtras.get(JSON_BODY_KEY);
         // null or non-JSONObjects should not be passed in localExtras as JSON_BODY_KEY
@@ -40,7 +50,7 @@ public class MoPubCustomEventNative extends CustomEventNative {
             return;
         }
 
-        final MoPubStaticNativeAd moPubStaticNativeAd =
+        moPubStaticNativeAd =
                 new MoPubStaticNativeAd(context,
                         (JSONObject) json,
                         new ImpressionTracker(context),
@@ -84,6 +94,14 @@ public class MoPubCustomEventNative extends CustomEventNative {
         }
     }
 
+    @Override
+    protected void onInvalidate() {
+        if (moPubStaticNativeAd == null) {
+            return;
+        }
+        moPubStaticNativeAd.invalidate();
+    }
+
     static class MoPubStaticNativeAd extends StaticNativeAd {
         enum Parameter {
             IMPRESSION_TRACKER("imptracker", true),
@@ -97,9 +115,13 @@ public class MoPubCustomEventNative extends CustomEventNative {
             CLICK_DESTINATION("clk", false),
             FALLBACK("fallback", false),
             CALL_TO_ACTION("ctatext", false),
-            STAR_RATING("starrating", false);
+            STAR_RATING("starrating", false),
 
-            @NonNull final String name;
+            PRIVACY_INFORMATION_ICON_IMAGE_URL("privacyicon", false),
+            PRIVACY_INFORMATION_ICON_CLICKTHROUGH_URL("privacyclkurl", false);
+
+            @NonNull
+            final String name;
             final boolean required;
 
             Parameter(@NonNull final String name, final boolean required) {
@@ -121,6 +143,7 @@ public class MoPubCustomEventNative extends CustomEventNative {
             @NonNull
             @VisibleForTesting
             static final Set<String> requiredKeys = new HashSet<String>();
+
             static {
                 for (final Parameter parameter : values()) {
                     if (parameter.required) {
@@ -133,17 +156,23 @@ public class MoPubCustomEventNative extends CustomEventNative {
         @VisibleForTesting
         static final String PRIVACY_INFORMATION_CLICKTHROUGH_URL = "https://www.mopub.com/optout";
 
-        @NonNull private final Context mContext;
-        @NonNull private final CustomEventNativeListener mCustomEventNativeListener;
-        @NonNull private final JSONObject mJsonObject;
-        @NonNull private final ImpressionTracker mImpressionTracker;
-        @NonNull private final NativeClickHandler mNativeClickHandler;
+        @NonNull
+        private final Context mContext;
+        @NonNull
+        private final CustomEventNativeListener mCustomEventNativeListener;
+        @NonNull
+        private final JSONObject mJsonObject;
+        @NonNull
+        private final ImpressionTracker mImpressionTracker;
+        @NonNull
+        private final NativeClickHandler mNativeClickHandler;
+
 
         MoPubStaticNativeAd(@NonNull final Context context,
-                @NonNull final JSONObject jsonBody,
-                @NonNull final ImpressionTracker impressionTracker,
-                @NonNull final NativeClickHandler nativeClickHandler,
-                @NonNull final CustomEventNativeListener customEventNativeListener) {
+                            @NonNull final JSONObject jsonBody,
+                            @NonNull final ImpressionTracker impressionTracker,
+                            @NonNull final NativeClickHandler nativeClickHandler,
+                            @NonNull final CustomEventNativeListener customEventNativeListener) {
             mJsonObject = jsonBody;
             mContext = context.getApplicationContext();
             mImpressionTracker = impressionTracker;
@@ -171,16 +200,24 @@ public class MoPubCustomEventNative extends CustomEventNative {
                     addExtra(key, mJsonObject.opt(key));
                 }
             }
-            setPrivacyInformationIconClickThroughUrl(PRIVACY_INFORMATION_CLICKTHROUGH_URL);
+            if (TextUtils.isEmpty(getPrivacyInformationIconClickThroughUrl())) {
+                setPrivacyInformationIconClickThroughUrl(PRIVACY_INFORMATION_CLICKTHROUGH_URL);
+            }
 
             preCacheImages(mContext, getAllImageUrls(), new ImageListener() {
                 @Override
                 public void onImagesCached() {
+                    if (isInvalidated()) {
+                        return;
+                    }
                     mCustomEventNativeListener.onNativeAdLoaded(MoPubStaticNativeAd.this);
                 }
 
                 @Override
                 public void onImagesFailedToCache(final NativeErrorCode errorCode) {
+                    if (isInvalidated()) {
+                        return;
+                    }
                     mCustomEventNativeListener.onNativeAdFailed(errorCode);
                 }
             });
@@ -197,7 +234,7 @@ public class MoPubCustomEventNative extends CustomEventNative {
         }
 
         private void addInstanceVariable(@NonNull final Parameter key,
-                @Nullable final Object value) throws ClassCastException {
+                                         @Nullable final Object value) throws ClassCastException {
             try {
                 switch (key) {
                     case MAIN_IMAGE:
@@ -226,6 +263,12 @@ public class MoPubCustomEventNative extends CustomEventNative {
                         break;
                     case STAR_RATING:
                         setStarRating(parseDouble(value));
+                        break;
+                    case PRIVACY_INFORMATION_ICON_IMAGE_URL:
+                        setPrivacyInformationIconImageUrl((String) value);
+                        break;
+                    case PRIVACY_INFORMATION_ICON_CLICKTHROUGH_URL:
+                        setPrivacyInformationIconClickThroughUrl((String) value);
                         break;
                     default:
                         MoPubLog.d("Unable to add JSON key to internal mapping: " + key.name);
@@ -267,13 +310,15 @@ public class MoPubCustomEventNative extends CustomEventNative {
         @NonNull
         List<String> getAllImageUrls() {
             final List<String> imageUrls = new ArrayList<String>();
-            if (getMainImageUrl() != null) {
+            if (!TextUtils.isEmpty(getMainImageUrl())) {
                 imageUrls.add(getMainImageUrl());
             }
-            if (getIconImageUrl() != null) {
+            if (!TextUtils.isEmpty(getIconImageUrl())) {
                 imageUrls.add(getIconImageUrl());
             }
-
+            if (!TextUtils.isEmpty(getPrivacyInformationIconImageUrl())) {
+                imageUrls.add(getPrivacyInformationIconImageUrl());
+            }
             imageUrls.addAll(getExtrasImageUrls());
             return imageUrls;
         }
@@ -294,6 +339,7 @@ public class MoPubCustomEventNative extends CustomEventNative {
         @Override
         public void destroy() {
             mImpressionTracker.destroy();
+            super.destroy();
         }
 
         // Event Handlers

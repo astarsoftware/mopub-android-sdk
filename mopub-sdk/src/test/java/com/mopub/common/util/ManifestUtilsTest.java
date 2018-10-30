@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.common.util;
 
 import android.annotation.TargetApi;
@@ -98,7 +102,7 @@ public class ManifestUtilsTest {
     public void checSdkActivitiesDeclared_shouldIncludeOneActivityDeclaration() throws Exception {
         ShadowLog.setupLogging();
 
-        ManifestUtils.checkSdkActivitiesDeclared(context);
+        ManifestUtils.checkGdprActivitiesDeclared(context);
 
         assertLogIncludes("com.mopub.common.privacy.ConsentDialogActivity");
         assertLogDoesntInclude(

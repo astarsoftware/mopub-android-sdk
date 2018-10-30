@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.common.privacy;
 
 import com.mopub.common.test.support.SdkTestRunner;
@@ -38,6 +42,11 @@ public class AdvertisingIdTest {
         assertThat(subject.mMopubId).isEqualTo(MOPUB_ID);
         assertThat(subject.mDoNotTrack).isFalse();
         assertThat(subject.mLastRotation).isEqualTo(time);
+
+        subject = new AdvertisingId(ANDROID_ID, MOPUB_ID, true, now);
+        assertThat(subject.mDoNotTrack).isTrue();
+        // return IFA even when DoNotTrack is true
+        assertThat(subject.getIfaWithPrefix()).isEqualTo("ifa:" + ANDROID_ID);
     }
 
     @Test
@@ -76,5 +85,47 @@ public class AdvertisingIdTest {
     public void getIdWithPrefix_whenUserConsentTrue_shouldReturnIfaString() {
         subject = new AdvertisingId(ANDROID_ID, MOPUB_ID, false, now);
         assertThat(subject.getIdWithPrefix(true)).isEqualTo("ifa:" + ANDROID_ID);
+    }
+
+    @Test
+    public void getIdWithPrefix_whenLimitAdTrackingIsTrue_shouldNotDependOnConsent() {
+        subject = new AdvertisingId(ANDROID_ID, MOPUB_ID, true, now);
+
+        assertThat(subject.getIdWithPrefix(true)).isEqualTo("mopub:" + MOPUB_ID);
+        assertThat(subject.getIdWithPrefix(false)).isEqualTo("mopub:" + MOPUB_ID);
+    }
+
+    @Test
+    public void getIdentifier_whenDoNotTrackIsTrue_shouldReturnMoPubid() {
+        subject = new AdvertisingId(ANDROID_ID, MOPUB_ID, true, now);
+
+        assertThat(subject.getIdentifier(true)).isEqualTo(MOPUB_ID);
+        assertThat(subject.getIdentifier(false)).isEqualTo(MOPUB_ID);
+    }
+
+    @Test
+    public void getIdentifier_whenDoNotTrackIsFalse_shouldAnalyzeConsent() {
+        subject = new AdvertisingId(ANDROID_ID, MOPUB_ID, false, now);
+        
+        assertThat(subject.getIdentifier(true)).isEqualTo(ANDROID_ID);
+        assertThat(subject.getIdentifier(false)).isEqualTo(MOPUB_ID);
+    }
+
+    @Test
+    public void generateExpiredAdvertisingId_shouldGenerateExpiredAdvertisingId() {
+        subject = AdvertisingId.generateExpiredAdvertisingId();
+        assertThat(subject.isRotationRequired()).isTrue();
+    }
+
+    @Test
+    public void generateFreshAdvertisingId_shouldGenerateNonExpiredAdvertisingId() {
+        subject = AdvertisingId.generateFreshAdvertisingId();
+        assertThat(subject.isRotationRequired()).isFalse();
+    }
+
+    @Test
+    public void generateIdString_lengthIs16x2plus4() {
+        String uuid = AdvertisingId.generateIdString();
+        assertThat(uuid.length()).isEqualTo(36);
     }
 }

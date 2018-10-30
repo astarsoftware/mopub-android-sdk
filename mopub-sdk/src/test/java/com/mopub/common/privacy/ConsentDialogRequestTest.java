@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.common.privacy;
 
 import android.app.Activity;
@@ -29,7 +33,7 @@ import static org.mockito.Mockito.verify;
 @RunWith(SdkTestRunner.class)
 @Config(constants = BuildConfig.class)
 public class ConsentDialogRequestTest {
-    private static final String URL = "https://"+ Constants.HOST+"/m/gdpr_consent_dialog?adunit_id=testAdUnitId&nv=5.0.0&language=en";
+    private static final String URL = "https://"+ Constants.HOST+"/m/gdpr_consent_dialog?id=testAdUnitId&nv=5.0.0&language=en";
     private static final String HTML = "html-body-text";
     private static final String BODY = "{ dialog_html : '" + HTML + "' }";
 
@@ -56,7 +60,7 @@ public class ConsentDialogRequestTest {
     }
 
     @Test
-    public void parseNetworkResponse_validBody_shouldSucceed() {
+    public void parseNetworkResponse_withValidBody_shouldSucceed() {
         NetworkResponse testResponse = new NetworkResponse(BODY.getBytes(Charset.defaultCharset()));
         final Response<ConsentDialogResponse> response = subject.parseNetworkResponse(testResponse);
 
@@ -65,7 +69,7 @@ public class ConsentDialogRequestTest {
     }
 
     @Test
-    public void parseNetworkResponse_emptyBody_shouldReturnErrorBadBody() {
+    public void parseNetworkResponse_withEmptyBody_shouldReturnErrorBadBody() {
         NetworkResponse testResponse = new NetworkResponse("".getBytes(Charset.defaultCharset()));
         final Response<ConsentDialogResponse> response = subject.parseNetworkResponse(testResponse);
 
@@ -75,7 +79,7 @@ public class ConsentDialogRequestTest {
     }
 
     @Test
-    public void parseNetworkResponse_bodyBrokenJson_shouldReturnErrorBadBody() {
+    public void parseNetworkResponse_withBrokenJsonBody_shouldReturnErrorBadBody() {
         NetworkResponse testResponse = new NetworkResponse("{ html - 'body' }".getBytes(Charset.defaultCharset()));
         final Response<ConsentDialogResponse> response = subject.parseNetworkResponse(testResponse);
 
@@ -85,7 +89,7 @@ public class ConsentDialogRequestTest {
     }
 
     @Test
-    public void parseNetworkResponse_jsonNoHtmlTag_shouldReturnErrorBadBody() {
+    public void parseNetworkResponse_withJsonNoHtmlTag_shouldReturnErrorBadBody() {
         NetworkResponse testResponse = new NetworkResponse("{ k: 1 }".getBytes(Charset.defaultCharset()));
         final Response<ConsentDialogResponse> response = subject.parseNetworkResponse(testResponse);
 
@@ -95,7 +99,7 @@ public class ConsentDialogRequestTest {
     }
 
     @Test
-    public void deliverResponse_validListener_callsListener() {
+    public void deliverResponse_withValidListener_shouldCallListener() {
         ConsentDialogResponse response = new ConsentDialogResponse("html-text");
         subject.deliverResponse(response);
 
@@ -103,7 +107,7 @@ public class ConsentDialogRequestTest {
     }
 
     @Test
-    public void deliverResponse_nullListener_doesntCrash() {
+    public void deliverResponse_withNullListener_shouldNotCrash() {
         subject = new ConsentDialogRequest(activity, URL, null);
         ConsentDialogResponse response = new ConsentDialogResponse("html-text");
         subject.deliverResponse(response);

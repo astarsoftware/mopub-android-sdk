@@ -1,5 +1,10 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.common;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -7,6 +12,8 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Point;
 import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -27,17 +34,14 @@ import static android.content.pm.PackageManager.NameNotFoundException;
  * Singleton that caches Client objects so they will be available to background threads.
  */
 public class ClientMetadata {
-    // Network type constant defined after API 9:
-    private static final int TYPE_ETHERNET = 9;
 
     private static final String DEVICE_ORIENTATION_PORTRAIT = "p";
     private static final String DEVICE_ORIENTATION_LANDSCAPE = "l";
     private static final String DEVICE_ORIENTATION_SQUARE = "s";
     private static final String DEVICE_ORIENTATION_UNKNOWN = "u";
-    private static final int UNKNOWN_NETWORK = -1;
 
     private String mNetworkOperatorForUrl;
-    private final String mNetworkOperator;
+    private String mNetworkOperator;
     private String mSimOperator;
     private String mIsoCountryCode;
     private String mSimIsoCountryCode;
@@ -47,11 +51,17 @@ public class ClientMetadata {
     @NonNull
     private final MoPubIdentifier moPubIdentifier;
 
+    /**
+     * MoPubNetworkType - network connection type enumeration
+     */
     public enum MoPubNetworkType {
         UNKNOWN(0),
         ETHERNET(1),
         WIFI(2),
-        MOBILE(3);
+        MOBILE(3),
+        GG(4),      // connected to 2G network
+        GGG(5),     // connected to 3G network
+        GGGG(6);    // connected to 4G network
 
         private final int mId;
         MoPubNetworkType(int id) {
@@ -61,23 +71,6 @@ public class ClientMetadata {
         @Override
         public String toString() {
             return Integer.toString(mId);
-        }
-
-        private static MoPubNetworkType fromAndroidNetworkType(int type) {
-            switch(type) {
-                case TYPE_ETHERNET:
-                    return ETHERNET;
-                case ConnectivityManager.TYPE_WIFI:
-                    return WIFI;
-                case ConnectivityManager.TYPE_MOBILE:
-                case ConnectivityManager.TYPE_MOBILE_DUN:
-                case ConnectivityManager.TYPE_MOBILE_HIPRI:
-                case ConnectivityManager.TYPE_MOBILE_MMS:
-                case ConnectivityManager.TYPE_MOBILE_SUPL:
-                    return MOBILE;
-                default:
-                    return UNKNOWN;
-            }
         }
 
         public int getId() {
@@ -103,7 +96,7 @@ public class ClientMetadata {
      * Returns the singleton ClientMetadata object, using the context to obtain data if necessary.
      */
     @NonNull
-    public static ClientMetadata getInstance(Context context) {
+    public static ClientMetadata getInstance(@NonNull final Context context) {
         // Use a local variable so we can reduce accesses of the volatile field.
         ClientMetadata result = sInstance;
         if (result == null) {
@@ -137,7 +130,9 @@ public class ClientMetadata {
     }
 
     // NEVER CALL THIS AS A USER. Get it from the Singletons class.
-    public ClientMetadata(Context context) {
+    public ClientMetadata(@NonNull final Context context) {
+        Preconditions.checkNotNull(context);
+
         mContext = context.getApplicationContext();
         mConnectivityManager =
                 (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -152,7 +147,7 @@ public class ClientMetadata {
         mAppVersion = getAppVersionFromContext(mContext);
         PackageManager packageManager = mContext.getPackageManager();
         ApplicationInfo applicationInfo = null;
-        mAppPackageName = context.getPackageName();
+        mAppPackageName = mContext.getPackageName();
         try {
             applicationInfo = packageManager.getApplicationInfo(mAppPackageName, 0);
         } catch (final NameNotFoundException e) {
@@ -164,33 +159,34 @@ public class ClientMetadata {
 
         final TelephonyManager telephonyManager =
                 (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-        mNetworkOperatorForUrl = telephonyManager.getNetworkOperator();
-        mNetworkOperator = telephonyManager.getNetworkOperator();
-        if (telephonyManager.getPhoneType() == TelephonyManager.PHONE_TYPE_CDMA &&
-                telephonyManager.getSimState() == TelephonyManager.SIM_STATE_READY) {
-            mNetworkOperatorForUrl = telephonyManager.getSimOperator();
-            mSimOperator = telephonyManager.getSimOperator();
-        }
-
-        if (MoPub.canCollectPersonalInformation()) {
-            mIsoCountryCode = telephonyManager.getNetworkCountryIso();
-            mSimIsoCountryCode = telephonyManager.getSimCountryIso();
-        } else {
-            mIsoCountryCode = "";
-            mSimIsoCountryCode = "";
-        }
-
-        try {
-            // Some Lenovo devices require READ_PHONE_STATE here.
-            mNetworkOperatorName = telephonyManager.getNetworkOperatorName();
-            if (telephonyManager.getSimState() == TelephonyManager.SIM_STATE_READY) {
-                mSimOperatorName = telephonyManager.getSimOperatorName();
+        if(telephonyManager!=null) {
+            mNetworkOperatorForUrl = telephonyManager.getNetworkOperator();
+            mNetworkOperator = telephonyManager.getNetworkOperator();
+            if (telephonyManager.getPhoneType() == TelephonyManager.PHONE_TYPE_CDMA &&
+                    telephonyManager.getSimState() == TelephonyManager.SIM_STATE_READY) {
+                mNetworkOperatorForUrl = telephonyManager.getSimOperator();
+                mSimOperator = telephonyManager.getSimOperator();
             }
-        } catch (SecurityException e) {
-            mNetworkOperatorName = null;
-            mSimOperatorName = null;
-        }
 
+            if (MoPub.canCollectPersonalInformation()) {
+                mIsoCountryCode = telephonyManager.getNetworkCountryIso();
+                mSimIsoCountryCode = telephonyManager.getSimCountryIso();
+            } else {
+                mIsoCountryCode = "";
+                mSimIsoCountryCode = "";
+            }
+
+            try {
+                // Some Lenovo devices require READ_PHONE_STATE here.
+                mNetworkOperatorName = telephonyManager.getNetworkOperatorName();
+                if (telephonyManager.getSimState() == TelephonyManager.SIM_STATE_READY) {
+                    mSimOperatorName = telephonyManager.getSimOperatorName();
+                }
+            } catch (SecurityException e) {
+                mNetworkOperatorName = null;
+                mSimOperatorName = null;
+            }
+        }
         moPubIdentifier = new MoPubIdentifier(mContext);
     }
 
@@ -231,17 +227,64 @@ public class ClientMetadata {
         return orientation;
     }
 
-
+    @SuppressLint("MissingPermission")
     public MoPubNetworkType getActiveNetworkType() {
-        int networkType = UNKNOWN_NETWORK;
-        if (DeviceUtils.isPermissionGranted(mContext, ACCESS_NETWORK_STATE)) {
-            NetworkInfo activeNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
-            networkType = activeNetworkInfo != null
-                    ? activeNetworkInfo.getType() : UNKNOWN_NETWORK;
+        if (!DeviceUtils.isPermissionGranted(mContext, ACCESS_NETWORK_STATE)) {
+            return MoPubNetworkType.UNKNOWN;
         }
-        return MoPubNetworkType.fromAndroidNetworkType(networkType);
-    }
 
+        NetworkInfo activeNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
+        if (activeNetworkInfo == null || !activeNetworkInfo.isConnected()) {
+            return MoPubNetworkType.UNKNOWN;
+        }
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            if (activeNetworkInfo.getType() == ConnectivityManager.TYPE_ETHERNET) {
+                return MoPubNetworkType.ETHERNET;
+            }
+        } else {
+            Network[] networks = mConnectivityManager.getAllNetworks();
+            for (Network network : networks) {
+                NetworkCapabilities capabilities = mConnectivityManager.getNetworkCapabilities(network);
+                if (capabilities != null && capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET))
+                    return MoPubNetworkType.ETHERNET;
+            }
+        }
+
+        NetworkInfo networkInfo = mConnectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        if (networkInfo != null && networkInfo.isConnected()) {
+            return MoPubNetworkType.WIFI;
+        }
+
+        networkInfo = mConnectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        if (networkInfo != null && networkInfo.isConnected()) {
+            int netType = networkInfo.getSubtype();
+            switch (netType) {
+                case TelephonyManager.NETWORK_TYPE_GPRS:
+                case TelephonyManager.NETWORK_TYPE_EDGE:
+                case TelephonyManager.NETWORK_TYPE_CDMA:
+                case TelephonyManager.NETWORK_TYPE_1xRTT:
+                case TelephonyManager.NETWORK_TYPE_IDEN:
+                    return MoPubNetworkType.GG; // 2G
+                case TelephonyManager.NETWORK_TYPE_UMTS:
+                case TelephonyManager.NETWORK_TYPE_EVDO_0:
+                case TelephonyManager.NETWORK_TYPE_EVDO_A:
+                case TelephonyManager.NETWORK_TYPE_HSDPA:
+                case TelephonyManager.NETWORK_TYPE_HSUPA:
+                case TelephonyManager.NETWORK_TYPE_HSPA:
+                case TelephonyManager.NETWORK_TYPE_EVDO_B:
+                case TelephonyManager.NETWORK_TYPE_EHRPD:
+                    return MoPubNetworkType.GGG; // 3G
+                case TelephonyManager.NETWORK_TYPE_HSPAP:
+                case TelephonyManager.NETWORK_TYPE_LTE:
+                    return MoPubNetworkType.GGGG; // 4G
+                default:
+                    return MoPubNetworkType.MOBILE;
+            }
+        }
+
+        return MoPubNetworkType.UNKNOWN;
+    }
 
     /**
      * Get the logical density of the display as in {@link android.util.DisplayMetrics#density}

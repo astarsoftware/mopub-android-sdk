@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.mobileads;
 
 import android.content.Context;
@@ -34,13 +38,12 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
     private boolean mInvalidated;
     private MoPubView mMoPubView;
     private Context mContext;
-    private CustomEventBanner mCustomEventBanner;
+    @Nullable private CustomEventBanner mCustomEventBanner;
     private Map<String, Object> mLocalExtras;
     private Map<String, String> mServerExtras;
 
     private final Handler mHandler;
     private final Runnable mTimeout;
-    private boolean mStoredAutorefresh;
 
     private int mImpressionMinVisibleDips = Integer.MIN_VALUE;
     private int mImpressionMinVisibleMs = Integer.MIN_VALUE;
@@ -75,7 +78,7 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
         }
 
         // Attempt to load the JSON extras into mServerExtras.
-        mServerExtras = new TreeMap<String, String>(serverExtras);
+        mServerExtras = new TreeMap<>(serverExtras);
 
         // Parse banner impression tracking headers to determine if we are in visibility experiment
         parseBannerImpressionTrackingHeaders();
@@ -126,6 +129,7 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
             } catch (Exception e) {
                 MoPubLog.d("Destroying a banner visibility tracker threw an exception", e);
             }
+            mVisibilityTracker = null;
         }
         mContext = null;
         mCustomEventBanner = null;
@@ -168,13 +172,11 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
     }
 
     private int getTimeoutDelayMilliseconds() {
-        if (mMoPubView == null
-                || mMoPubView.getAdTimeoutDelay() == null
-                || mMoPubView.getAdTimeoutDelay() < 0) {
+        if (mMoPubView == null) {
             return DEFAULT_BANNER_TIMEOUT_DELAY;
         }
 
-        return mMoPubView.getAdTimeoutDelay() * 1000;
+        return mMoPubView.getAdTimeoutDelay(DEFAULT_BANNER_TIMEOUT_DELAY);
     }
 
     private void parseBannerImpressionTrackingHeaders() {
@@ -217,7 +219,7 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
         cancelTimeout();
 
         if (mMoPubView != null) {
-            mMoPubView.nativeAdLoaded();
+            mMoPubView.creativeDownloaded();
 
             // If visibility impression tracking is enabled for banners, fire all impression
             // tracking URLs (AdServer, MPX, 3rd-party) for both HTML and MRAID banner types when
@@ -225,7 +227,11 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
             //
             // Else, retain old behavior of firing AdServer impression tracking URL if and only if
             // banner is not HTML.
-            if (mIsVisibilityImpressionTrackingEnabled) {
+            if (mIsVisibilityImpressionTrackingEnabled &&
+                    mCustomEventBanner != null &&
+                    mCustomEventBanner.isAutomaticImpressionAndClickTrackingEnabled()) {
+                // Disable autorefresh temporarily until an impression happens.
+                mMoPubView.pauseAutorefresh();
                 // Set up visibility tracker and listener if in experiment
                 mVisibilityTracker = new BannerVisibilityTracker(mContext, mMoPubView, bannerView,
                         mImpressionMinVisibleDips, mImpressionMinVisibleMs);
@@ -237,6 +243,7 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
                         if (mCustomEventBanner != null) {
                             mCustomEventBanner.trackMpxAndThirdPartyImpressions();
                         }
+                        mMoPubView.resumeAutorefresh();
                     }
                 });
             }
@@ -244,7 +251,9 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
             mMoPubView.setAdContentView(bannerView);
 
             // Old behavior
-            if (!mIsVisibilityImpressionTrackingEnabled) {
+            if (!mIsVisibilityImpressionTrackingEnabled &&
+                    mCustomEventBanner != null &&
+                    mCustomEventBanner.isAutomaticImpressionAndClickTrackingEnabled()) {
                 if (!(bannerView instanceof HtmlBannerWebView)) {
                     mMoPubView.trackNativeImpression();
                 }
@@ -258,11 +267,12 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
             return;
         }
 
+        cancelTimeout();
+
         if (mMoPubView != null) {
             if (errorCode == null) {
                 errorCode = UNSPECIFIED;
             }
-            cancelTimeout();
             mMoPubView.loadFailUrl(errorCode);
         }
     }
@@ -273,8 +283,7 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
             return;
         }
 
-        mStoredAutorefresh = mMoPubView.getAutorefreshEnabled();
-        mMoPubView.setAutorefreshEnabled(false);
+        mMoPubView.expand();
         mMoPubView.adPresentedOverlay();
     }
 
@@ -284,7 +293,7 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
             return;
         }
 
-        mMoPubView.setAutorefreshEnabled(mStoredAutorefresh);
+        mMoPubView.collapse();
         mMoPubView.adClosed();
     }
 
@@ -296,6 +305,22 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
 
         if (mMoPubView != null) {
             mMoPubView.registerClick();
+        }
+    }
+
+    @Override
+    public void onBannerImpression() {
+        if (isInvalidated()) {
+            return;
+        }
+
+        if (mMoPubView != null &&
+                mCustomEventBanner != null &&
+                !mCustomEventBanner.isAutomaticImpressionAndClickTrackingEnabled()) {
+            mMoPubView.trackNativeImpression();
+            if (mIsVisibilityImpressionTrackingEnabled) {
+                mCustomEventBanner.trackMpxAndThirdPartyImpressions();
+            }
         }
     }
 

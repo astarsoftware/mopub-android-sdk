@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.common.privacy;
 
 import android.content.ContentResolver;
@@ -15,6 +19,7 @@ import com.mopub.common.SdkInitializationListener;
 import com.mopub.common.SharedPreferencesHelper;
 import com.mopub.common.VisibleForTesting;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.common.util.AsyncTasks;
 
 import java.util.Calendar;
 
@@ -33,6 +38,7 @@ public class MoPubIdentifier {
 
     @NonNull
     private AdvertisingId mAdInfo;
+
     @NonNull
     private final Context mAppContext;
 
@@ -42,6 +48,7 @@ public class MoPubIdentifier {
     private boolean mRefreshingAdvertisingInfo;
 
     private boolean initialized;
+
     @Nullable
     private SdkInitializationListener mInitializationListener;
 
@@ -51,8 +58,8 @@ public class MoPubIdentifier {
 
     @VisibleForTesting
     MoPubIdentifier(@NonNull final Context appContext,
-            @Nullable final AdvertisingIdChangeListener idChangeListener) {
-        Preconditions.NoThrow.checkNotNull(appContext);
+                    @Nullable final AdvertisingIdChangeListener idChangeListener) {
+        Preconditions.checkNotNull(appContext);
 
         mAppContext = appContext;
         mIdChangeListener = idChangeListener;
@@ -81,7 +88,7 @@ public class MoPubIdentifier {
             return;
         }
         mRefreshingAdvertisingInfo = true;
-        new RefreshAdvertisingInfoAsyncTask().execute();
+        AsyncTasks.safeExecuteOnExecutor(new RefreshAdvertisingInfoAsyncTask());
     }
 
     void refreshAdvertisingInfoBackgroundThread() {
@@ -90,22 +97,24 @@ public class MoPubIdentifier {
         // try google
         if (isPlayServicesAvailable()) {
             GpsHelper.AdvertisingInfo info = GpsHelper.fetchAdvertisingInfoSync(mAppContext);
-            if (info != null) {
+            if (info != null && !TextUtils.isEmpty(info.advertisingId)) {
                 final AdvertisingId oldId = mAdInfo;
-                if (info.limitAdTracking && oldId.isRotationRequired()) {
+                if (oldId.isRotationRequired()) {
                     setAdvertisingInfo(info.advertisingId, AdvertisingId.generateIdString(), info.limitAdTracking, time);
                 } else {
                     setAdvertisingInfo(info.advertisingId, oldId.mMopubId, info.limitAdTracking, oldId.mLastRotation.getTimeInMillis());
                 }
                 return;
+            } else {
+                MoPubLog.w("Call to 'getAdvertisingIdInfo' returned invalid value.");
             }
         }
 
         // try amazon
         final AdvertisingId info = getAmazonAdvertisingInfo(mAppContext);
-        if (info != null) {
+        if (info != null && !TextUtils.isEmpty(info.mAdvertisingId)) {
             final AdvertisingId oldId = mAdInfo;
-            if (info.isDoNotTrack() && oldId.isRotationRequired()) {
+            if (oldId.isRotationRequired()) {
                 setAdvertisingInfo(info.mAdvertisingId, AdvertisingId.generateIdString(), info.mDoNotTrack, time);
             } else {
                 setAdvertisingInfo(info.mAdvertisingId, oldId.mMopubId, info.mDoNotTrack, oldId.mLastRotation.getTimeInMillis());
@@ -118,7 +127,7 @@ public class MoPubIdentifier {
     }
 
     @Nullable
-    private static synchronized AdvertisingId readIdFromStorage(@NonNull final Context appContext) {
+    static synchronized AdvertisingId readIdFromStorage(@NonNull final Context appContext) {
         Preconditions.checkNotNull(appContext);
 
         Calendar now = Calendar.getInstance();
@@ -163,7 +172,7 @@ public class MoPubIdentifier {
         editor.apply();
     }
 
-    private void rotateMopubId() {
+    void rotateMopubId() {
         if (!mAdInfo.isRotationRequired()) {
             setAdvertisingInfo(mAdInfo);
             return;
@@ -173,13 +182,13 @@ public class MoPubIdentifier {
     }
 
     private void setAdvertisingInfo(@NonNull String advertisingId, @NonNull String mopubId, boolean limitAdTracking, long rotationTime) {
-        Preconditions.NoThrow.checkNotNull(advertisingId);
-        Preconditions.NoThrow.checkNotNull(mopubId);
+        Preconditions.checkNotNull(advertisingId);
+        Preconditions.checkNotNull(mopubId);
 
         setAdvertisingInfo(new AdvertisingId(advertisingId, mopubId, limitAdTracking, rotationTime));
     }
 
-    private void setAdvertisingInfo(@NonNull final AdvertisingId newId) {
+    void setAdvertisingInfo(@NonNull final AdvertisingId newId) {
         AdvertisingId oldId = mAdInfo;
         mAdInfo = newId;
         writeIdToStorage(mAppContext, mAdInfo);
@@ -187,10 +196,9 @@ public class MoPubIdentifier {
         if (!mAdInfo.equals(oldId) || !initialized) {
             notifyIdChangeListener(oldId, mAdInfo);
         }
+        initialized = true;
 
-        if (!initialized) {
-            reportInitializationComplete();
-        }
+        reportInitializationComplete();
     }
 
     /**
@@ -213,7 +221,6 @@ public class MoPubIdentifier {
             mInitializationListener.onInitializationFinished();
             mInitializationListener = null;
         }
-        initialized = true;
     }
 
     private void notifyIdChangeListener(@NonNull final AdvertisingId oldId, @NonNull final AdvertisingId newId) {
@@ -224,7 +231,7 @@ public class MoPubIdentifier {
         }
     }
 
-    private boolean isPlayServicesAvailable() {
+    boolean isPlayServicesAvailable() {
         return GpsHelper.isPlayServicesAvailable(mAppContext);
     }
 

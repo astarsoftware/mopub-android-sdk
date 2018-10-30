@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.mobileads;
 
 import android.content.Context;
@@ -23,6 +27,7 @@ class ConversionUrlGenerator extends BaseUrlGenerator {
     private String mConsentedPrivacyPolicyVersion;
     @Nullable
     private Boolean mGdprApplies;
+    private boolean mForceGdprApplies;
 
     private boolean mSt;
 
@@ -38,6 +43,11 @@ class ConversionUrlGenerator extends BaseUrlGenerator {
 
     public ConversionUrlGenerator withGdprApplies(@Nullable final Boolean gdprApplies) {
         mGdprApplies = gdprApplies;
+        return this;
+    }
+
+    public ConversionUrlGenerator withForceGdprApplies(final boolean forceGdprApplies) {
+        mForceGdprApplies = forceGdprApplies;
         return this;
     }
 
@@ -73,9 +83,8 @@ class ConversionUrlGenerator extends BaseUrlGenerator {
         addParam(CURRENT_CONSENT_STATUS_KEY, mCurrentConsentStatus);
         addParam(CONSENTED_VENDOR_LIST_VERSION_KEY, mConsentedVendorListVersion);
         addParam(CONSENTED_PRIVACY_POLICY_VERSION_KEY, mConsentedPrivacyPolicyVersion);
-        if (mGdprApplies != null) {
-            addParam(GDPR_APPLIES, mGdprApplies);
-        }
+        addParam(GDPR_APPLIES, mGdprApplies);
+        addParam(FORCE_GDPR_APPLIES, mForceGdprApplies);
         return getFinalUrlString();
     }
 }

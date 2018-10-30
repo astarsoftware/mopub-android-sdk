@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.common.privacy;
 
 import android.content.Context;
@@ -50,6 +54,7 @@ public class SyncRequest extends MoPubRequest<SyncResponse> {
                             jsonBody.optString(PrivacyKey.INVALIDATE_CONSENT.getKey()))
                     .setReacquireConsent(jsonBody.optString(PrivacyKey.REACQUIRE_CONSENT.getKey()))
                     .setIsWhitelisted(jsonBody.getString(PrivacyKey.IS_WHITELISTED.getKey()))
+                    .setForceGdprApplies(jsonBody.optString(PrivacyKey.FORCE_GDPR_APPLIES.getKey()))
                     .setCurrentVendorListVersion(
                             jsonBody.getString(PrivacyKey.CURRENT_VENDOR_LIST_VERSION.getKey()))
                     .setCurrentVendorListLink(

@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.common.privacy;
 
 import android.app.Activity;
@@ -23,18 +27,17 @@ public class ConsentDialogActivity extends Activity {
     private static final String KEY_HTML_PAGE = "html-page-content";
 
     @Nullable
-    private ConsentDialogLayout mView;
+    ConsentDialogLayout mView;
     @Nullable
     private Runnable mEnableCloseButtonRunnable;
     @Nullable
-    private Handler mCloseButtonHandler;
+    Handler mCloseButtonHandler;
 
     @Nullable
-    private ConsentStatus mConsentStatus;
+    ConsentStatus mConsentStatus;
 
     static void start(@NonNull final Context context, @NonNull String htmlData) {
         Preconditions.checkNotNull(context);
-        Preconditions.checkNotNull(htmlData);
 
         if (TextUtils.isEmpty(htmlData)) {
             MoPubLog.e("ConsentDialogActivity htmlData can't be empty string.");

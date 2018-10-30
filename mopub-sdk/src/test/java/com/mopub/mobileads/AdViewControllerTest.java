@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.mobileads;
 
 import android.Manifest;
@@ -6,6 +10,7 @@ import android.content.Context;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.Uri;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
@@ -13,16 +18,20 @@ import android.widget.FrameLayout;
 
 import com.mopub.common.AdFormat;
 import com.mopub.common.MoPub;
+import com.mopub.common.SdkConfiguration;
 import com.mopub.common.privacy.ConsentStatus;
 import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.common.test.support.SdkTestRunner;
 import com.mopub.common.util.Reflection;
 import com.mopub.common.util.test.support.TestMethodBuilderFactory;
+import com.mopub.mobileads.test.support.MoPubShadowConnectivityManager;
+import com.mopub.mobileads.test.support.MoPubShadowTelephonyManager;
 import com.mopub.mobileads.test.support.ThreadUtils;
-import com.mopub.network.AdRequest;
+import com.mopub.network.AdLoader;
 import com.mopub.network.AdResponse;
 import com.mopub.network.MoPubNetworkError;
 import com.mopub.network.MoPubRequestQueue;
+import com.mopub.network.MultiAdRequest;
 import com.mopub.network.Networking;
 import com.mopub.volley.NetworkResponse;
 import com.mopub.volley.NoConnectionError;
@@ -41,13 +50,13 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
 import static com.mopub.common.VolleyRequestMatcher.isUrl;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
@@ -62,7 +71,7 @@ import static org.mockito.Mockito.when;
 
 
 @RunWith(SdkTestRunner.class)
-@Config(constants = BuildConfig.class)
+@Config(constants = BuildConfig.class, shadows = {MoPubShadowTelephonyManager.class, MoPubShadowConnectivityManager.class})
 public class AdViewControllerTest {
 
     private static final int[] HTML_ERROR_CODES = new int[]{400, 401, 402, 403, 404, 405, 407, 408,
@@ -72,6 +81,8 @@ public class AdViewControllerTest {
     @Mock private MoPubView mockMoPubView;
     @Mock private MoPubRequestQueue mockRequestQueue;
     private Reflection.MethodBuilder methodBuilder;
+    private MoPubShadowTelephonyManager shadowTelephonyManager;
+    private MoPubShadowConnectivityManager shadowConnectivityManager;
 
     private AdResponse response;
     private Activity activity;
@@ -82,6 +93,8 @@ public class AdViewControllerTest {
     public void setup() throws Exception {
         activity = Robolectric.buildActivity(Activity.class).create().get();
         Shadows.shadowOf(activity).grantPermissions(android.Manifest.permission.ACCESS_NETWORK_STATE);
+
+        MoPub.initializeSdk(activity, new SdkConfiguration.Builder("adunit").build(), null);
 
         mockPersonalInfoManager = mock(PersonalInfoManager.class);
         when(mockPersonalInfoManager.getPersonalInfoConsentStatus()).thenReturn(ConsentStatus.UNKNOWN);
@@ -102,20 +115,24 @@ public class AdViewControllerTest {
         response = new AdResponse.Builder()
                 .setCustomEventClassName("customEvent")
                 .setClickTrackingUrl("clickUrl")
-                .setImpressionTrackingUrl("impressionUrl")
-                .setRedirectUrl("redirectUrl")
-                .setScrollable(false)
+                .setImpressionTrackingUrls(Arrays.asList("impressionUrl1", "impressionUrl2"))
                 .setDimensions(320, 50)
                 .setAdType("html")
                 .setFailoverUrl("failUrl")
                 .setResponseBody("testResponseBody")
                 .setServerExtras(Collections.<String, String>emptyMap())
                 .build();
+        shadowTelephonyManager = (MoPubShadowTelephonyManager) Shadows.shadowOf((TelephonyManager) RuntimeEnvironment.application.getSystemService(Context.TELEPHONY_SERVICE));
+        shadowConnectivityManager = (MoPubShadowConnectivityManager) Shadows.shadowOf((ConnectivityManager) RuntimeEnvironment.application.getSystemService(Context.CONNECTIVITY_SERVICE));
     }
 
     @After
     public void tearDown() throws Exception {
         reset(methodBuilder);
+        new Reflection.MethodBuilder(null, "clearAdvancedBidders")
+                .setStatic(MoPub.class)
+                .setAccessible()
+                .execute();
     }
 
     @Test
@@ -359,7 +376,8 @@ public class AdViewControllerTest {
         subject.onAdLoadSuccess(response);
         subject.trackImpression();
 
-        verify(mockRequestQueue).add(argThat(isUrl("impressionUrl")));
+        verify(mockRequestQueue).add(argThat(isUrl("impressionUrl1")));
+        verify(mockRequestQueue).add(argThat(isUrl("impressionUrl2")));
     }
 
     @Test
@@ -386,8 +404,8 @@ public class AdViewControllerTest {
     @Test
     public void fetchAd_withNullMoPubView_shouldNotMakeRequest() throws Exception {
         subject.cleanup();
-        subject.fetchAd("adUrl");
-        verify(mockRequestQueue, never()).add(any(AdRequest.class));
+        subject.fetchAd("adUrl", null);
+        verify(mockRequestQueue, never()).add(any(MultiAdRequest.class));
     }
 
     @Test
@@ -410,7 +428,7 @@ public class AdViewControllerTest {
     @Test
     public void loadNonJavascript_shouldFetchAd() throws Exception {
         String url = "https://www.guy.com";
-        subject.loadNonJavascript(url);
+        subject.loadNonJavascript(url, null);
 
         verify(mockRequestQueue).add(argThat(isUrl(url)));
     }
@@ -418,32 +436,23 @@ public class AdViewControllerTest {
     @Test
     public void loadNonJavascript_whenAlreadyLoading_shouldNotFetchAd() throws Exception {
         String url = "https://www.guy.com";
-        subject.loadNonJavascript(url);
+        subject.loadNonJavascript(url, null);
         reset(mockRequestQueue);
-        subject.loadNonJavascript(url);
+        subject.loadNonJavascript(url, null);
 
         verify(mockRequestQueue, never()).add(any(Request.class));
     }
 
     @Test
     public void loadNonJavascript_shouldAcceptNullParameter() throws Exception {
-        subject.loadNonJavascript(null);
+        subject.loadNonJavascript(null, null);
         // pass
     }
 
     @Test
-    public void reload_shouldReuseOldUrl() throws Exception {
-        String url = "https://www.guy.com";
-        subject.loadNonJavascript(url);
-        subject.setNotLoading();
-        reset(mockRequestQueue);
-        subject.reload();
+    public void loadFailUrl_shouldLoadFailUrl() {
+        subject.mAdLoader = new AdLoader("failUrl", AdFormat.BANNER, "adUnitId", activity, mock(AdLoader.Listener.class));
 
-        verify(mockRequestQueue).add(argThat(isUrl(url)));
-    }
-
-    @Test
-    public void loadFailUrl_shouldLoadFailUrl() throws Exception {
         subject.onAdLoadSuccess(response);
         subject.loadFailUrl(MoPubErrorCode.INTERNAL_ERROR);
 
@@ -666,7 +675,7 @@ public class AdViewControllerTest {
         String customEventClassName = "customEventClassName";
         subject.loadCustomEvent(null, customEventClassName, serverExtras);
 
-        verify(mockMoPubView, never()).loadCustomEvent(anyString(), anyMap());
+        verify(mockMoPubView, never()).loadCustomEvent(anyString(), any(Map.class));
     }
 
     @Test

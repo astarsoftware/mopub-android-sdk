@@ -1,3 +1,7 @@
+// Copyright 2018 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.nativeads;
 
 import android.app.Activity;
@@ -44,7 +48,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.stub;
+import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -77,7 +81,7 @@ public class MoPubStaticNativeAdTest {
 
         Networking.setRequestQueueForTesting(mockRequestQueue);
         Networking.setImageLoaderForTesting(mockImageLoader);
-        stub(mockImageContainer.getBitmap()).toReturn(mock(Bitmap.class));
+        when(mockImageContainer.getBitmap()).thenReturn(mock(Bitmap.class));
     }
 
     @Test
@@ -143,6 +147,8 @@ public class MoPubStaticNativeAdTest {
         fakeJsonObject.put("text", "expected text");
         fakeJsonObject.put("mainimage", "expected mainimage");
         fakeJsonObject.put("iconimage", "expected iconimage");
+        fakeJsonObject.put("privacyicon", "piiimageurl");
+        fakeJsonObject.put("privacyclkurl", "piiclkurl");
 
         fakeJsonObject.put("clk", "expected clk");
 
@@ -164,6 +170,8 @@ public class MoPubStaticNativeAdTest {
         assertThat(subject.getImpressionTrackers()).containsOnly("url1", "url2");
         assertThat(subject.getCallToAction()).isEqualTo("expected ctatext");
         assertThat(subject.getStarRating()).isEqualTo(5.0);
+        assertThat(subject.getPrivacyInformationIconImageUrl()).isEqualTo("piiimageurl");
+        assertThat(subject.getPrivacyInformationIconClickThroughUrl()).isEqualTo("piiclkurl");
     }
 
     @Test
