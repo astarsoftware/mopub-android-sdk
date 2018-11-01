@@ -165,6 +165,51 @@ public class MultiAdResponse implements Iterator<AdResponse> {
                     MoPubNetworkError.Reason.NO_FILL,
                     refreshTimeMilliseconds);
         }
+
+		try {
+			MoPubLog.d("AdConfiguration: Sending AdResponseReceivedFromMopub notification");
+
+			NotificationCenter notificationCenter = (NotificationCenter) DependencyInjector.getObjectWithGlobalId("NotificationCenter");
+
+			final List<Map<String, String>> responseMetadataList = new ArrayList<>();
+			for (int i = 0; i < adResponses.length(); i++) {
+				try {
+					JSONObject adResponseJson = adResponses.getJSONObject(i);
+					JSONObject adResponseHeaders = adResponseJson.getJSONObject(ResponseHeader.METADATA.getKey());
+
+					if(adResponseHeaders != null) {
+						Map<String, String> responseMetadata = new TreeMap<>();
+						for(Iterator<String> keyIt = adResponseHeaders.keys(); keyIt.hasNext();) {
+							String metadataKey = keyIt.next();
+							responseMetadata.put(metadataKey, adResponseHeaders.getString(metadataKey));
+						}
+						responseMetadataList.add(responseMetadata);
+					}
+
+				} catch (Exception ex) {
+					MoPubLog.w("Unexpected error parsing response item for ad tracker. " + ex.getMessage());
+				}
+			}
+
+			final String finalRequestId = requestId;
+			notificationCenter.postNotification("AdResponseReceivedFromMopub", new HashMap<String, Object>() {{
+				put("HttpHeaders", networkResponse.headers);
+				put("ResponseMetadata", responseMetadataList);
+				put("RequestId", finalRequestId);
+			}});
+
+		} catch (Throwable t) {
+			Log.e("AdConfiguration", "Error", t);
+
+			try {
+				ExceptionHandler exceptionHandler = (ExceptionHandler) DependencyInjector.getObjectWithGlobalId("ExceptionHandler");
+
+				exceptionHandler.handleException(t);
+
+			} catch (Throwable t2) {
+				Log.e("AdConfiguration", "Error2", t2);
+			}
+		}
     }
 
     @Override
@@ -215,37 +260,6 @@ public class MultiAdResponse implements Iterator<AdResponse> {
         final AdResponse.Builder builder = new AdResponse.Builder();
         final String content = jsonObject.optString(ResponseHeader.CONTENT.getKey());
         final JSONObject jsonHeaders = jsonObject.getJSONObject(ResponseHeader.METADATA.getKey());
-
-		try {
-			MoPubLog.d("AdConfiguration: Sending AdResponseReceivedFromMopub notification");
-
-			NotificationCenter notificationCenter = (NotificationCenter) DependencyInjector.getObjectWithGlobalId("NotificationCenter");
-
-			final Map<String, String> finalHeaders = new TreeMap<>(networkResponse.headers);
-			for(Iterator<String> keyIt = jsonHeaders.keys(); keyIt.hasNext();) {
-				String metadataKey = keyIt.next();
-				String finalHeadersKey = finalHeaders.containsKey(metadataKey) ? "metadata:"+metadataKey : metadataKey;
-				finalHeaders.put(finalHeadersKey, jsonHeaders.getString(metadataKey));
-			}
-
-			final String finalRequestId = requestId;
-			notificationCenter.postNotification("AdResponseReceivedFromMopub", new HashMap<String, Object>() {{
-				put("HttpHeaders", finalHeaders);
-				put("RequestId", finalRequestId);
-			}});
-
-		} catch (Throwable t) {
-			Log.e("AdConfiguration", "Error", t);
-
-			try {
-				ExceptionHandler exceptionHandler = (ExceptionHandler) DependencyInjector.getObjectWithGlobalId("ExceptionHandler");
-
-				exceptionHandler.handleException(t);
-
-			} catch (Throwable t2) {
-				Log.e("AdConfiguration", "Error2", t2);
-			}
-		}
 
         builder.setAdUnitId(adUnitId);
 
