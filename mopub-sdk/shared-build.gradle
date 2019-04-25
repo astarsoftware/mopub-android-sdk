@@ -22,7 +22,7 @@ android {
     defaultConfig {
         versionCode 67
         versionName version
-        minSdkVersion 16
+        minSdkVersion 19
         targetSdkVersion rootProject.ext.targetSdkVersion
         consumerProguardFiles project(':ThirdParty:Java:Android:MoPub:mopub-sdk').file('proguard.txt')
     }
