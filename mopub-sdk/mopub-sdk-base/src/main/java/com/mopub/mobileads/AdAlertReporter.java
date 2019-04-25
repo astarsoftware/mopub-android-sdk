@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.astarsoftware.android.AndroidUtils;
 import com.mopub.common.AdReport;
+import com.mopub.common.VisibleForTesting;
 import com.mopub.common.util.DateAndTime;
 import com.mopub.common.util.Intents;
 import com.mopub.exceptions.IntentNotResolvableException;
@@ -30,6 +31,11 @@ public class AdAlertReporter {
     private static final String DATE_FORMAT_PATTERN = "M/d/yy hh:mm:ss a z";
     private static final int IMAGE_QUALITY = 25;
     private static final String BODY_SEPARATOR = "\n=================\n";
+    @VisibleForTesting
+    static final String MESSAGE = "Thank you for taking the time to tell us about your ad experience.\n" +
+            "\n" +
+            "Please share with us how the ad experience was poor:\n" +
+            "\n";
 
     private final String mDateString;
 
@@ -123,6 +129,9 @@ public class AdAlertReporter {
 
     private void addEmailBody(String... data) {
         StringBuilder body = new StringBuilder();
+        body.append(MESSAGE);
+        body.append(BODY_SEPARATOR);
+
         int i = 0;
         while (i<data.length) {
             body.append(data[i]);

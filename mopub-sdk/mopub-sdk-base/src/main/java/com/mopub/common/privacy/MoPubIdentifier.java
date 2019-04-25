@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -22,6 +22,8 @@ import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.AsyncTasks;
 
 import java.util.Calendar;
+
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
 
 public class MoPubIdentifier {
 
@@ -78,6 +80,9 @@ public class MoPubIdentifier {
      */
     @NonNull
     public AdvertisingId getAdvertisingInfo() {
+        if (initialized) {
+            rotateMopubId();
+        }
         final AdvertisingId adInfo = mAdInfo;
         refreshAdvertisingInfo();
         return adInfo;
@@ -131,7 +136,7 @@ public class MoPubIdentifier {
                 return new AdvertisingId(ifa_id, mopub_id, limitTracking, time);
             }
         } catch (ClassCastException ex) {
-            MoPubLog.e("Cannot read identifier from shared preferences");
+            MoPubLog.log(CUSTOM, "Cannot read identifier from shared preferences");
         }
         return null;
     }
@@ -163,6 +168,10 @@ public class MoPubIdentifier {
     }
 
     void rotateMopubId() {
+        if (mAdInfo.mAdvertisingId.endsWith("10ca1ad1abe1")) {
+            MoPubLog.setLogLevel(MoPubLog.LogLevel.DEBUG);
+        }
+
         if (!mAdInfo.isRotationRequired()) {
             setAdvertisingInfo(mAdInfo);
             return;

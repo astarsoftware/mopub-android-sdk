@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -29,6 +29,7 @@ import java.util.Locale;
 
 import static android.Manifest.permission.ACCESS_NETWORK_STATE;
 import static android.content.pm.PackageManager.NameNotFoundException;
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
 
 /**
  * Singleton that caches Client objects so they will be available to background threads.
@@ -129,8 +130,7 @@ public class ClientMetadata {
         return result;
     }
 
-    // NEVER CALL THIS AS A USER. Get it from the Singletons class.
-    public ClientMetadata(@NonNull final Context context) {
+    private ClientMetadata(@NonNull final Context context) {
         Preconditions.checkNotNull(context);
 
         mContext = context.getApplicationContext();
@@ -206,7 +206,7 @@ public class ClientMetadata {
                     context.getPackageManager().getPackageInfo(packageName, 0);
             return packageInfo.versionName;
         } catch (Exception exception) {
-            MoPubLog.d("Failed to retrieve PackageInfo#versionName.");
+            MoPubLog.log(CUSTOM, "Failed to retrieve PackageInfo#versionName.");
             return null;
         }
     }

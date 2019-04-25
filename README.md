@@ -8,9 +8,7 @@ Sign up for an account at [http://app.mopub.com/](http://app.mopub.com/).
 
 You can find integration documentation on our [wiki](https://github.com/mopub/mopub-android-sdk/wiki/Getting-Started) and additional help documentation on our [developer help site](http://dev.twitter.com/mopub).
 
-To file an issue with our team visit the [MoPub Forum](https://twittercommunity.com/c/fabric/mopub) or email [support@mopub.com](mailto:support@mopub.com).
-
-**Please Note: We no longer accept GitHub Issues.**
+To file an issue with our team visit the [MoPub Forum](https://twittercommunity.com/c/advertiser-api/mopub) or email [support@mopub.com](mailto:support@mopub.com).
 
 ## New Pull Requests?
 
@@ -39,7 +37,7 @@ The MoPub SDK is available via:
     }
 
     dependencies {
-        implementation('com.mopub:mopub-sdk:5.4.1@aar') {
+        implementation('com.mopub:mopub-sdk:5.6.0@aar') {
             transitive = true
         }
     }
@@ -61,27 +59,27 @@ The MoPub SDK is available via:
         // ... other project dependencies
 
         // For banners
-        implementation('com.mopub:mopub-sdk-banner:5.4.1@aar') {
+        implementation('com.mopub:mopub-sdk-banner:5.6.0@aar') {
             transitive = true
         }
         
         // For interstitials
-        implementation('com.mopub:mopub-sdk-interstitial:5.4.1@aar') {
+        implementation('com.mopub:mopub-sdk-interstitial:5.6.0@aar') {
             transitive = true
         }
 
         // For rewarded videos. This will automatically also include interstitials
-        implementation('com.mopub:mopub-sdk-rewardedvideo:5.4.1@aar') {
+        implementation('com.mopub:mopub-sdk-rewardedvideo:5.6.0@aar') {
             transitive = true
         }
 
         // For native static (images).
-        implementation('com.mopub:mopub-sdk-native-static:5.4.1@aar') {
+        implementation('com.mopub:mopub-sdk-native-static:5.6.0@aar') {
             transitive = true
         }
 
         // For native video. This will automatically also include native static
-        implementation('com.mopub:mopub-sdk-native-video:5.4.1@aar') {
+        implementation('com.mopub:mopub-sdk-native-video:5.6.0@aar') {
             transitive = true
         }
     }
@@ -91,7 +89,7 @@ The MoPub SDK is available via:
 
 2. **Zipped Source**
 
-    The MoPub SDK is also distributed as zipped source code that you can include in your application.  MoPub provides two prepackaged archives of source code:
+    The MoPub SDK is also distributed as zipped source code that you can include in your application:
 
     **[MoPub Android SDK.zip](http://bit.ly/YUdWhH)**  
     _Includes everything you need to serve MoPub ads.  No third party ad networks are included._
@@ -109,14 +107,17 @@ The MoPub SDK is available via:
 ## New in this Version
 Please view the [changelog](https://github.com/mopub/mopub-android-sdk/blob/master/CHANGELOG.md) for a complete list of additions, fixes, and enhancements in the latest release.
 
+- **Features**
+  - Enabled debug logging when using a debug Google Advertising ID (one that ends with "10ca1ad1abe1").
+  - Upgraded ExoPlayer dependency to 2.9.5.
+  - Upgraded MoPub-Volley dependency to 2.1.0.
+
 - **Bug Fixes**
-  - Fixed bug with the internal state of rewarded video when the video fails to play.
-  - Fixed bug where initialization complete is called multiple times.
-  - Fixed Google Advertising ID fetching logic.
-  - Marked `gdprApplies` as nullable
-  - Added cleartextTrafficPermitted="true" to Android Sample App.
-  - Fixed bug where `rewardedAdsLoaders.markPlayed()` was fired before `onRewardedVideoClosed()`.
-  - Added `adDidFail` callback to `!isNetworkAvailable()` in `AdViewController`.
+  - Banners no longer refresh when they are expanded. They will resume refreshing when the expanded view is closed.
+  - Setting orientation on an expanded banner no longer locks the orientation after the expanded view is closed.
+  - Improved click detection.           
+  - Catch `MissingWebViewPackageException` in `ConsentDialogLayoutWebView`.
+  - Reduce ANRs by removing synchronization from `Networking#getUserAgent(Context)`.
 
 ## Requirements
 
@@ -124,14 +125,14 @@ Please view the [changelog](https://github.com/mopub/mopub-android-sdk/blob/mast
 - android-support-v4.jar, r28 (**Updated in 5.4.0**)
 - android-support-annotations.jar, r28 (**Updated in 5.4.0**)
 - android-support-v7-recyclerview.jar, r28 (**Updated in 5.4.0**)
-- MoPub Volley Library (mopub-volley-2.0.0.jar - available on JCenter) (**Updated in 5.0.0**)
-- **Recommended** Google Play Services 15.0.1
+- MoPub Volley Library (mopub-volley-2.1.0.jar - available on JCenter) (**Updated in 5.6.0**)
+- **Recommended** Google Play Services (com.google.android.gms:play-services-ads-identifier:16.0.0 and com.google.android.gms:play-services-base:16.0.1) (**Updated in 5.6.0**)
 
 ## Upgrading to SDK 5.0
 
 Please see the [Getting Started Guide](https://developers.mopub.com/docs/android/getting-started/) for instructions on upgrading from SDK 4.X to SDK 5.0.
 
-For GDPR-specific upgrading instructions, also see the [GDPR Integration Guide](https://developers.mopub.com/docs/publisher/gdpr).
+For GDPR-specific upgrading instructions, also see the [GDPR Integration Guide](https://developers.mopub.com/docs/publisher/gdpr-guide).
 
 ## <a name="upgradeRepositoryViewability"></a>Upgrading from 4.15.0 and Prior
 In 4.16.0, dependencies were added to viewability libraries provided by AVID and Moat. Apps upgrading from previous versions must add
@@ -145,7 +146,7 @@ Normally, to add the MoPub SDK to your app via JCenter, your `build.gradle` woul
 
 ```	
 dependencies {
-    implementation('com.mopub:mopub-sdk:5.4.1@aar') {
+    implementation('com.mopub:mopub-sdk:5.6.0@aar') {
         transitive = true
     }
 }
@@ -154,7 +155,7 @@ Update to the following to exclude one or both viewability vendors:
 
 ```
 dependencies {
-    implementation('com.mopub:mopub-sdk:5.4.1@aar') {
+    implementation('com.mopub:mopub-sdk:5.6.0@aar') {
         transitive = true
         exclude module: 'libAvid-mopub' // To exclude AVID
         exclude module: 'moat-mobile-app-kit' // To exclude Moat

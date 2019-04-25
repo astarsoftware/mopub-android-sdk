@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -13,15 +13,14 @@ repositories {
 }
 
 project.group = 'com.mopub'
-project.version = '5.4.1'
+project.version = '5.6.0'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     lintOptions { abortOnError false }
-    useLibrary 'org.apache.http.legacy'
 
     defaultConfig {
-        versionCode 65
+        versionCode 67
         versionName version
         minSdkVersion 16
         targetSdkVersion rootProject.ext.targetSdkVersion

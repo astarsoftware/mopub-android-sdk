@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -21,7 +21,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
 
 import java.text.SimpleDateFormat;
@@ -37,7 +36,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 
 @RunWith(SdkTestRunner.class)
-@Config(constants = BuildConfig.class)
 public class AdAlertReporterTest {
     private final static String EMAIL_ADDRESS = "creative-review@mopub.com";
     private AdAlertReporter subject;
@@ -105,12 +103,14 @@ public class AdAlertReporterTest {
         emailIntent = subject.getEmailIntent();
         String emailSubject = emailIntent.getStringExtra(Intent.EXTRA_TEXT);
         String bodyParts[] = emailSubject.split("\n=================\n");
-        String parameters = bodyParts[0];
-        String response = bodyParts[1];
-        String imageString = bodyParts[2];
+        String message = bodyParts[0];
+        String parameters = bodyParts[1];
+        String response = bodyParts[2];
+        String imageString = bodyParts[3];
 
-        assertThat(bodyParts.length).isEqualTo(3);
+        assertThat(bodyParts.length).isEqualTo(4);
         //this string is the JPEG encoded version
+        assertThat(message).isEqualTo(AdAlertReporter.MESSAGE);
         assertThat(parameters).isEqualTo(subject.getParameters());
         assertThat(response).isEqualTo(subject.getResponse());
         assertThat(imageString).isEqualTo("Qml0bWFwICgxMCB4IDEwKSBjcmVhdGVkIGZyb20gQml0bWFwIG9iamVjdCBjb21wcmVzc2VkIGFz\nIEpQRUcgd2l0aCBxdWFsaXR5IDI1\n");

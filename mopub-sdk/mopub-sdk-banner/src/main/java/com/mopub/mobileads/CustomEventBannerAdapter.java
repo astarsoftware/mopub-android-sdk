@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -18,7 +18,6 @@ import com.mopub.common.Preconditions;
 import com.mopub.common.VisibleForTesting;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.ReflectionTarget;
-import com.mopub.mobileads.CustomEventBanner.CustomEventBannerListener;
 import com.mopub.mobileads.factories.CustomEventBannerFactory;
 
 import java.util.Map;
@@ -29,12 +28,15 @@ import static com.mopub.common.DataKeys.AD_REPORT_KEY;
 import static com.mopub.common.DataKeys.AD_WIDTH;
 import static com.mopub.common.DataKeys.BANNER_IMPRESSION_PIXEL_COUNT_ENABLED;
 import static com.mopub.common.DataKeys.BROADCAST_IDENTIFIER_KEY;
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM_WITH_THROWABLE;
 import static com.mopub.mobileads.MoPubErrorCode.ADAPTER_NOT_FOUND;
 import static com.mopub.mobileads.MoPubErrorCode.NETWORK_TIMEOUT;
 import static com.mopub.mobileads.MoPubErrorCode.UNSPECIFIED;
 
-public class CustomEventBannerAdapter implements CustomEventBannerListener {
+public class CustomEventBannerAdapter implements InternalCustomEventBannerListener {
     public static final int DEFAULT_BANNER_TIMEOUT_DELAY = Constants.TEN_SECONDS_MILLIS;
+
     private boolean mInvalidated;
     private MoPubView mMoPubView;
     private Context mContext;
@@ -62,17 +64,19 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
         mTimeout = new Runnable() {
             @Override
             public void run() {
-                MoPubLog.d("Third-party network timed out.");
+                MoPubLog.log(CUSTOM, "CustomEventBannerAdapter failed with code " +
+                        NETWORK_TIMEOUT.getIntCode() + " and message " +
+                        NETWORK_TIMEOUT);
                 onBannerFailed(NETWORK_TIMEOUT);
                 invalidate();
             }
         };
 
-        MoPubLog.d("Attempting to invoke custom event: " + className);
+        MoPubLog.log(CUSTOM,  "Attempting to invoke custom event: " + className);
         try {
             mCustomEventBanner = CustomEventBannerFactory.create(className);
         } catch (Exception exception) {
-            MoPubLog.d("Couldn't locate or instantiate custom event: " + className + ".");
+            MoPubLog.log(CUSTOM,  "Couldn't locate or instantiate custom event: " + className + ".");
             mMoPubView.loadFailUrl(ADAPTER_NOT_FOUND);
             return;
         }
@@ -107,7 +111,9 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
         try {
             mCustomEventBanner.loadBanner(mContext, this, mLocalExtras, mServerExtras);
         } catch (Exception e) {
-            MoPubLog.d("Loading a custom event banner threw an exception.", e);
+            MoPubLog.log(CUSTOM, "loadAd() failed with code " +
+                    MoPubErrorCode.INTERNAL_ERROR.getIntCode() + " and message " +
+                    MoPubErrorCode.INTERNAL_ERROR);
             onBannerFailed(MoPubErrorCode.INTERNAL_ERROR);
         }
     }
@@ -120,14 +126,14 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
             try {
                 mCustomEventBanner.onInvalidate();
             } catch (Exception e) {
-                MoPubLog.d("Invalidating a custom event banner threw an exception", e);
+                MoPubLog.log(CUSTOM_WITH_THROWABLE,  "Invalidating a custom event banner threw an exception", e);
             }
         }
         if (mVisibilityTracker != null) {
             try {
                 mVisibilityTracker.destroy();
             } catch (Exception e) {
-                MoPubLog.d("Destroying a banner visibility tracker threw an exception", e);
+                MoPubLog.log(CUSTOM_WITH_THROWABLE,  "Destroying a banner visibility tracker threw an exception", e);
             }
             mVisibilityTracker = null;
         }
@@ -190,14 +196,14 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
             try {
                 mImpressionMinVisibleDips = Integer.parseInt(impressionMinVisibleDipsString);
             } catch (NumberFormatException e) {
-                MoPubLog.d("Cannot parse integer from header "
+                MoPubLog.log(CUSTOM,  "Cannot parse integer from header "
                         + DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_DIPS);
             }
 
             try {
                 mImpressionMinVisibleMs = Integer.parseInt(impressionMinVisibleMsString);
             } catch (NumberFormatException e) {
-                MoPubLog.d("Cannot parse integer from header "
+                MoPubLog.log(CUSTOM,  "Cannot parse integer from header "
                         + DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_MS);
             }
 
@@ -216,6 +222,8 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
             return;
         }
 
+        MoPubLog.log(CUSTOM, "onBannerLoaded() success. Attempting to show.");
+
         cancelTimeout();
 
         if (mMoPubView != null) {
@@ -230,8 +238,8 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
             if (mIsVisibilityImpressionTrackingEnabled &&
                     mCustomEventBanner != null &&
                     mCustomEventBanner.isAutomaticImpressionAndClickTrackingEnabled()) {
-                // Disable autorefresh temporarily until an impression happens.
-                mMoPubView.pauseAutorefresh();
+                // Disable autoRefresh temporarily until an impression happens.
+                mMoPubView.pauseAutoRefresh();
                 // Set up visibility tracker and listener if in experiment
                 mVisibilityTracker = new BannerVisibilityTracker(mContext, mMoPubView, bannerView,
                         mImpressionMinVisibleDips, mImpressionMinVisibleMs);
@@ -243,7 +251,7 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
                         if (mCustomEventBanner != null) {
                             mCustomEventBanner.trackMpxAndThirdPartyImpressions();
                         }
-                        mMoPubView.resumeAutorefresh();
+                        mMoPubView.resumeAutoRefresh();
                     }
                 });
             }
@@ -258,6 +266,12 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
                     mMoPubView.trackNativeImpression();
                 }
             }
+
+            MoPubLog.log(CUSTOM, "onBannerLoaded() - Show successful.");
+        } else {
+            MoPubLog.log(CUSTOM, "onBannerLoaded() - Show failed with code " +
+                    MoPubErrorCode.INTERNAL_ERROR.getIntCode() + " and message " +
+                    MoPubErrorCode.INTERNAL_ERROR);
         }
     }
 
@@ -283,7 +297,7 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
             return;
         }
 
-        mMoPubView.expand();
+        mMoPubView.engageOverlay();
         mMoPubView.adPresentedOverlay();
     }
 
@@ -293,7 +307,7 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
             return;
         }
 
-        mMoPubView.collapse();
+        mMoPubView.dismissOverlay();
         mMoPubView.adClosed();
     }
 
@@ -327,5 +341,19 @@ public class CustomEventBannerAdapter implements CustomEventBannerListener {
     @Override
     public void onLeaveApplication() {
         onBannerClicked();
+    }
+
+    @Override
+    public void onPauseAutoRefresh() {
+        if (mMoPubView != null) {
+            mMoPubView.engageOverlay();
+        }
+    }
+
+    @Override
+    public void onResumeAutoRefresh() {
+        if (mMoPubView != null) {
+            mMoPubView.dismissOverlay();
+        }
     }
 }

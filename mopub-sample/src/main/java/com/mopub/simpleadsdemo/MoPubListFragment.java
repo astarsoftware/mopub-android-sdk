@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -30,10 +30,13 @@ import android.widget.Toast;
 import com.mopub.common.MoPub;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.common.privacy.ConsentStatus;
+import com.mopub.common.privacy.PersonalInfoManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR;
 import static com.mopub.simpleadsdemo.MoPubSampleAdUnit.AdType;
 import static com.mopub.simpleadsdemo.Utils.logToast;
 
@@ -128,10 +131,10 @@ public class MoPubListFragment extends ListFragment implements TrashCanClickList
         try {
             fragment = fragmentClass.newInstance();
         } catch (java.lang.InstantiationException e) {
-            MoPubLog.e("Error creating fragment for class " + fragmentClass, e);
+            MoPubLog.log(ERROR, "Error creating fragment for class " + fragmentClass, e);
             return;
         } catch (IllegalAccessException e) {
-            MoPubLog.e("Error creating fragment for class " + fragmentClass, e);
+            MoPubLog.log(ERROR, "Error creating fragment for class " + fragmentClass, e);
             return;
         }
 
@@ -221,6 +224,36 @@ public class MoPubListFragment extends ListFragment implements TrashCanClickList
         mAdUnitDataSource.deleteSampleAdUnit(moPubSampleAdUnit);
         mAdapter.remove(moPubSampleAdUnit);
         mAdapter.sort(MoPubSampleAdUnit.COMPARATOR);
+    }
+
+    /**
+     * Call this function to grant or revoke user consent
+     * @param consentGranted - true to grant consent, false to revoke
+     * @return - true successfully completed operation, false failed for some reason
+     */
+    boolean onChangeConsent(final boolean consentGranted) {
+        final PersonalInfoManager personalInfoManager = MoPub.getPersonalInformationManager();
+        final View view = getView();
+        if (personalInfoManager == null || view == null) {
+            MoPubLog.log(MoPubLog.SdkLogEvent.CUSTOM, getString(R.string.pim_is_not_available));
+            return false;
+        }
+
+        final EditText text = view.findViewById(R.id.status_change_notification);
+        text.setVisibility(View.VISIBLE);
+        if (consentGranted) {
+            personalInfoManager.grantConsent();
+            text.setText(R.string.consent_whitelisted);
+        } else {
+            if (personalInfoManager.getPersonalInfoConsentStatus().equals(ConsentStatus.DNT)) {
+                text.setText(R.string.donottrack_text);
+                return false;
+            }
+            personalInfoManager.revokeConsent();
+            text.setText(R.string.consent_denied);
+        }
+
+        return true;
     }
 
     public static class DeleteDialogFragment extends DialogFragment {

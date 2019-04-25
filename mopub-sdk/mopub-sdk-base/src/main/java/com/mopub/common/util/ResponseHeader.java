@@ -1,10 +1,12 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.common.util;
 
 public enum ResponseHeader {
+    BACKOFF_REASON("backoff_reason"),
+    BACKOFF_MS("backoff_ms"),
     AD_TIMEOUT("x-ad-timeout-ms"),
     AD_TYPE("x-adtype"),
     CLICK_TRACKING_URL("x-clickthrough"),
@@ -78,7 +80,10 @@ public enum ResponseHeader {
     FORCE_EXPLICIT_NO("force_explicit_no"),
     REACQUIRE_CONSENT("reacquire_consent"),
     CONSENT_CHANGE_REASON("consent_change_reason"),
-    FORCE_GDPR_APPLIES("force_gdpr_applies");
+    FORCE_GDPR_APPLIES("force_gdpr_applies"),
+
+    // Enable logging with rewrite
+    ENABLE_DEBUG_LOGGING("enable_debug_logging");
 
     private final String key;
     ResponseHeader(String key) {

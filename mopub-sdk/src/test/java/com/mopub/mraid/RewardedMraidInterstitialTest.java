@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.content.Intent;
 
 import com.mopub.common.test.support.SdkTestRunner;
-import com.mopub.mobileads.BuildConfig;
 import com.mopub.mobileads.ResponseBodyInterstitialTest;
 
 import org.junit.Before;
@@ -17,13 +16,13 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.support.v4.ShadowLocalBroadcastManager;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.mopub.common.DataKeys.AD_REPORT_KEY;
 import static com.mopub.common.DataKeys.BROADCAST_IDENTIFIER_KEY;
 import static com.mopub.common.DataKeys.HTML_RESPONSE_BODY_KEY;
 import static com.mopub.common.DataKeys.REWARDED_AD_DURATION_KEY;
@@ -38,7 +37,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @RunWith(SdkTestRunner.class)
-@Config(constants = BuildConfig.class)
 public class RewardedMraidInterstitialTest extends ResponseBodyInterstitialTest {
     private static final String EXPECTED_HTML_DATA = "<html></html>";
     private static final int EXPECTED_REWARDED_DURATION_SECONDS = 15;
@@ -131,11 +129,12 @@ public class RewardedMraidInterstitialTest extends ResponseBodyInterstitialTest 
 
         assertThat(intent.getComponent().getClassName())
                 .isEqualTo("com.mopub.mobileads.RewardedMraidActivity");
-        assertThat(intent.getExtras().get(HTML_RESPONSE_BODY_KEY)).isEqualTo(EXPECTED_HTML_DATA);
         assertThat(intent.getExtras().get(REWARDED_AD_DURATION_KEY)).isEqualTo(
                 EXPECTED_REWARDED_DURATION_SECONDS);
         assertThat(intent.getExtras().get(SHOULD_REWARD_ON_CLICK_KEY)).isEqualTo(
                 EXPECTED_SHOULD_REWARD_ON_CLICK);
+        assertThat(intent.getExtras().get(AD_REPORT_KEY)).isEqualTo(
+                localExtras.get(AD_REPORT_KEY));
     }
 
     @Test

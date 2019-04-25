@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -28,11 +28,19 @@ import static com.mopub.common.DataKeys.AD_REPORT_KEY;
 import static com.mopub.common.DataKeys.BROADCAST_IDENTIFIER_KEY;
 import static com.mopub.common.DataKeys.CLICKTHROUGH_URL_KEY;
 import static com.mopub.common.DataKeys.CREATIVE_ORIENTATION_KEY;
-import static com.mopub.common.DataKeys.HTML_RESPONSE_BODY_KEY;
 import static com.mopub.common.IntentActions.ACTION_INTERSTITIAL_CLICK;
 import static com.mopub.common.IntentActions.ACTION_INTERSTITIAL_DISMISS;
 import static com.mopub.common.IntentActions.ACTION_INTERSTITIAL_FAIL;
 import static com.mopub.common.IntentActions.ACTION_INTERSTITIAL_SHOW;
+import static com.mopub.common.logging.MoPubLog.AdLogEvent.CLICKED;
+import static com.mopub.common.logging.MoPubLog.AdLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdLogEvent.DID_DISAPPEAR;
+import static com.mopub.common.logging.MoPubLog.AdLogEvent.LOAD_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdLogEvent.LOAD_FAILED;
+import static com.mopub.common.logging.MoPubLog.AdLogEvent.LOAD_SUCCESS;
+import static com.mopub.common.logging.MoPubLog.AdLogEvent.SHOW_ATTEMPTED;
+import static com.mopub.common.logging.MoPubLog.AdLogEvent.SHOW_SUCCESS;
+import static com.mopub.common.logging.MoPubLog.AdLogEvent.WILL_LEAVE_APPLICATION;
 import static com.mopub.common.util.JavaScriptWebViewCallbacks.WEB_VIEW_DID_APPEAR;
 import static com.mopub.common.util.JavaScriptWebViewCallbacks.WEB_VIEW_DID_CLOSE;
 import static com.mopub.mobileads.CustomEventInterstitial.CustomEventInterstitialListener;
@@ -44,9 +52,10 @@ public class MoPubActivity extends BaseInterstitialActivity {
     @Nullable private HtmlInterstitialWebView mHtmlInterstitialWebView;
     @Nullable private ExternalViewabilitySessionManager mExternalViewabilitySessionManager;
 
-    public static void start(Context context, String htmlData, AdReport adReport, String clickthroughUrl,
-            CreativeOrientation creativeOrientation, long broadcastIdentifier) {
-        Intent intent = createIntent(context, htmlData, adReport, clickthroughUrl,
+    public static void start(Context context, AdReport adReport, String clickthroughUrl,
+                             CreativeOrientation creativeOrientation, long broadcastIdentifier) {
+        MoPubLog.log(SHOW_ATTEMPTED);
+        Intent intent = createIntent(context, adReport, clickthroughUrl,
                 creativeOrientation, broadcastIdentifier);
         try {
             context.startActivity(intent);
@@ -56,10 +65,9 @@ public class MoPubActivity extends BaseInterstitialActivity {
     }
 
     static Intent createIntent(Context context,
-            String htmlData, AdReport adReport, String clickthroughUrl,
-            CreativeOrientation orientation, long broadcastIdentifier) {
+                               AdReport adReport, String clickthroughUrl,
+                               CreativeOrientation orientation, long broadcastIdentifier) {
         Intent intent = new Intent(context, MoPubActivity.class);
-        intent.putExtra(HTML_RESPONSE_BODY_KEY, htmlData);
         intent.putExtra(CLICKTHROUGH_URL_KEY, clickthroughUrl);
         intent.putExtra(BROADCAST_IDENTIFIER_KEY, broadcastIdentifier);
         intent.putExtra(AD_REPORT_KEY, adReport);
@@ -72,9 +80,9 @@ public class MoPubActivity extends BaseInterstitialActivity {
             final Context context,
             final AdReport adReport,
             final CustomEventInterstitialListener customEventInterstitialListener,
-            final String htmlData,
             final String clickthroughUrl,
             final long broadcastIdentifier) {
+        MoPubLog.log(LOAD_ATTEMPTED);
         final HtmlInterstitialWebView htmlInterstitialWebView = HtmlInterstitialWebViewFactory.create(
                 context.getApplicationContext(), adReport, customEventInterstitialListener, clickthroughUrl);
 
@@ -98,16 +106,16 @@ public class MoPubActivity extends BaseInterstitialActivity {
                 new ExternalViewabilitySessionManager(context);
         externalViewabilitySessionManager.createDisplaySession(context, htmlInterstitialWebView, true);
 
-        htmlInterstitialWebView.loadHtmlResponse(htmlData);
+        htmlInterstitialWebView.loadHtmlResponse(getResponseString(adReport));
         WebViewCacheService.storeWebViewConfig(broadcastIdentifier, baseInterstitial,
-                htmlInterstitialWebView, externalViewabilitySessionManager);
+                htmlInterstitialWebView, externalViewabilitySessionManager, null);
     }
 
     @Override
     public View getAdView() {
         Intent intent = getIntent();
-        String clickthroughUrl = intent.getStringExtra(CLICKTHROUGH_URL_KEY);
-        String htmlResponse = intent.getStringExtra(HTML_RESPONSE_BODY_KEY);
+        final String clickthroughUrl = intent.getStringExtra(CLICKTHROUGH_URL_KEY);
+        final String htmlData = getResponseString();
 
         final Long broadcastIdentifier = getBroadcastIdentifier();
         if (broadcastIdentifier != null) {
@@ -129,13 +137,13 @@ public class MoPubActivity extends BaseInterstitialActivity {
             }
         }
 
-        MoPubLog.d("WebView cache miss. Recreating the WebView.");
+        MoPubLog.log(CUSTOM, "WebView cache miss. Recreating the WebView.");
         mHtmlInterstitialWebView = HtmlInterstitialWebViewFactory.create(getApplicationContext(),
                 mAdReport, new BroadcastingInterstitialListener(), clickthroughUrl);
         
         mExternalViewabilitySessionManager = new ExternalViewabilitySessionManager(this);
         mExternalViewabilitySessionManager.createDisplaySession(this, mHtmlInterstitialWebView, true);
-        mHtmlInterstitialWebView.loadHtmlResponse(htmlResponse);
+        mHtmlInterstitialWebView.loadHtmlResponse(htmlData);
         return mHtmlInterstitialWebView;
     }
 
@@ -147,7 +155,7 @@ public class MoPubActivity extends BaseInterstitialActivity {
         Serializable orientationExtra = getIntent().getSerializableExtra(DataKeys.CREATIVE_ORIENTATION_KEY);
         CreativeOrientation requestedOrientation;
         if (orientationExtra == null || !(orientationExtra instanceof CreativeOrientation)) {
-            requestedOrientation = CreativeOrientation.UNDEFINED;
+            requestedOrientation = CreativeOrientation.DEVICE;
         } else {
             requestedOrientation = (CreativeOrientation) orientationExtra;
         }
@@ -176,6 +184,7 @@ public class MoPubActivity extends BaseInterstitialActivity {
     class BroadcastingInterstitialListener implements CustomEventInterstitialListener {
         @Override
         public void onInterstitialLoaded() {
+            MoPubLog.log(LOAD_SUCCESS);
             if (mHtmlInterstitialWebView != null) {
                 mHtmlInterstitialWebView.loadUrl(WEB_VIEW_DID_APPEAR.getUrl());
             }
@@ -183,16 +192,20 @@ public class MoPubActivity extends BaseInterstitialActivity {
 
         @Override
         public void onInterstitialFailed(MoPubErrorCode errorCode) {
+            MoPubLog.log(LOAD_FAILED, MoPubErrorCode.VIDEO_CACHE_ERROR.getIntCode(),
+                    MoPubErrorCode.VIDEO_CACHE_ERROR);
             broadcastAction(MoPubActivity.this, getBroadcastIdentifier(), ACTION_INTERSTITIAL_FAIL);
             finish();
         }
 
         @Override
         public void onInterstitialShown() {
+            MoPubLog.log(SHOW_SUCCESS);
         }
 
         @Override
         public void onInterstitialClicked() {
+            MoPubLog.log(CLICKED);
             broadcastAction(MoPubActivity.this, getBroadcastIdentifier(), ACTION_INTERSTITIAL_CLICK);
         }
 
@@ -202,10 +215,12 @@ public class MoPubActivity extends BaseInterstitialActivity {
 
         @Override
         public void onLeaveApplication() {
+            MoPubLog.log(WILL_LEAVE_APPLICATION);
         }
 
         @Override
         public void onInterstitialDismissed() {
+            MoPubLog.log(DID_DISAPPEAR);
         }
     }
 }

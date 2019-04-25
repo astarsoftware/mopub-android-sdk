@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -70,6 +70,11 @@ abstract class BaseInterstitialActivity extends Activity {
         return mBroadcastIdentifier;
     }
 
+    @Nullable
+    String getResponseString() {
+        return getResponseString(mAdReport);
+    }
+
     protected void showInterstitialCloseButton() {
         if (mCloseableLayout != null) {
             mCloseableLayout.setCloseVisible(true);
@@ -96,5 +101,10 @@ abstract class BaseInterstitialActivity extends Activity {
         } catch (ClassCastException e) {
             return null;
         }
+    }
+
+    @Nullable
+    static String getResponseString(AdReport adReport) {
+        return adReport != null ? adReport.getResponseString() : null;
     }
 }

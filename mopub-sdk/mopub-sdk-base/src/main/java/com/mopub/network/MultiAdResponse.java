@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -42,6 +42,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import static com.mopub.common.DataKeys.ADM_KEY;
+import static com.mopub.common.logging.MoPubLog.AdLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdLogEvent.RESPONSE_RECEIVED;
 import static com.mopub.network.HeaderUtils.extractBooleanHeader;
 import static com.mopub.network.HeaderUtils.extractHeader;
 import static com.mopub.network.HeaderUtils.extractIntegerHeader;
@@ -94,6 +96,10 @@ public class MultiAdResponse implements Iterator<AdResponse> {
         mFailUrl = jsonObject.optString(ResponseHeader.FAIL_URL.getKey());
         String requestId = jsonObject.optString(ResponseHeader.REQUEST_ID.getKey());
 
+        final Integer backoffMs = extractIntegerHeader(jsonObject, ResponseHeader.BACKOFF_MS);
+        final String backoffReason = extractHeader(jsonObject, ResponseHeader.BACKOFF_REASON);
+        RequestRateTracker.getInstance().registerRateLimit(adUnitId, backoffMs, backoffReason);
+
         final boolean invalidateConsent = extractBooleanHeader(jsonObject,
                 ResponseHeader.INVALIDATE_CONSENT, false);
         final boolean forceExplicitNo = extractBooleanHeader(jsonObject,
@@ -115,6 +121,13 @@ public class MultiAdResponse implements Iterator<AdResponse> {
             } else if (reacquireConsent) {
                 sServerOverrideListener.onReacquireConsent(consentChangeReason);
             }
+        }
+
+        final boolean enableDebugLogging = extractBooleanHeader(jsonObject,
+                ResponseHeader.ENABLE_DEBUG_LOGGING, false);
+
+        if (enableDebugLogging) {
+            MoPubLog.setLogLevel(MoPubLog.LogLevel.DEBUG);
         }
 
         JSONArray adResponses = jsonObject.getJSONArray(ResponseHeader.AD_RESPONSES.getKey());
@@ -142,14 +155,14 @@ public class MultiAdResponse implements Iterator<AdResponse> {
 
             } catch (JSONException ex) {
                 // don't break everything because of single item parsing error
-                MoPubLog.w("Invalid response item. Body: " + responseBody);
+                MoPubLog.log(CUSTOM, "Invalid response item. Body: " + responseBody);
             } catch (MoPubNetworkError ex) {
                 if (ex.getReason() == MoPubNetworkError.Reason.WARMING_UP) {
                     throw ex;
                 }
-                MoPubLog.w("Invalid response item. Error: " + ex.getReason());
+                MoPubLog.log(CUSTOM, "Invalid response item. Error: " + ex.getReason());
             } catch (Exception ex) {
-                MoPubLog.w("Unexpected error parsing response item. " + ex.getMessage());
+                MoPubLog.log(CUSTOM, "Unexpected error parsing response item. " + ex.getMessage());
             }
         }
         mResponseIterator = list.iterator();
@@ -256,6 +269,8 @@ public class MultiAdResponse implements Iterator<AdResponse> {
         Preconditions.checkNotNull(networkResponse);
         Preconditions.checkNotNull(jsonObject);
         Preconditions.checkNotNull(adFormat);
+
+        MoPubLog.log(RESPONSE_RECEIVED, jsonObject.toString());
 
         final AdResponse.Builder builder = new AdResponse.Builder();
         final String content = jsonObject.optString(ResponseHeader.CONTENT.getKey());

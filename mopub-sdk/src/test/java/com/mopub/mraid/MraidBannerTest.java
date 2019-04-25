@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -10,7 +10,9 @@ import android.view.View;
 
 import com.mopub.common.DataKeys;
 import com.mopub.common.test.support.SdkTestRunner;
-import com.mopub.mobileads.BuildConfig;
+import com.mopub.mobileads.CustomEventBanner;
+import com.mopub.mobileads.InternalCustomEventBannerListener;
+import com.mopub.mobileads.MoPubErrorCode;
 import com.mopub.mobileads.test.support.TestMraidControllerFactory;
 import com.mopub.mraid.MraidController.MraidListener;
 
@@ -19,26 +21,25 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.robolectric.annotation.Config;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.mopub.common.DataKeys.HTML_RESPONSE_BODY_KEY;
-import static com.mopub.mobileads.CustomEventBanner.CustomEventBannerListener;
 import static com.mopub.mobileads.MoPubErrorCode.MRAID_LOAD_ERROR;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @RunWith(SdkTestRunner.class)
-@Config(constants = BuildConfig.class)
 public class MraidBannerTest {
     private static final String INPUT_HTML_DATA = "%3Chtml%3E%3C%2Fhtml%3E";
 
     MraidController mockMraidController;
-    @Mock CustomEventBannerListener mockBannerListener;
+    @Mock InternalCustomEventBannerListener mockBannerListener;
 
     private Context context;
     private Map<String, Object> localExtras;
@@ -136,6 +137,33 @@ public class MraidBannerTest {
         mraidListener.onClose();
 
         verify(mockBannerListener).onBannerCollapsed();
+    }
+
+    @Test
+    public void bannerMraidListener_onResizeToOriginalSizeTrue_shouldNotifyResumeAutoRefresh() {
+        MraidListener mraidListener = captureMraidListener();
+        mraidListener.onResize(true);
+
+        verify(mockBannerListener).onResumeAutoRefresh();
+    }
+
+    @Test
+    public void bannerMraidListener_onResizeToOriginalSizeFalse_shouldNotifyPauseAutoRefresh() {
+        MraidListener mraidListener = captureMraidListener();
+        mraidListener.onResize(false);
+
+        verify(mockBannerListener).onPauseAutoRefresh();
+    }
+
+    @Test
+    public void bannerMraidListener_notInstanceOfInternalListener_shouldNotifyBannerFailed() {
+        CustomEventBanner.CustomEventBannerListener mockPublicListener = mock(
+                CustomEventBanner.CustomEventBannerListener.class);
+        subject.loadBanner(context, mockPublicListener, localExtras, serverExtras);
+        ArgumentCaptor<MraidListener> listenerCaptor = ArgumentCaptor.forClass(MraidListener.class);
+        verify(mockMraidController, never()).setMraidListener(listenerCaptor.capture());
+
+        verify(mockPublicListener).onBannerFailed(MoPubErrorCode.MRAID_LOAD_ERROR);
     }
 
     @Test

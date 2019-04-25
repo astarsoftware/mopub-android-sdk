@@ -1,9 +1,9 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 apply plugin: 'com.android.library'
-//apply plugin: 'com.novoda.bintray-release'
+apply plugin: 'com.novoda.bintray-release'
 
 def siteUrl = 'https://github.com/mopub/mopub-android-sdk'
 def gitUrl = 'https://github.com/mopub/mopub-android-sdk.git'
@@ -30,37 +30,37 @@ android.libraryVariants.all { variant ->
     artifacts.add('archives', task)
 }
 
-//android.libraryVariants.all { variant ->
-//    task("generate${variant.name.capitalize()}Javadoc", type: Javadoc) {
-//        title = project.ext.displayName
-//        description "Generates Javadoc for $variant.name."
-//        source = variant.javaCompile.source
-//        classpath += files(variant.javaCompile.classpath.files, project.android.getBootClasspath())
-//        classpath += project.configurations.compile
-//
-//        options {
-//            links "http://docs.oracle.com/javase/7/docs/api/"
-//            linksOffline "https://developer.android.com/reference","${android.sdkDirectory}/docs/reference"
-//        }
-//
-//        exclude '**/BuildConfig.java'
-//        exclude '**/R.java'
-//    }
-//}
+android.libraryVariants.all { variant ->
+    task("generate${variant.name.capitalize()}Javadoc", type: Javadoc) {
+        title = project.ext.displayName
+        description "Generates Javadoc for $variant.name."
+        source = variant.javaCompile.source
+        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+        classpath += configurations.compile
 
-//publish {
-//    repoName = bintrayRepo
-//    userOrg = bintrayUserOrg
-//    groupId = project.group
-//    artifactId = project.ext.projectName
-//    uploadName = project.ext.uploadName
-//    version = project.version
-//    description = project.description
-//    website = siteUrl
-//    repository = gitUrl
-//
-//    bintrayUser = project.hasProperty("bintray.user") ? project.getProperty("bintray.user") : ""
-//    bintrayKey = project.hasProperty("bintray.apikey") ? project.getProperty("bintray.apikey") : ""
-//
-//    dryRun = false
-//}
+        options {
+            links "http://docs.oracle.com/javase/7/docs/api/"
+            linksOffline "https://developer.android.com/reference","${android.sdkDirectory}/docs/reference"
+        }
+
+        exclude '**/BuildConfig.java'
+        exclude '**/R.java'
+    }
+}
+
+publish {
+    repoName = bintrayRepo
+    userOrg = bintrayUserOrg
+    groupId = project.group
+    artifactId = project.ext.projectName
+    uploadName = project.ext.uploadName
+    publishVersion = project.version
+    desc = project.description
+    website = siteUrl
+    repository = gitUrl
+
+    bintrayUser = project.hasProperty("bintray.user") ? project.getProperty("bintray.user") : ""
+    bintrayKey = project.hasProperty("bintray.apikey") ? project.getProperty("bintray.apikey") : ""
+
+    dryRun = false
+}

@@ -1,23 +1,21 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.common.privacy;
 
 import com.mopub.common.test.support.SdkTestRunner;
-import com.mopub.mobileads.BuildConfig;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 import java.util.Calendar;
+import java.util.TimeZone;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(SdkTestRunner.class)
-@Config(constants = BuildConfig.class)
 public class AdvertisingIdTest {
     private static final long ONE_DAY_MS = 24 * 60 * 60 * 1000;
     private static final long TEN_SECONDS_MS = 10 * 1000;
@@ -47,6 +45,8 @@ public class AdvertisingIdTest {
         assertThat(subject.mDoNotTrack).isTrue();
         // return IFA even when DoNotTrack is true
         assertThat(subject.getIfaWithPrefix()).isEqualTo("ifa:" + ANDROID_ID);
+        assertThat(subject.mLastRotation.get(Calendar.DAY_OF_YEAR)).isEqualTo(
+                time.get(Calendar.DAY_OF_YEAR));
     }
 
     @Test
@@ -57,9 +57,66 @@ public class AdvertisingIdTest {
     }
 
     @Test
-    public void isRotationRequired_whenLessThan24Hours_shouldReturnFalse() {
-        // one day and ten seconds ago
-        subject = new AdvertisingId(ANDROID_ID, MOPUB_ID, false, now - ONE_DAY_MS + TEN_SECONDS_MS);
+    public void isRotationRequired_whenMidnightSameDay_shouldReturnFalse() {
+        final Calendar sameDayCalendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+        sameDayCalendar.set(sameDayCalendar.get(Calendar.YEAR), sameDayCalendar.get(Calendar.MONTH),
+                sameDayCalendar.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
+
+        subject = new AdvertisingId(ANDROID_ID, MOPUB_ID, false,
+                sameDayCalendar.getTimeInMillis());
+
+        assertThat(subject.isRotationRequired()).isFalse();
+    }
+
+    @Test
+    public void isRotationRequired_whenLastSecondOfTheSameDay_shouldReturnFalse() {
+        final Calendar sameDayCalendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+        sameDayCalendar.set(sameDayCalendar.get(Calendar.YEAR), sameDayCalendar.get(Calendar.MONTH),
+                sameDayCalendar.get(Calendar.DAY_OF_MONTH), 23, 59, 59);
+
+        subject = new AdvertisingId(ANDROID_ID, MOPUB_ID, false,
+                sameDayCalendar.getTimeInMillis());
+
+        assertThat(subject.isRotationRequired()).isFalse();
+    }
+    @Test
+    public void isRotationRequired_whenMidnightOfNextDay_shouldReturnTrue() {
+        final Calendar sameDayCalendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+        sameDayCalendar.set(sameDayCalendar.get(Calendar.YEAR), sameDayCalendar.get(Calendar.MONTH),
+                sameDayCalendar.get(Calendar.DAY_OF_MONTH), 23, 59, 59);
+        sameDayCalendar.add(Calendar.SECOND, 1);
+
+        subject = new AdvertisingId(ANDROID_ID, MOPUB_ID, false,
+                sameDayCalendar.getTimeInMillis());
+
+        assertThat(subject.isRotationRequired()).isTrue();
+    }
+
+    @Test
+    public void isRotationRequired_whenTimeZoneCausesDayDifference_shouldReturnTrue() {
+        final Calendar sameDayCalendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+        sameDayCalendar.set(sameDayCalendar.get(Calendar.YEAR), sameDayCalendar.get(Calendar.MONTH),
+                sameDayCalendar.get(Calendar.DAY_OF_MONTH), 5, 0, 0);
+        sameDayCalendar.setTimeZone(TimeZone.getTimeZone("PST"));
+        sameDayCalendar.add(Calendar.DATE, -1);
+
+        subject = new AdvertisingId(ANDROID_ID, MOPUB_ID, false,
+                sameDayCalendar.getTimeInMillis());
+
+        assertThat(subject.isRotationRequired()).isTrue();
+    }
+
+    @Test
+    public void isRotationRequired_whenTimeZoneCausesNoDayDifference_shouldReturnFalse() {
+        final Calendar sameDayCalendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+        sameDayCalendar.set(sameDayCalendar.get(Calendar.YEAR), sameDayCalendar.get(Calendar.MONTH),
+                sameDayCalendar.get(Calendar.DAY_OF_MONTH), 22, 0, 0);
+        sameDayCalendar.setTimeZone(TimeZone.getTimeZone("PST"));
+        sameDayCalendar.add(Calendar.DATE, -1);
+
+        subject = new AdvertisingId(ANDROID_ID, MOPUB_ID, false,
+                sameDayCalendar.getTimeInMillis());
+
         assertThat(subject.isRotationRequired()).isFalse();
     }
 

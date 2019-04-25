@@ -1,4 +1,4 @@
-// Copyright 2018 Twitter, Inc.
+// Copyright 2018-2019 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -6,6 +6,7 @@ package com.mopub.mobileads;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,11 +17,11 @@ import com.mopub.common.Constants;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.network.Networking;
 
-import static com.mopub.mobileads.ViewGestureDetector.UserClickListener;
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
 
-public class BaseHtmlWebView extends BaseWebView implements UserClickListener {
+public class BaseHtmlWebView extends BaseWebView {
+    @NonNull
     private final ViewGestureDetector mViewGestureDetector;
-    private boolean mClicked;
 
     public BaseHtmlWebView(Context context, AdReport adReport) {
         super(context);
@@ -29,7 +30,6 @@ public class BaseHtmlWebView extends BaseWebView implements UserClickListener {
         getSettings().setJavaScriptEnabled(true);
 
         mViewGestureDetector = new ViewGestureDetector(context, this, adReport);
-        mViewGestureDetector.setUserClickListener(this);
 
         enablePlugins(true);
         setBackgroundColor(Color.TRANSPARENT);
@@ -50,19 +50,19 @@ public class BaseHtmlWebView extends BaseWebView implements UserClickListener {
             return;
         }
 
-        MoPubLog.d("Loading url: " + url);
+        MoPubLog.log(CUSTOM, "Loading url: " + url);
     }
 
     @Override
     public void stopLoading() {
         if (mIsDestroyed) {
-            MoPubLog.w(BaseHtmlWebView.class.getSimpleName() + "#stopLoading() called after destroy()");
+            MoPubLog.log(CUSTOM, BaseHtmlWebView.class.getSimpleName() + "#stopLoading() called after destroy()");
             return;
         }
 
         final WebSettings webSettings = getSettings();
         if (webSettings == null) {
-            MoPubLog.w(BaseHtmlWebView.class.getSimpleName() + "#getSettings() returned null");
+            MoPubLog.log(CUSTOM, BaseHtmlWebView.class.getSimpleName() + "#getSettings() returned null");
             return;
         }
 
@@ -87,7 +87,7 @@ public class BaseHtmlWebView extends BaseWebView implements UserClickListener {
     void initializeOnTouchListener() {
         setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
-                mViewGestureDetector.sendTouchEvent(event);
+                mViewGestureDetector.onTouchEvent(event);
 
                 // We're not handling events if the current action is ACTION_MOVE
                 return event.getAction() == MotionEvent.ACTION_MOVE;
@@ -95,18 +95,15 @@ public class BaseHtmlWebView extends BaseWebView implements UserClickListener {
         });
     }
 
-    @Override
-    public void onUserClick() {
-        mClicked = true;
-    }
-
-    @Override
     public void onResetUserClick() {
-        mClicked = false;
+        final ViewGestureDetector gestureDetector = mViewGestureDetector;
+        if (gestureDetector != null) {
+            gestureDetector.onResetUserClick();
+        }
     }
 
-    @Override
     public boolean wasClicked() {
-        return mClicked;
+        final ViewGestureDetector gestureDetector = mViewGestureDetector;
+        return gestureDetector != null && gestureDetector.isClicked();
     }
 }
