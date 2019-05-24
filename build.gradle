@@ -13,7 +13,3 @@ buildscript {
         classpath 'com.novoda:bintray-release:0.9'
     }
 }
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.10.1'
-}
