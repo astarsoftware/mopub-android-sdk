@@ -7,8 +7,8 @@ package com.mopub.common;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.mopub.common.MoPub.BrowserAgent;
@@ -61,6 +61,8 @@ public enum UrlAction {
                 moPubSchemeListener.onClose();
             } else if ("failLoad".equalsIgnoreCase(host)) {
                 moPubSchemeListener.onFailLoad();
+            } else if ("crash".equals(host)) {
+                moPubSchemeListener.onCrash();
             } else {
                 throw new IntentNotResolvableException("Could not handle MoPub Scheme url: " + uri);
             }

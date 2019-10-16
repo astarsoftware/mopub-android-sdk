@@ -1,3 +1,40 @@
+## Version 5.9.1 (September 23, 2019)
+- **Bug Fixes**
+  - Now sends ad width in pixels instead of dips when setting a `MoPubAdSize`.
+
+## Version 5.9.0 (September 16, 2019)
+- **Features**
+  - Certified against Android 10.
+  - Removed support for `tel`, `sms`, `createCalendarEvent`, and `storePicture` functions for MRAID ads.
+  - Upgraded ExoPlayer to 2.10.3.
+  - Migrated to AndroidX. See [https://developer.android.com/jetpack/androidx/migrate] for more information.
+  - Upgraded `targetSdkVersion` and `compileSdkVersion` to 29.
+
+- **Bug Fixes**
+  - SDK location is now prioritized over publisher-specified location.
+  - Fixed a rare crash when layout params are available but the parent view is null.
+
+## Version 5.8.0 (July 22, 2019)
+- **Features**
+  - Height-based constants have been added to banners and medium rectangles. Call `MoPubView#setAdSize(MoPubAdSize)` before loading an ad or pass in the ad size to `MoPubView#loadAd(MoPubAdSize)` to request an ad of a particular height. See [https://developers.mopub.com/publishers/android/banner/] for more information.
+  - Deprecated skyscraper and leaderboard ad formats. Leaderboards can now be made by setting the `MoPubView` ad size to `MoPubAdSize.HEIGHT_90`.
+  - Renamed the MRect ad format as Medium Rectangle.
+  - Upgraded Robolectric dependency to 4.3.
+  - Updated the icon for the sample app.
+  - Sample app now has visible callbacks.
+  - VAST Videos now play with `device` orientation by default.
+  - The background for interstitials is now black. The background for banners and medium rectangles remain transparent.
+
+- **Bug Fixes**
+  - Improved the look and feel of the sample app on tablets.
+  - Fixed warnings in the `build.gradle` file.
+  - Improved test run speed.
+  - Improved the VAST video selection logic.
+
+## Version 5.7.1 (June 3, 2019)
+- **Bug Fixes**
+  - Handle `WebViewClient#onRenderProcessGone` for API 26+ devices so WebView crashes do not take the entire process with it. This only affects MoPub WebViews, and all WebViews in the application must handle this call in order for the process to not be killed.
+
 ## Version 5.7.0 (May 20, 2019)
 - **Features**
   - Impression Level Revenue Data - a data object that includes revenue information associated with each impression.

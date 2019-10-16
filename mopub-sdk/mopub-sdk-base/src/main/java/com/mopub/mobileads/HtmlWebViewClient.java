@@ -5,7 +5,7 @@
 package com.mopub.mobileads;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -82,6 +82,9 @@ class HtmlWebViewClient extends WebViewClient {
                         mHtmlWebView.stopLoading();
                         mHtmlWebViewListener.onFailed(UNSPECIFIED);
                     }
+
+                    @Override
+                    public void onCrash() { }
                 })
                 .build().handleUrl(mContext, url, mHtmlWebView.wasClicked());
         return true;

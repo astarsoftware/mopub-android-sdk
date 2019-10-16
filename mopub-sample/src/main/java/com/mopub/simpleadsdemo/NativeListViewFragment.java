@@ -6,12 +6,13 @@ package com.mopub.simpleadsdemo;
 
 import android.location.Location;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import androidx.fragment.app.Fragment;
 
 import com.mopub.nativeads.FacebookAdRenderer;
 import com.mopub.nativeads.FlurryCustomEventNative;
@@ -156,11 +157,13 @@ public class NativeListViewFragment extends Fragment {
                         .build());
 
         // Register the renderers with the MoPubAdAdapter and then set the adapter on the ListView.
+        // The first renderer that can handle a particular native ad gets used.
+        // We are prioritizing network renderers.
         mAdAdapter.registerAdRenderer(googlePlayServicesAdRenderer);
         mAdAdapter.registerAdRenderer(flurryRenderer);
-        mAdAdapter.registerAdRenderer(videoAdRenderer);
-        mAdAdapter.registerAdRenderer(staticAdRender);
         mAdAdapter.registerAdRenderer(facebookAdRenderer);
+        mAdAdapter.registerAdRenderer(staticAdRender);
+        mAdAdapter.registerAdRenderer(videoAdRenderer);
         listView.setAdapter(mAdAdapter);
 
         mAdAdapter.loadAds(mAdConfiguration.getAdUnitId(), mRequestParameters);

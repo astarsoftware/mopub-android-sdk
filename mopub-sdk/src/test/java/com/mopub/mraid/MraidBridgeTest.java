@@ -8,12 +8,14 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
+import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebSettings;
 import android.webkit.WebViewClient;
 
 import com.mopub.common.AdReport;
 import com.mopub.common.Constants;
 import com.mopub.common.test.support.SdkTestRunner;
+import com.mopub.mobileads.MoPubErrorCode;
 import com.mopub.mraid.MraidBridge.MraidBridgeListener;
 import com.mopub.mraid.MraidBridge.MraidWebView;
 import com.mopub.mraid.MraidNativeCommandHandler.MraidCommandFailureListener;
@@ -61,6 +63,8 @@ public class MraidBridgeTest {
     private MraidWebView mockInterstitialWebView;
     @Mock
     private WebSettings mockWebSettings;
+    @Mock
+    private RenderProcessGoneDetail mockRenderProcessGoneDetail;
     @Captor
     private ArgumentCaptor<WebViewClient> bannerWebViewClientCaptor;
 
@@ -279,6 +283,12 @@ public class MraidBridgeTest {
         assertThat(result).isFalse();
     }
 
+    @Test
+    public void handleRenderProcessGone_shouldDetach_shouldNotifyMraidBridgeListener() {
+        subjectBanner.handleRenderProcessGone(mockRenderProcessGoneDetail);
+        verify(mockBridgeListener).onRenderProcessGone(any(MoPubErrorCode.class));
+    }
+
     @Test(expected = MraidCommandException.class)
     public void runCommand_requiresClick_notClicked_shouldThrowException()
             throws MraidCommandException {
@@ -379,34 +389,6 @@ public class MraidBridgeTest {
         ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
         verify(mockBridgeListener).onPlayVideo(uriCaptor.capture());
         assertThat(uriCaptor.getValue().toString()).isEqualTo("https://valid-url");
-    }
-
-    @Test
-    public void runCommand_storePicture_shouldCallListener()
-            throws MraidCommandException {
-        attachWebViews();
-        subjectBanner.setClicked(true);
-        Map<String, String> params = new HashMap<>();
-        params.put("uri", "https://valid-url");
-
-        subjectBanner.runCommand(MraidJavascriptCommand.STORE_PICTURE, params);
-
-        verify(mockNativeCommandHandler).storePicture(any(Context.class), eq("https://valid-url"),
-                any(MraidCommandFailureListener.class));
-    }
-
-    @Test
-    public void runCommand_createCalendarEvent_shouldCallListener()
-            throws MraidCommandException {
-        attachWebViews();
-        subjectBanner.setClicked(true);
-        Map<String, String> params = new HashMap<>();
-        params.put("eventName", "Dinner at my house");
-
-        subjectBanner.runCommand(MraidJavascriptCommand.CREATE_CALENDAR_EVENT, params);
-
-        verify(mockNativeCommandHandler).createCalendarEvent(any(Context.class),
-                anyMapOf(String.class, String.class));
     }
 
     private void attachWebViews() {

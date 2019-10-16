@@ -13,14 +13,14 @@ repositories {
 }
 
 project.group = 'com.mopub'
-project.version = '5.7.0'
+project.version = '5.9.1'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     lintOptions { abortOnError false }
 
     defaultConfig {
-        versionCode 68
+        versionCode 73
         versionName version
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
@@ -53,6 +53,7 @@ android {
             all {
                 jvmArgs '-XX:MaxPermSize=4096m', '-Xmx8192m', '-noverify'
                 forkEvery 200
+                maxParallelForks Runtime.runtime.availableProcessors().intdiv(2) ?: 1
             }
         }
     }
@@ -76,6 +77,6 @@ android {
 }
 
 dependencies {
-    api 'com.android.support:support-v4:28.0.0'
-    api 'com.android.support:support-annotations:28.0.0'
+    api 'androidx.legacy:legacy-support-v4:1.0.0'
+    api 'androidx.annotation:annotation:1.1.0'
 }

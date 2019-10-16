@@ -8,21 +8,21 @@ import android.annotation.TargetApi;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.NavigationView;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.FragmentManager;
+
 import android.view.Menu;
 import android.view.MenuItem;
 import android.webkit.WebView;
 
-import com.facebook.ads.AdSettings;
+import com.google.android.material.navigation.NavigationView;
 import com.mopub.common.Constants;
 import com.mopub.common.MoPub;
 import com.mopub.common.SdkConfiguration;
@@ -35,10 +35,7 @@ import com.mopub.common.privacy.ConsentStatusChangeListener;
 import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.common.util.DeviceUtils;
 import com.mopub.common.util.Reflection;
-import com.mopub.mobileads.FlurryAdapterConfiguration;
 import com.mopub.mobileads.MoPubErrorCode;
-import com.mopub.mobileads.TapjoyAdapterConfiguration;
-import com.mopub.mobileads.TapjoyInterstitial;
 import com.mopub.network.ImpressionData;
 import com.mopub.network.ImpressionListener;
 import com.mopub.network.ImpressionsEmitter;
@@ -47,13 +44,10 @@ import org.json.JSONException;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
-import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static com.mopub.common.Constants.UNUSED_REQUEST_CODE;
 import static com.mopub.common.logging.MoPubLog.LogLevel.DEBUG;
 import static com.mopub.common.logging.MoPubLog.LogLevel.INFO;
@@ -63,10 +57,10 @@ import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM_WITH_THROWABL
 public class MoPubSampleActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
     private static final List<String> REQUIRED_DANGEROUS_PERMISSIONS = new ArrayList<>();
+    private static final String SHOWING_CONSENT_DIALOG_KEY = "ShowingConsentDialog";
 
     static {
         REQUIRED_DANGEROUS_PERMISSIONS.add(ACCESS_COARSE_LOCATION);
-        REQUIRED_DANGEROUS_PERMISSIONS.add(WRITE_EXTERNAL_STORAGE);
     }
 
     // Sample app web views are debuggable.
@@ -83,10 +77,12 @@ public class MoPubSampleActivity extends AppCompatActivity
 
     private MoPubListFragment mMoPubListFragment;
     private Intent mDeeplinkIntent;
+    private boolean mShowingConsentDialog;
     @Nullable
     PersonalInfoManager mPersonalInfoManager;
 
-    @Nullable DrawerLayout mDrawerLayout;
+    @Nullable
+    DrawerLayout mDrawerLayout;
 
     @Nullable
     private ConsentStatusChangeListener mConsentStatusChangeListener;
@@ -101,6 +97,7 @@ public class MoPubSampleActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle(getString(R.string.app_title));
 
         setupNavigationDrawer(toolbar);
 
@@ -123,6 +120,8 @@ public class MoPubSampleActivity extends AppCompatActivity
 
         if (savedInstanceState == null) {
             createMoPubListFragment(getIntent());
+        } else {
+            mShowingConsentDialog = savedInstanceState.getBoolean(SHOWING_CONSENT_DIALOG_KEY);
         }
 
         final SdkConfiguration.Builder configBuilder = new SdkConfiguration.Builder(
@@ -133,16 +132,7 @@ public class MoPubSampleActivity extends AppCompatActivity
             configBuilder.withLogLevel(INFO);
         }
 
-        final Map<String, String> flurryConfig = new HashMap<>();
-        flurryConfig.put("apiKey", "VX85BD4YBFNW629NN2SP");
-        configBuilder.withMediatedNetworkConfiguration(FlurryAdapterConfiguration.class.getName(),
-                flurryConfig);
-
-        final Map<String, String> tapjoyConfig = new HashMap<>();
-        tapjoyConfig.put(TapjoyInterstitial.SDK_KEY,
-                "cSOY1BYrRsSyJljkFWPdsgECRpZaaWDkWwXH1N1hIUbz1-c0o-DKATsLtckr");
-        configBuilder.withMediatedNetworkConfiguration(TapjoyAdapterConfiguration.class.getName(),
-                tapjoyConfig);
+        SampleActivityUtils.addDefaultNetworkConfiguration(configBuilder);
 
         MoPub.initializeSdk(this, configBuilder.build(), initSdkListener());
 
@@ -155,8 +145,7 @@ public class MoPubSampleActivity extends AppCompatActivity
         // Intercepts all logs including Level.FINEST so we can show a toast
         // that is not normally user-facing. This is only used for native ads.
         LoggingUtils.enableCanaryLogging(this);
-        // For Facebook, request for test ads
-        AdSettings.setTestMode(true);
+
 
         mImpressionListener = createImpressionsListener();
         ImpressionsEmitter.addListener(mImpressionListener);
@@ -235,6 +224,7 @@ public class MoPubSampleActivity extends AppCompatActivity
             public void onConsentDialogLoaded() {
                 if (mPersonalInfoManager != null) {
                     mPersonalInfoManager.showConsentDialog();
+                    mShowingConsentDialog = true;
                 }
             }
 
@@ -352,6 +342,21 @@ public class MoPubSampleActivity extends AppCompatActivity
         }
 
         return false;
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull final Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putBoolean(SHOWING_CONSENT_DIALOG_KEY, mShowingConsentDialog);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mShowingConsentDialog) {
+            mShowingConsentDialog = false;
+            Utils.logToast(MoPubSampleActivity.this, "Consent dialog dismissed");
+        }
     }
 
     private void onImpressionsMenu() {

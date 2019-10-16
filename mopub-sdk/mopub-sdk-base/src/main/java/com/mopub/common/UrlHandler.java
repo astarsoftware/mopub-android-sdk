@@ -6,8 +6,8 @@ package com.mopub.common;
 
 import android.content.Context;
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.mopub.common.logging.MoPubLog;
@@ -59,6 +59,7 @@ public class UrlHandler {
         void onFinishLoad();
         void onClose();
         void onFailLoad();
+        void onCrash();
     }
 
     /**
@@ -172,6 +173,8 @@ public class UrlHandler {
         @Override public void onClose() { }
 
         @Override public void onFailLoad() { }
+
+        @Override public void onCrash() { }
     };
 
     @NonNull

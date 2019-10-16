@@ -14,8 +14,8 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -262,21 +262,6 @@ public class VastVideoViewController extends BaseVideoViewController {
     protected void onCreate() {
         super.onCreate();
 
-        switch (mVastVideoConfig.getCustomForceOrientation()) {
-            case FORCE_PORTRAIT:
-                getBaseVideoViewControllerListener().onSetRequestedOrientation(SCREEN_ORIENTATION_PORTRAIT);
-                break;
-            case FORCE_LANDSCAPE:
-                getBaseVideoViewControllerListener().onSetRequestedOrientation(SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
-                break;
-            case DEVICE_ORIENTATION:
-                break;  // don't do anything
-            case UNDEFINED:
-                break;  // don't do anything
-            default:
-                break;
-        }
-
         mVastVideoConfig.handleImpression(getContext(), getCurrentPosition());
         broadcastAction(IntentActions.ACTION_INTERSTITIAL_SHOW);
     }
@@ -498,7 +483,6 @@ public class VastVideoViewController extends BaseVideoViewController {
 
         mTopGradientStripWidget = new VastVideoGradientStripWidget(context,
                 GradientDrawable.Orientation.TOP_BOTTOM,
-                mVastVideoConfig.getCustomForceOrientation(),
                 hasCompanionAd,
                 View.VISIBLE,
                 RelativeLayout.ALIGN_TOP,
@@ -512,7 +496,6 @@ public class VastVideoViewController extends BaseVideoViewController {
 
         mBottomGradientStripWidget = new VastVideoGradientStripWidget(context,
                 GradientDrawable.Orientation.BOTTOM_TOP,
-                mVastVideoConfig.getCustomForceOrientation(),
                 hasCompanionAd,
                 View.GONE,
                 RelativeLayout.ABOVE,

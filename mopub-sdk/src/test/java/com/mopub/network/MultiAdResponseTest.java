@@ -7,6 +7,7 @@ package com.mopub.network;
 /*
     {
         "x-next-url": "fail_url",
+        "adunit-format": "mock_format",
         "ad-responses": [
         {
             "content": "content_body",
@@ -127,6 +128,7 @@ public class MultiAdResponseTest {
     private static final int REFRESH_TIME = 15;
     private static final int HEIGHT = 50;
     private static final int WIDTH = 320;
+    private static final String ADUNIT_FORMAT = "mock_format";
 
 
     private Activity activity;
@@ -238,6 +240,20 @@ public class MultiAdResponseTest {
         new MultiAdResponse(activity, testResponse, AdFormat.BANNER, adUnitId);
 
         verify(mockOverrideListener).onReacquireConsent("change_reason");
+    }
+
+    @Test
+    public void constructor_withServerOverrideListener_shouldCallOnRequestSuccess() throws Exception {
+        final ServerOverrideListener mockOverrideListener = mock(ServerOverrideListener.class);
+        MultiAdResponse.setServerOverrideListener(mockOverrideListener);
+
+        final JSONObject jsonObject = createJsonBody(FAIL_URL, singleAdResponse);
+
+        final byte[] body = jsonObject.toString().getBytes();
+        final NetworkResponse testResponse = new NetworkResponse(body);
+        new MultiAdResponse(activity, testResponse, AdFormat.BANNER, adUnitId);
+
+        verify(mockOverrideListener).onRequestSuccess(adUnitId);
     }
 
     @Test(expected = JSONException.class)
@@ -530,6 +546,7 @@ public class MultiAdResponseTest {
                 singleAdResponse,
                 adUnitId,
                 AdFormat.BANNER,
+                ADUNIT_FORMAT,
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.HTML);
@@ -551,6 +568,7 @@ public class MultiAdResponseTest {
         assertThat(serverExtras.get(DataKeys.HTML_RESPONSE_BODY_KEY)).isEqualToIgnoringCase("content_text");
         assertThat(serverExtras.get(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_DIPS)).isEmpty();
         assertThat(serverExtras.get(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_MS)).isEmpty();
+        assertThat(serverExtras.get(DataKeys.ADUNIT_FORMAT)).isEqualTo(ADUNIT_FORMAT);
     }
 
     @Test
@@ -566,6 +584,7 @@ public class MultiAdResponseTest {
                 singleAdResponse,
                 adUnitId,
                 AdFormat.BANNER,
+                ADUNIT_FORMAT,
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.HTML);
@@ -588,6 +607,7 @@ public class MultiAdResponseTest {
         assertThat(serverExtras.get(DataKeys.HTML_RESPONSE_BODY_KEY)).isEqualToIgnoringCase("content_text");
         assertThat(serverExtras.get(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_DIPS)).isEqualTo("1");
         assertThat(serverExtras.get(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_MS)).isEqualTo("2");
+        assertThat(serverExtras.get(DataKeys.ADUNIT_FORMAT)).isEqualTo(ADUNIT_FORMAT);
         assertThat(subject.getImpressionData()).isNull();
     }
 
@@ -604,6 +624,7 @@ public class MultiAdResponseTest {
                 singleAdResponse,
                 adUnitId,
                 AdFormat.BANNER,
+                ADUNIT_FORMAT,
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.HTML);
@@ -637,6 +658,7 @@ public class MultiAdResponseTest {
                 singleAdResponse,
                 adUnitId,
                 AdFormat.BANNER,
+                ADUNIT_FORMAT,
                 FAIL_URL);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.HTML);
@@ -658,6 +680,7 @@ public class MultiAdResponseTest {
         assertThat(serverExtras.get(DataKeys.CLICKTHROUGH_URL_KEY)).isEqualToIgnoringCase(CLICKTTRACKING_URL);
         assertThat(serverExtras.get(DataKeys.HTML_RESPONSE_BODY_KEY)).isEqualToIgnoringCase("content_text");
         assertThat(serverExtras.get(DataKeys.ADM_KEY)).isEqualTo(ADM_VALUE);
+        assertThat(serverExtras.get(DataKeys.ADUNIT_FORMAT)).isEqualTo(ADUNIT_FORMAT);
     }
 
     @Test(expected = MoPubNetworkError.class)
@@ -671,6 +694,7 @@ public class MultiAdResponseTest {
                 singleAdResponse,
                 adUnitId,
                 AdFormat.BANNER,
+                ADUNIT_FORMAT,
                 REQUEST_ID_VALUE);
     }
 
@@ -688,6 +712,7 @@ public class MultiAdResponseTest {
                 singleAdResponse,
                 adUnitId,
                 AdFormat.BANNER,
+                ADUNIT_FORMAT,
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.STATIC_NATIVE);
@@ -722,6 +747,7 @@ public class MultiAdResponseTest {
                 singleAdResponse,
                 adUnitId,
                 AdFormat.BANNER,
+                ADUNIT_FORMAT,
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.STATIC_NATIVE);
@@ -756,6 +782,7 @@ public class MultiAdResponseTest {
                 singleAdResponse,
                 adUnitId,
                 AdFormat.BANNER,
+                ADUNIT_FORMAT,
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.VIDEO_NATIVE);
@@ -790,6 +817,7 @@ public class MultiAdResponseTest {
                 singleAdResponse,
                 adUnitId,
                 AdFormat.BANNER,
+                ADUNIT_FORMAT,
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.VIDEO_NATIVE);
@@ -835,6 +863,7 @@ public class MultiAdResponseTest {
                 singleAdResponse,
                 adUnitId,
                 AdFormat.BANNER,
+                ADUNIT_FORMAT,
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.REWARDED_VIDEO);
@@ -861,6 +890,7 @@ public class MultiAdResponseTest {
         assertThat(serverExtras.get(DataKeys.CLICKTHROUGH_URL_KEY)).isEqualToIgnoringCase(CLICKTTRACKING_URL);
         assertNull(serverExtras.get(DataKeys.HTML_RESPONSE_BODY_KEY));
         assertThat(serverExtras.get(DataKeys.ADM_KEY)).isEqualTo(ADM_VALUE);
+        assertThat(serverExtras.get(DataKeys.ADUNIT_FORMAT)).isEqualTo(ADUNIT_FORMAT);
     }
 
 
@@ -875,6 +905,7 @@ public class MultiAdResponseTest {
                 singleAdResponse,
                 adUnitId,
                 AdFormat.BANNER,
+                ADUNIT_FORMAT,
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdUnitId()).isEqualTo(adUnitId);
@@ -892,6 +923,7 @@ public class MultiAdResponseTest {
                 singleAdResponse,
                 adUnitId,
                 AdFormat.BANNER,
+                ADUNIT_FORMAT,
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdUnitId()).isEqualTo(adUnitId);
@@ -909,6 +941,7 @@ public class MultiAdResponseTest {
                 singleAdResponse,
                 adUnitId,
                 AdFormat.BANNER,
+                ADUNIT_FORMAT,
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdUnitId()).isEqualTo(adUnitId);
@@ -924,6 +957,7 @@ public class MultiAdResponseTest {
                 singleAdResponse,
                 adUnitId,
                 AdFormat.BANNER,
+                ADUNIT_FORMAT,
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdUnitId()).isEqualTo(adUnitId);
@@ -941,6 +975,7 @@ public class MultiAdResponseTest {
                 singleAdResponse,
                 adUnitId,
                 AdFormat.BANNER,
+                ADUNIT_FORMAT,
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdUnitId()).isEqualTo(adUnitId);
@@ -962,6 +997,7 @@ public class MultiAdResponseTest {
                 singleAdResponse,
                 adUnitId,
                 AdFormat.BANNER,
+                ADUNIT_FORMAT,
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.STATIC_NATIVE);
@@ -996,6 +1032,7 @@ public class MultiAdResponseTest {
                 singleAdResponse,
                 adUnitId,
                 AdFormat.BANNER,
+                ADUNIT_FORMAT,
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.STATIC_NATIVE);
@@ -1030,6 +1067,7 @@ public class MultiAdResponseTest {
                 singleAdResponse,
                 adUnitId,
                 AdFormat.BANNER,
+                ADUNIT_FORMAT,
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.STATIC_NATIVE);
@@ -1064,6 +1102,7 @@ public class MultiAdResponseTest {
                 singleAdResponse,
                 adUnitId,
                 AdFormat.BANNER,
+                ADUNIT_FORMAT,
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.STATIC_NATIVE);

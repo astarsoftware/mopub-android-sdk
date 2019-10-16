@@ -7,8 +7,8 @@ package com.mopub.mobileads;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -132,6 +132,12 @@ public class RewardedMraidActivity extends MraidActivity {
                 MoPubLog.log(CUSTOM, "RewardedMraidActivity failed to load. Finishing the activity");
                 broadcastAction(RewardedMraidActivity.this, getBroadcastIdentifier(),
                         ACTION_INTERSTITIAL_FAIL);
+                finish();
+            }
+
+            @Override
+            public void onRenderProcessGone(@NonNull final MoPubErrorCode errorCode) {
+                MoPubLog.log(CUSTOM, "Finishing the activity due to a problem: " + errorCode);
                 finish();
             }
 

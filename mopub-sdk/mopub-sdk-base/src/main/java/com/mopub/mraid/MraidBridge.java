@@ -4,22 +4,26 @@
 
 package com.mopub.mraid;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.webkit.ConsoleMessage;
 import android.webkit.JsResult;
+import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import com.mopub.common.AdReport;
 import com.mopub.common.CloseableLayout.ClosePosition;
@@ -29,8 +33,8 @@ import com.mopub.common.VisibilityTracker;
 import com.mopub.common.VisibleForTesting;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.BaseWebView;
+import com.mopub.mobileads.MoPubErrorCode;
 import com.mopub.mobileads.ViewGestureDetector;
-import com.mopub.mraid.MraidNativeCommandHandler.MraidCommandFailureListener;
 import com.mopub.network.Networking;
 
 import org.json.JSONObject;
@@ -43,6 +47,8 @@ import java.util.List;
 import java.util.Map;
 
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
+import static com.mopub.mobileads.MoPubErrorCode.RENDER_PROCESS_GONE_UNSPECIFIED;
+import static com.mopub.mobileads.MoPubErrorCode.RENDER_PROCESS_GONE_WITH_CRASH;
 import static com.mopub.network.MoPubRequestUtils.getQueryParamMap;
 
 public class MraidBridge {
@@ -52,6 +58,8 @@ public class MraidBridge {
         void onPageLoaded();
 
         void onPageFailedToLoad();
+
+        void onRenderProcessGone(@NonNull final MoPubErrorCode errorCode);
 
         void onVisibilityChanged(boolean isVisible);
 
@@ -323,6 +331,13 @@ public class MraidBridge {
             MoPubLog.log(CUSTOM, "Error: " + description);
             super.onReceivedError(view, errorCode, description, failingUrl);
         }
+
+        @RequiresApi(Build.VERSION_CODES.O)
+        @Override
+        public boolean onRenderProcessGone(@Nullable final WebView view, @Nullable final RenderProcessGoneDetail detail) {
+            handleRenderProcessGone(detail);
+            return true;
+        }
     };
 
     @VisibleForTesting
@@ -396,6 +411,21 @@ public class MraidBridge {
     }
 
     @VisibleForTesting
+    @TargetApi(Build.VERSION_CODES.O)
+    void handleRenderProcessGone(@Nullable final RenderProcessGoneDetail detail) {
+        final MoPubErrorCode errorCode = (detail != null && detail.didCrash())
+                ? RENDER_PROCESS_GONE_WITH_CRASH
+                : RENDER_PROCESS_GONE_UNSPECIFIED;
+
+        MoPubLog.log(CUSTOM, errorCode);
+        detach();
+
+        if (mMraidBridgeListener != null) {
+            mMraidBridgeListener.onRenderProcessGone(errorCode);
+        }
+    }
+
+    @VisibleForTesting
     void runCommand(@NonNull final MraidJavascriptCommand command,
             @NonNull Map<String, String> params)
             throws MraidCommandException {
@@ -452,20 +482,10 @@ public class MraidBridge {
                 uri = parseURI(params.get("uri"));
                 mMraidBridgeListener.onPlayVideo(uri);
                 break;
+                // STORE_PICTURE and CREATE_CALENDAR_EVENT are no longer supported
             case STORE_PICTURE:
-                uri = parseURI(params.get("uri"));
-                mMraidNativeCommandHandler.storePicture(mMraidWebView.getContext(), uri.toString(),
-                        new MraidCommandFailureListener() {
-                            @Override
-                            public void onFailure(final MraidCommandException exception) {
-                                fireErrorEvent(command, exception.getMessage());
-                            }
-                        });
-                break;
-
             case CREATE_CALENDAR_EVENT:
-                mMraidNativeCommandHandler.createCalendarEvent(mMraidWebView.getContext(), params);
-                break;
+                throw new MraidCommandException("Unsupported MRAID Javascript command");
             case UNSPECIFIED:
                 throw new MraidCommandException("Unspecified MRAID Javascript command");
         }

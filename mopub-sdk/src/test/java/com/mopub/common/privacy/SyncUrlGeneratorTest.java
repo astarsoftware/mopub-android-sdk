@@ -7,6 +7,8 @@ package com.mopub.common.privacy;
 import android.app.Activity;
 import android.content.Context;
 
+import com.mopub.common.AppEngineInfo;
+import com.mopub.common.BaseUrlGenerator;
 import com.mopub.common.ClientMetadata;
 import com.mopub.common.Constants;
 import com.mopub.common.MoPub;
@@ -14,6 +16,7 @@ import com.mopub.common.test.support.SdkTestRunner;
 import com.mopub.nativeads.NativeUrlGeneratorTest;
 import com.mopub.network.PlayServicesUrlRewriter;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -63,8 +66,16 @@ public class SyncUrlGeneratorTest {
         when(ClientMetadata.getInstance(any(Context.class))).thenReturn(clientMetadata);
     }
 
+    @After
+    public void tearDown() {
+        BaseUrlGenerator.setAppEngineInfo(null);
+        BaseUrlGenerator.setWrapperVersion("");
+    }
+
     @Test
     public void generateUrlString_withAllParams_shouldGenerateFullUrl() {
+        MoPub.setEngineInformation(new AppEngineInfo("ename", "eversion"));
+        MoPub.setWrapperVersion("SyncUrlGeneratorTestVersion");
         subject.withAdUnitId(AD_UNIT);
         subject.withUdid(UDID);
         subject.withGdprApplies(true);
@@ -110,6 +121,14 @@ public class SyncUrlGeneratorTest {
                 "extras")).isEqualTo(EXTRAS);
         assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url,
                 "dnt")).isEqualTo(PlayServicesUrlRewriter.DO_NOT_TRACK_TEMPLATE);
+        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url,
+                "mid")).isEqualTo(PlayServicesUrlRewriter.MOPUB_ID_TEMPLATE);
+        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url,
+                "e_name")).isEqualTo("ename");
+        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url,
+                "e_ver")).isEqualTo("eversion");
+        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url,
+                "w_ver")).isEqualTo("SyncUrlGeneratorTestVersion");
     }
 
     @Test
@@ -118,7 +137,8 @@ public class SyncUrlGeneratorTest {
 
         assertThat(url).isEqualTo("https://minurl/m/gdpr_sync?nv=" +
                 URLEncoder.encode(MoPub.SDK_VERSION, "UTF-8") +
-                "&current_consent_status=unknown&force_gdpr_applies=0&dnt=mp_tmpl_do_not_track");
+                "&current_consent_status=unknown&force_gdpr_applies=0&dnt=mp_tmpl_do_not_track" +
+                "&mid=mp_tmpl_mopub_id");
     }
 
     @Test
@@ -132,7 +152,7 @@ public class SyncUrlGeneratorTest {
                 URLEncoder.encode(MoPub.SDK_VERSION, "UTF-8") +
                 "&current_consent_status=explicit_yes" +
                 "&extras=!%40%23%24%25%5E%26*()_%3B'%5B%5D%7B%7D%7C%5C" +
-                "&force_gdpr_applies=0&dnt=mp_tmpl_do_not_track");
+                "&force_gdpr_applies=0&dnt=mp_tmpl_do_not_track&mid=mp_tmpl_mopub_id");
     }
 
 }

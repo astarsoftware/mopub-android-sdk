@@ -5,18 +5,21 @@
 package com.mopub.common;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.location.Location;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.view.WindowInsets;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.mopub.common.privacy.ConsentData;
 import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.common.util.DateAndTime;
+import com.mopub.common.util.ResponseHeader;
 import com.mopub.network.RequestRateTracker;
 
 import static com.mopub.common.ClientMetadata.MoPubNetworkType;
-import com.mopub.common.util.ResponseHeader;
 
 public abstract class AdUrlGenerator extends BaseUrlGenerator {
 
@@ -130,6 +133,8 @@ public abstract class AdUrlGenerator extends BaseUrlGenerator {
     protected String mKeywords;
     protected String mUserDataKeywords;
     protected Location mLocation;
+    protected Point mRequestedAdSize;
+    protected WindowInsets mWindowInsets;
     @Nullable private final PersonalInfoManager mPersonalInfoManager;
     @Nullable private final ConsentData mConsentData;
     protected Boolean mForceGdprApplies;
@@ -164,6 +169,16 @@ public abstract class AdUrlGenerator extends BaseUrlGenerator {
         return this;
     }
 
+    public AdUrlGenerator withRequestedAdSize(final Point adSize) {
+        mRequestedAdSize = adSize;
+        return this;
+    }
+
+    public AdUrlGenerator withWindowInsets(final WindowInsets windowInsets) {
+        mWindowInsets = windowInsets;
+        return this;
+    }
+
     protected void setAdUnitId(String adUnitId) {
         addParam(AD_UNIT_ID_KEY, adUnitId);
     }
@@ -193,8 +208,7 @@ public abstract class AdUrlGenerator extends BaseUrlGenerator {
                 MoPub.getLocationPrecision(),
                 MoPub.getLocationAwareness());
 
-        if (locationFromLocationService != null &&
-                (location == null || locationFromLocationService.getTime() >= location.getTime())) {
+        if (locationFromLocationService != null) {
             bestLocation = locationFromLocationService;
         }
 
@@ -308,6 +322,8 @@ public abstract class AdUrlGenerator extends BaseUrlGenerator {
         setAdUnitId(mAdUnitId);
 
         setSdkVersion(clientMetadata.getSdkVersion());
+        appendAppEngineInfo();
+        appendWrapperVersion();
         setDeviceInfo(clientMetadata.getDeviceManufacturer(),
                 clientMetadata.getDeviceModel(),
                 clientMetadata.getDeviceProduct());
@@ -323,7 +339,7 @@ public abstract class AdUrlGenerator extends BaseUrlGenerator {
         setTimezone(DateAndTime.getTimeZoneOffsetString());
 
         setOrientation(clientMetadata.getOrientationString());
-        setDeviceDimensions(clientMetadata.getDeviceDimensions());
+        setDeviceDimensions(clientMetadata.getDeviceDimensions(), mRequestedAdSize, mWindowInsets);
         setDensity(clientMetadata.getDensity());
 
         final String networkOperator = clientMetadata.getNetworkOperatorForUrl();

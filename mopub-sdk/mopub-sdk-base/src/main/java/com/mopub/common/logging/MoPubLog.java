@@ -4,9 +4,9 @@
 
 package com.mopub.common.logging;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.util.Pair;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 import android.text.TextUtils;
 
 import com.mopub.common.Preconditions;
@@ -549,6 +549,8 @@ public class MoPubLog {
         // Comma delimited string of networks that were initialized, or "No networks initialized."
         // Comma delimited string of advanced bidder that were initialized, or "No bidders initialized."
         INIT_FINISHED(LogLevel.INFO, "SDK initialized and ready to display ads.\nInitialized adapters:\n{0}"),
+
+        INIT_FAILED(LogLevel.INFO, "SDK initialization failed - {0}\n{1}"),
 
         // Params:
         // Custom message string

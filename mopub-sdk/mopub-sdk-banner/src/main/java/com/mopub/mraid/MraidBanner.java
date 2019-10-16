@@ -6,8 +6,8 @@ package com.mopub.mraid;
 
 import android.app.Activity;
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.view.View;
 
 import com.mopub.common.AdReport;
@@ -17,6 +17,7 @@ import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.AdViewController;
 import com.mopub.mobileads.CustomEventBanner;
 import com.mopub.mobileads.InternalCustomEventBannerListener;
+import com.mopub.mobileads.MoPubErrorCode;
 import com.mopub.mobileads.factories.MraidControllerFactory;
 import com.mopub.mraid.MraidController.MraidListener;
 
@@ -106,6 +107,12 @@ class MraidBanner extends CustomEventBanner {
                         MRAID_LOAD_ERROR.getIntCode(),
                         MRAID_LOAD_ERROR);
                 mBannerListener.onBannerFailed(MRAID_LOAD_ERROR);
+            }
+
+            @Override
+            public void onRenderProcessGone(@NonNull final MoPubErrorCode errorCode) {
+                MoPubLog.log(LOAD_FAILED, ADAPTER_NAME, errorCode.getIntCode(), errorCode);
+                mBannerListener.onBannerFailed(errorCode);
             }
 
             @Override
