@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -904,7 +904,7 @@ public class MoPubRewardedVideoManager {
 
     private static void logErrorNotInitialized() {
         MoPubLog.log(CUSTOM, "MoPub rewarded ad was not initialized. You must call " +
-                "MoPub.initializeRewardedVideo() before loading or attempting " +
+                "MoPub.initializeSdk() with an Activity Context before loading or attempting " +
                 "to play rewarded ads.");
     }
 

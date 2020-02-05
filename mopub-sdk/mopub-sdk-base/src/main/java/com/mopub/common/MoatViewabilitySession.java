@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -24,7 +24,6 @@ import java.util.Set;
 
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
 
-// API documentation: https://drive.google.com/drive/folders/0B8U0thTyT1GGLUlweWRVMXk1Qlk
 class MoatViewabilitySession implements ExternalViewabilitySession {
     private static final String MOAT_FACTORY_PATH = "com.moat.analytics.mobile.mpub.MoatFactory";
     private static final String MOAT_OPTIONS_PATH = "com.moat.analytics.mobile.mpub.MoatOptions";

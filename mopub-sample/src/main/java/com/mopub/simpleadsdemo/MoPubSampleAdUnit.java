@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -17,6 +17,7 @@ class MoPubSampleAdUnit implements Comparable<MoPubSampleAdUnit> {
     private static final String AD_UNIT_ID = "adUnitId";
     static final String DESCRIPTION = "description";
     private static final String AD_TYPE = "adType";
+    private static final String KEYWORDS = "keywords";
     private static final String IS_USER_DEFINED = "isCustom";
     private static final String ID = "id";
 
@@ -28,7 +29,8 @@ class MoPubSampleAdUnit implements Comparable<MoPubSampleAdUnit> {
         REWARDED_VIDEO("Rewarded Video", RewardedVideoDetailFragment.class),
         LIST_VIEW("Native List View", NativeListViewFragment.class),
         RECYCLER_VIEW("Native Recycler View", NativeRecyclerViewFragment.class),
-        CUSTOM_NATIVE("Native Gallery (Custom Stream)", NativeGalleryFragment.class);
+        CUSTOM_NATIVE("Native Gallery (Custom Stream)", NativeGalleryFragment.class),
+        MANUAL_NATIVE("Native Manual", NativeManualFragment.class);
 
         String getName() {
             return name;
@@ -99,6 +101,7 @@ class MoPubSampleAdUnit implements Comparable<MoPubSampleAdUnit> {
         private final AdType mAdType;
 
         private String mDescription;
+        private String mKeywords;
         private boolean mIsUserDefined;
         private long mId;
 
@@ -106,10 +109,16 @@ class MoPubSampleAdUnit implements Comparable<MoPubSampleAdUnit> {
             mAdUnitId = adUnitId;
             mAdType = adType;
             mId = -1;
+            mKeywords = "";
         }
 
         Builder description(final String description) {
             mDescription = description;
+            return this;
+        }
+
+        Builder keywords(final String keywords) {
+            mKeywords = keywords;
             return this;
         }
 
@@ -131,6 +140,7 @@ class MoPubSampleAdUnit implements Comparable<MoPubSampleAdUnit> {
     private final String mAdUnitId;
     private final AdType mAdType;
     private final String mDescription;
+    private final String mKeywords;
     private final boolean mIsUserDefined;
     private final long mId;
 
@@ -138,6 +148,7 @@ class MoPubSampleAdUnit implements Comparable<MoPubSampleAdUnit> {
         mAdUnitId = builder.mAdUnitId;
         mAdType = builder.mAdType;
         mDescription = builder.mDescription;
+        mKeywords = builder.mKeywords;
         mIsUserDefined = builder.mIsUserDefined;
         mId = builder.mId;
     }
@@ -152,6 +163,10 @@ class MoPubSampleAdUnit implements Comparable<MoPubSampleAdUnit> {
 
     String getDescription() {
         return mDescription;
+    }
+
+    String getKeywords() {
+        return mKeywords;
     }
 
     String getFragmentClassName() {
@@ -176,6 +191,7 @@ class MoPubSampleAdUnit implements Comparable<MoPubSampleAdUnit> {
         bundle.putString(AD_UNIT_ID, mAdUnitId);
         bundle.putString(DESCRIPTION, mDescription);
         bundle.putSerializable(AD_TYPE, mAdType);
+        bundle.putString(KEYWORDS, mKeywords);
         bundle.putBoolean(IS_USER_DEFINED, mIsUserDefined);
 
         return bundle;
@@ -186,9 +202,11 @@ class MoPubSampleAdUnit implements Comparable<MoPubSampleAdUnit> {
         final String adUnitId = bundle.getString(AD_UNIT_ID);
         final AdType adType = (AdType) bundle.getSerializable(AD_TYPE);
         final String description = bundle.getString(DESCRIPTION);
+        final String keywords = bundle.getString(KEYWORDS, "");
         final boolean isUserDefined = bundle.getBoolean(IS_USER_DEFINED, false);
         final Builder builder = new MoPubSampleAdUnit.Builder(adUnitId, adType);
         builder.description(description);
+        builder.keywords(keywords);
         builder.id(id);
         builder.isUserDefined(isUserDefined);
 
@@ -210,6 +228,7 @@ class MoPubSampleAdUnit implements Comparable<MoPubSampleAdUnit> {
         result = 31 * result + mAdType.ordinal();
         result = 31 * result + (mIsUserDefined ? 1 : 0);
         result = 31 * result + mDescription.hashCode();
+        result = 31 * result + mKeywords.hashCode();
         result = 31 * result + mAdUnitId.hashCode();
         return result;
     }
@@ -233,6 +252,7 @@ class MoPubSampleAdUnit implements Comparable<MoPubSampleAdUnit> {
         return that.mAdType.equals(this.mAdType) &&
                 that.mIsUserDefined == this.mIsUserDefined &&
                 that.mDescription.equals(this.mDescription) &&
+                that.mKeywords.equals(this.mKeywords) &&
                 that.mAdUnitId.equals(this.mAdUnitId);
     }
 

@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -6,6 +6,7 @@ package com.mopub.common;
 
 import android.content.Context;
 import android.os.AsyncTask;
+
 import androidx.annotation.Nullable;
 
 import com.mopub.common.factories.MethodBuilderFactory;
@@ -15,7 +16,7 @@ import com.mopub.common.util.AsyncTasks;
 import java.lang.ref.WeakReference;
 
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
-import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR;
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR_WITH_THROWABLE;
 import static com.mopub.common.util.Reflection.MethodBuilder;
 import static com.mopub.common.util.Reflection.classFound;
 
@@ -83,7 +84,7 @@ public class GpsHelper {
         try {
             AsyncTasks.safeExecuteOnExecutor(new FetchAdvertisingInfoTask(context, gpsHelperListener));
         } catch (Exception exception) {
-            MoPubLog.log(ERROR, "Error executing FetchAdvertisingInfoTask", exception);
+            MoPubLog.log(ERROR_WITH_THROWABLE, "Error executing FetchAdvertisingInfoTask", exception);
 
             if (gpsHelperListener != null) {
                 gpsHelperListener.onFetchAdInfoCompleted();

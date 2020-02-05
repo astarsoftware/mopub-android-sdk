@@ -1,10 +1,11 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.mobileads;
 
 import android.os.AsyncTask;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -24,7 +25,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
-import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR;
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR_WITH_THROWABLE;
 
 public class VideoDownloader {
     private static final int MAX_VIDEO_SIZE = 25 * 1024 * 1024; // 25 MiB
@@ -142,7 +143,7 @@ public class VideoDownloader {
                 boolean diskPutResult = CacheService.putToDiskCache(videoUrl, inputStream);
                 return diskPutResult;
             } catch (Exception e) {
-                MoPubLog.log(ERROR, "VideoDownloader task threw an internal exception.", e);
+                MoPubLog.log(ERROR_WITH_THROWABLE, "VideoDownloader task threw an internal exception.", e);
                 return false;
             } finally {
                 Streams.closeStream(inputStream);

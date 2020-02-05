@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -10,24 +10,33 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.google.gson.Gson;
+import com.google.gson.TypeAdapter;
+import com.google.gson.TypeAdapterFactory;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
 import com.mopub.common.Constants;
 import com.mopub.common.MoPubBrowser;
 import com.mopub.common.Preconditions;
 import com.mopub.common.UrlAction;
 import com.mopub.common.UrlHandler;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.common.util.DeviceUtils;
 import com.mopub.common.util.Intents;
-import com.mopub.common.util.Strings;
 import com.mopub.exceptions.IntentNotResolvableException;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,45 +47,73 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
+import static com.mopub.mobileads.VastAbsoluteProgressTracker.parseAbsoluteOffset;
 import static com.mopub.network.TrackingRequest.makeVastTrackingHttpRequest;
 
 public class VastVideoConfig implements Serializable {
     private static final long serialVersionUID = 2L;
 
+    @Expose @SerializedName(Constants.VAST_TRACKERS_IMPRESSION)
     @NonNull private final ArrayList<VastTracker> mImpressionTrackers;
+    @Expose @SerializedName(Constants.VAST_TRACKERS_FRACTIONAL)
     @NonNull private final ArrayList<VastFractionalProgressTracker> mFractionalTrackers;
+    @Expose @SerializedName(Constants.VAST_TRACKERS_ABSOLUTE)
     @NonNull private final ArrayList<VastAbsoluteProgressTracker> mAbsoluteTrackers;
+    @Expose @SerializedName(Constants.VAST_TRACKERS_PAUSE)
     @NonNull private final ArrayList<VastTracker> mPauseTrackers;
+    @Expose @SerializedName(Constants.VAST_TRACKERS_RESUME)
     @NonNull private final ArrayList<VastTracker> mResumeTrackers;
+    @Expose @SerializedName(Constants.VAST_TRACKERS_COMPLETE)
     @NonNull private final ArrayList<VastTracker> mCompleteTrackers;
+    @Expose @SerializedName(Constants.VAST_TRACKERS_CLOSE)
     @NonNull private final ArrayList<VastTracker> mCloseTrackers;
+    @Expose @SerializedName(Constants.VAST_TRACKERS_SKIP)
     @NonNull private final ArrayList<VastTracker> mSkipTrackers;
+    @Expose @SerializedName(Constants.VAST_TRACKERS_CLICK)
     @NonNull private final ArrayList<VastTracker> mClickTrackers;
+    @Expose @SerializedName(Constants.VAST_TRACKERS_ERROR)
     @NonNull private final ArrayList<VastTracker> mErrorTrackers;
 
+    @Expose @SerializedName(Constants.VAST_URL_CLICKTHROUGH)
     @Nullable private String mClickThroughUrl;
+    @Expose @SerializedName(Constants.VAST_URL_NETWORK_MEDIA_FILE)
     @Nullable private String mNetworkMediaFileUrl;
+    @Expose @SerializedName(Constants.VAST_URL_DISK_MEDIA_FILE)
     @Nullable private String mDiskMediaFileUrl;
+    @Expose @SerializedName(Constants.VAST_SKIP_OFFSET)
     @Nullable private String mSkipOffset;
+    @Expose @SerializedName(Constants.VAST_COMPANION_AD_LANDSCAPE)
     @Nullable private VastCompanionAdConfig mLandscapeVastCompanionAdConfig;
+    @Expose @SerializedName(Constants.VAST_COMPANION_AD_PORTRAIT)
     @Nullable private VastCompanionAdConfig mPortraitVastCompanionAdConfig;
-    @NonNull private Map<String, VastCompanionAdConfig> mSocialActionsCompanionAds;
+    @Expose @SerializedName(Constants.VAST_ICON_CONFIG)
     @Nullable private VastIconConfig mVastIconConfig;
+    @Expose @SerializedName(Constants.VAST_IS_REWARDED)
     private boolean mIsRewardedVideo;
 
     // Custom extensions
+    @Expose @SerializedName(Constants.VAST_CUSTOM_TEXT_CTA)
     @Nullable private String mCustomCtaText;
+    @Expose @SerializedName(Constants.VAST_CUSTOM_TEXT_SKIP)
     @Nullable private String mCustomSkipText;
+    @Expose @SerializedName(Constants.VAST_CUSTOM_CLOSE_ICON_URL)
     @Nullable private String mCustomCloseIconUrl;
+    @Expose @SerializedName(Constants.VAST_VIDEO_VIEWABILITY_TRACKER)
     @Nullable private VideoViewabilityTracker mVideoViewabilityTracker;
     // Viewability
+    @Expose @SerializedName(Constants.VAST_EXTERNAL_VIEWABILITY_TRACKERS)
     @NonNull private final Map<String, String> mExternalViewabilityTrackers;
+    @Expose @SerializedName(Constants.VAST_AVID_JAVASCRIPT_RESOURCES)
     @NonNull private final Set<String> mAvidJavascriptResources;
+    @Expose @SerializedName(Constants.VAST_MOAT_IMPRESSION_PIXELS)
     @NonNull private final Set<String> mMoatImpressionPixels;
 
     // MoPub-specific metadata
+    @Expose @SerializedName(Constants.VAST_DSP_CREATIVE_ID)
     private String mDspCreativeId;
+    @Expose @SerializedName(Constants.VAST_PRIVACY_ICON_IMAGE_URL)
     private String mPrivacyInformationIconImageUrl;
+    @Expose @SerializedName(Constants.VAST_PRIVACY_ICON_CLICK_URL)
     private String mPrivacyInformationIconClickthroughUrl;
 
     public VastVideoConfig() {
@@ -90,7 +127,6 @@ public class VastVideoConfig implements Serializable {
         mSkipTrackers = new ArrayList<VastTracker>();
         mClickTrackers = new ArrayList<VastTracker>();
         mErrorTrackers = new ArrayList<VastTracker>();
-        mSocialActionsCompanionAds = new HashMap<String, VastCompanionAdConfig>();
         mIsRewardedVideo = false;
 
         mExternalViewabilityTrackers = new HashMap<String, String>();
@@ -217,7 +253,7 @@ public class VastVideoConfig implements Serializable {
         for (int i = 0; i < events.length(); i++) { // JSONArray isn't Iterable -_-)
             final String eventName = events.optString(i);
             final List<String> urlsForEvent = hydrateUrls(eventName, urls);
-            final VideoTrackingEvent event = VideoTrackingEvent.fromString(eventName);
+            final VideoTrackingEvent event = VideoTrackingEvent.Companion.fromString(eventName);
             if (eventName == null || urlsForEvent == null) {
                 continue;
             }
@@ -286,11 +322,6 @@ public class VastVideoConfig implements Serializable {
             @Nullable final VastCompanionAdConfig portraitVastCompanionAdConfig) {
         mLandscapeVastCompanionAdConfig = landscapeVastCompanionAdConfig;
         mPortraitVastCompanionAdConfig = portraitVastCompanionAdConfig;
-    }
-
-    public void setSocialActionsCompanionAds(
-            @NonNull final Map<String, VastCompanionAdConfig> socialActionsCompanionAds) {
-        this.mSocialActionsCompanionAds = socialActionsCompanionAds;
     }
 
     public void setVastIconConfig(@Nullable final VastIconConfig vastIconConfig) {
@@ -425,11 +456,6 @@ public class VastVideoConfig implements Serializable {
             default:
                 return mLandscapeVastCompanionAdConfig;
         }
-    }
-
-    @NonNull
-    public Map<String, VastCompanionAdConfig> getSocialActionsCompanionAds() {
-        return mSocialActionsCompanionAds;
     }
 
     @Nullable
@@ -667,7 +693,7 @@ public class VastVideoConfig implements Serializable {
     }
 
     /**
-     * Called when the video is closed or skipped.
+     * Called when the video is closed.
      *
      * @param context         The context. Can be application or activity context.
      * @param contentPlayHead Current video playback time.
@@ -681,7 +707,16 @@ public class VastVideoConfig implements Serializable {
                 mNetworkMediaFileUrl,
                 context
         );
+    }
 
+    /**
+     * Called when the video is skipped.
+     *
+     * @param context         The context. Can be application or activity context.
+     * @param contentPlayHead Current video playback time.
+     */
+    public void handleSkip(@NonNull Context context, int contentPlayHead) {
+        Preconditions.checkNotNull(context, "context cannot be null");
         makeVastTrackingHttpRequest(
                 mSkipTrackers,
                 null,
@@ -789,28 +824,24 @@ public class VastVideoConfig implements Serializable {
     @Nullable
     public Integer getSkipOffsetMillis(final int videoDuration) {
         if (mSkipOffset != null) {
-            try {
-                final Integer skipOffsetMilliseconds;
-                if (Strings.isAbsoluteTracker(mSkipOffset)) {
-                    skipOffsetMilliseconds = Strings.parseAbsoluteOffset(mSkipOffset);
-                } else if (Strings.isPercentageTracker(mSkipOffset)) {
-                    float percentage = Float.parseFloat(mSkipOffset.replace("%", "")) / 100f;
-                    skipOffsetMilliseconds = Math.round(videoDuration * percentage);
-                } else {
-                    MoPubLog.log(CUSTOM,
-                            String.format("Invalid VAST skipoffset format: %s", mSkipOffset));
-                    return null;
-                }
+            final Integer skipOffsetMilliseconds;
+            if (VastAbsoluteProgressTracker.isAbsoluteTracker(mSkipOffset)) {
+                skipOffsetMilliseconds = VastAbsoluteProgressTracker.parseAbsoluteOffset(mSkipOffset);
+            } else if (VastFractionalProgressTrackerTwo.Companion.isPercentageTracker(mSkipOffset)) {
+                float percentage = Float.parseFloat(mSkipOffset.replace("%", "")) / 100f;
+                skipOffsetMilliseconds = Math.round(videoDuration * percentage);
+            } else {
+                MoPubLog.log(CUSTOM,
+                        String.format("Invalid VAST skipoffset format: %s", mSkipOffset));
+                return null;
+            }
 
-                if (skipOffsetMilliseconds != null) {
-                    if (skipOffsetMilliseconds < videoDuration) {
-                        return skipOffsetMilliseconds;
-                    } else {
-                        return videoDuration;
-                    }
+            if (skipOffsetMilliseconds != null) {
+                if (skipOffsetMilliseconds < videoDuration) {
+                    return skipOffsetMilliseconds;
+                } else {
+                    return videoDuration;
                 }
-            } catch (NumberFormatException e) {
-                MoPubLog.log(CUSTOM, String.format("Failed to parse skipoffset %s", mSkipOffset));
             }
         }
         return null;
@@ -892,4 +923,51 @@ public class VastVideoConfig implements Serializable {
         }
     }
 
+    // This is required for testing
+    public static class VastVideoConfigTypeAdapterFactory implements TypeAdapterFactory {
+        @Override
+        public <T> TypeAdapter<T> create(@Nullable final Gson gson,
+                                         @Nullable final TypeToken<T> typeToken) {
+            if (typeToken == null || !Class.class.isAssignableFrom(typeToken.getRawType())) {
+                return null;
+            }
+            return (TypeAdapter<T>) new VastVideoConfigTypeAdapter();
+        }
+    }
+
+    public static class VastVideoConfigTypeAdapter extends TypeAdapter<Class<?>> {
+        @Override
+        public void write(@Nullable final JsonWriter jsonWriter, @Nullable final Class<?> clazz)
+                throws IOException {
+            if (jsonWriter == null) {
+                return;
+            }
+
+            if (clazz == null) {
+                jsonWriter.nullValue();
+                return;
+            }
+            jsonWriter.value(clazz.getName());
+        }
+
+        @Override
+        @Nullable
+        public Class<?> read(@Nullable JsonReader jsonReader) throws IOException {
+            if (jsonReader == null) {
+                return null;
+            }
+
+            if (jsonReader.peek() == JsonToken.NULL) {
+                jsonReader.nextNull();
+                return null;
+            }
+            Class<?> clazz = null;
+            try {
+                clazz = Class.forName(jsonReader.nextString());
+            } catch (ClassNotFoundException exception) {
+                throw new IOException(exception);
+            }
+            return clazz;
+        }
+    }
 }

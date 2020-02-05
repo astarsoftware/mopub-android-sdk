@@ -1,15 +1,16 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.nativeads;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.mopub.common.Preconditions;
 import com.mopub.common.VisibleForTesting;
@@ -85,6 +86,8 @@ public class MoPubVideoNativeAdRenderer implements MoPubAdRenderer<VideoNativeAd
                 mediaViewHolder.privacyInformationIconImageView,
                 videoNativeAd.getPrivacyInformationIconImageUrl(),
                 videoNativeAd.getPrivacyInformationIconClickThroughUrl());
+        NativeRendererHelper.addSponsoredView(videoNativeAd.getSponsored(),
+                mediaViewHolder.sponsoredTextView);
     }
 
     private void setViewVisibility(@NonNull final MediaViewHolder mediaViewHolder,

@@ -1,0 +1,64 @@
+<html>
+  <head>
+    <script src='mraid.js'></script>
+    <script>
+      /*
+      Enables the following tests:
+
+      1. Reading the state
+      2. Listening for state change events
+      */
+
+      var resizeProperties = {
+        height: 400,
+        width: 320,
+        offsetX: 0,
+        offsetY: 0
+      };
+
+      function resize() {
+        mraid.setResizeProperties(resizeProperties);
+        mraid.resize();
+      }
+
+      function expand() {
+        mraid.expand();
+      }
+
+      function closeAd() {
+        mraid.close();
+      }
+
+      function getState() {
+        var state = mraid.getState();
+        alert('State: ' + state);
+      }
+
+      mraid.addEventListener('stateChange', function(state) {
+        console.log('State changed to: ' + state);
+      });
+
+      mraid.addEventListener('error', function(message, action) {
+        alert('MRAID error: ' + message + ' (action: ' + action + ')');
+      });
+    </script>
+  </head>
+  <body>
+    <div>
+      <button style='display:inline-block' onclick='expand()'>
+        expand()
+      </button>
+      <button style='display:inline-block' onclick='resize()'>
+        resize()
+      </button>
+      <button style='display:inline-block' onclick='closeAd()'>
+        close()
+      </button>
+    </div>
+    <div>
+      <button style='display:inline-block' onclick='getState()'>
+        getState()
+      </button>
+    </div>
+  </body>
+</html>

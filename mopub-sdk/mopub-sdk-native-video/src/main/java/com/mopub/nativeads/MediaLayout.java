@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -9,8 +9,6 @@ import android.graphics.Color;
 import android.graphics.SurfaceTexture;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.TextureView;
 import android.view.View;
@@ -18,11 +16,13 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Dips;
 import com.mopub.common.util.Drawables;
-import com.mopub.common.util.Utils;
 import com.mopub.mobileads.VastVideoProgressBarWidget;
 import com.mopub.mobileads.resource.DrawableConstants.GradientStrip;
 
@@ -121,7 +121,7 @@ public class MediaLayout extends RelativeLayout {
         videoTextureLayoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
         mVideoTextureView = new TextureView(getContext());
         mVideoTextureView.setLayoutParams(videoTextureLayoutParams);
-        mVideoTextureView.setId((int) Utils.generateUniqueId());
+        mVideoTextureView.setId(View.generateViewId());
         addView(mVideoTextureView);
 
         // Place texture beneath image.

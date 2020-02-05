@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -6,6 +6,7 @@ package com.mopub.nativeads;
 
 import android.content.Context;
 import android.os.Handler;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -22,7 +23,7 @@ import com.mopub.volley.Response;
 import com.mopub.volley.VolleyError;
 
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
-import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR;
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR_WITH_THROWABLE;
 
 /**
  * Requests positioning information from the MoPub ad server.
@@ -98,7 +99,7 @@ class ServerPositioningSource implements PositioningSource {
                 // Don't log a stack trace when we're just warming up.
                 if (!(error instanceof MoPubNetworkError) ||
                         ((MoPubNetworkError) error).getReason().equals(MoPubNetworkError.Reason.WARMING_UP)) {
-                    MoPubLog.log(ERROR, "Failed to load positioning data", error);
+                    MoPubLog.log(ERROR_WITH_THROWABLE, "Failed to load positioning data", error);
                     if (error.networkResponse == null && !DeviceUtils.isNetworkAvailable(mContext)) {
                         MoPubLog.log(CUSTOM, String.valueOf(MoPubErrorCode.NO_CONNECTION));
                     }

@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -19,6 +19,8 @@ public class ViewBinder {
         private int mainImageId;
         private int iconImageId;
         private int privacyInformationIconImageId;
+        private int sponsoredTextId;
+
         @NonNull private Map<String, Integer> extras = Collections.emptyMap();
 
         public Builder(final int layoutId) {
@@ -63,6 +65,12 @@ public class ViewBinder {
         }
 
         @NonNull
+        public final Builder sponsoredTextId(final int sponsoredTextId) {
+            this.sponsoredTextId = sponsoredTextId;
+            return this;
+        }
+
+        @NonNull
         public final Builder addExtras(final Map<String, Integer> resourceIds) {
             this.extras = new HashMap<String, Integer>(resourceIds);
             return this;
@@ -87,6 +95,7 @@ public class ViewBinder {
     final int mainImageId;
     final int iconImageId;
     final int privacyInformationIconImageId;
+    final int sponsoredTextId;
     @NonNull final Map<String, Integer> extras;
 
     private ViewBinder(@NonNull final Builder builder) {
@@ -97,6 +106,7 @@ public class ViewBinder {
         this.mainImageId = builder.mainImageId;
         this.iconImageId = builder.iconImageId;
         this.privacyInformationIconImageId = builder.privacyInformationIconImageId;
+        this.sponsoredTextId = builder.sponsoredTextId;
         this.extras = builder.extras;
     }
 }

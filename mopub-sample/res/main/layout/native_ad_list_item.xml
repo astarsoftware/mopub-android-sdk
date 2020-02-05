@@ -44,7 +44,6 @@
         android:layout_marginTop="10dp"
         android:textColor="@android:color/darker_gray" />
 
-
     <ImageView
         android:id="@+id/native_main_image"
         android:layout_width="match_parent"
@@ -58,6 +57,21 @@
         android:background="@null"
         android:contentDescription="@string/native_main_image"
         android:scaleType="centerCrop" />
+
+    <TextView
+        android:id="@+id/native_sponsored_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/native_main_image"
+        android:layout_alignStart="@id/native_main_image"
+        android:layout_alignLeft="@id/native_main_image"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_toStartOf="@id/native_cta"
+        android:layout_toLeftOf="@id/native_cta"
+        android:visibility="invisible" />
 
     <Button
         android:id="@+id/native_cta"

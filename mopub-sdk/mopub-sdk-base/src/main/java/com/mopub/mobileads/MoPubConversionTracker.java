@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -54,7 +54,7 @@ public class MoPubConversionTracker {
      *
      * @param sessionTracker - true for session tracking
      */
-    public void reportAppOpen(boolean sessionTracker) {
+    public void reportAppOpen(final boolean sessionTracker) {
         final PersonalInfoManager infoManager = MoPub.getPersonalInformationManager();
         if (infoManager == null) {
             MoPubLog.log(CUSTOM, "Cannot report app open until initialization is done");
@@ -89,6 +89,9 @@ public class MoPubConversionTracker {
                 mContext, new TrackingRequest.Listener() {
                     @Override
                     public void onResponse(@NonNull final String url) {
+                        if (sessionTracker) {
+                            return;
+                        }
                         mSharedPreferences
                                 .edit()
                                 .putBoolean(mIsTrackedKey, true)

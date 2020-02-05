@@ -1,0 +1,28 @@
+<html>
+  <head>
+    <script src='mraid.js'></script>
+    <script>
+      /*
+      Enables the following tests:
+
+      1. Sending a valid SMS
+      2. Sending an invalid SMS, which should fail with an error
+      */
+
+      console.log('This test contains a link with an "sms://" url. Clicking on it should ' +
+          'allow sending a native SMS message.');
+
+      mraid.addEventListener('error', function(message, action) {
+        alert('MRAID error: ' + message + ' (action: ' + action + ')');
+      });
+    </script>
+  </head>
+  <body>
+    <button><a style="text-decoration:none"  href="sms://1234567890">
+      Send SMS
+    </a></button>
+    <button><a style="text-decoration:none"  href="sms://asdf' + alert('malformed') + '">
+      Malformed SMS number
+    </a></button>
+  </body>
+</html>

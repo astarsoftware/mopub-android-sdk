@@ -1,0 +1,150 @@
+<html>
+  <head>
+    <script src='mraid.js'></script>
+    <script>
+      /*
+      Enables the following tests:
+
+      1. Resizing an ad in default state
+      2. Resizing an ad, then closing
+      3. Resizing an ad, then closing, then closing again to completely hide the ad
+      4. Resizing an ad, then resizing again with different dimensions
+      5. Resizing an ad with offsets
+      6. Resizing an ad with a custom close position
+      7. Resizing an ad offscreen with allow offscreen allowed
+      8. Resizing an ad offscreen with allow offscreen not allowed (should be an error)
+      9. Getting resize properties in all states
+      10. Getting current position in all states
+      11. Getting default position in all states
+      */
+
+      var CUSTOM_CLOSE_POSITIONS = [
+        'top-right',
+        'top-left',
+        'top-center',
+        'bottom-right',
+        'bottom-left',
+        'bottom-center',
+        'center'
+      ];
+
+      var WIDTHS = [200, 320, /* off-screen */ 1000];
+
+      var HEIGHTS = [300, 600, /* off-screen */ 1000];
+
+      var X_OFFSETS = [0, 10, 200, -10, -200];
+
+      var Y_OFFSETS = [0, 15, 250, -15, -250];
+
+      var resizeProperties = {
+          width: WIDTHS[0],
+          height: HEIGHTS[0],
+          offsetX: X_OFFSETS[0],
+          offsetY: Y_OFFSETS[0],
+          customClosePosition: CUSTOM_CLOSE_POSITIONS[0],
+          allowOffscreen: true
+      };
+
+      function resize() {
+        mraid.setResizeProperties(resizeProperties);
+        mraid.resize();
+      }
+
+      function closeAd() {
+        mraid.close();
+      }
+
+      function toggleResizeDimensions() {
+        var oldWidth = resizeProperties.width;
+        resizeProperties.width = WIDTHS[(WIDTHS.indexOf(oldWidth) + 1) % WIDTHS.length];
+
+        var oldHeight = resizeProperties.height;
+        resizeProperties.height = HEIGHTS[(HEIGHTS.indexOf(oldHeight) + 1) % HEIGHTS.length];
+
+        alert('(width, height) changed from: (' + oldWidth + ', ' + oldHeight + ') to: ' +
+            '(' + resizeProperties.width + ', ' + resizeProperties.height + ')');
+      }
+
+      function toggleResizeOffsets() {
+        var oldOffsetX = resizeProperties.offsetX;
+        resizeProperties.offsetX = X_OFFSETS[(X_OFFSETS.indexOf(oldOffsetX) + 1) %
+            X_OFFSETS.length];
+
+        var oldOffsetY = resizeProperties.offsetY;
+        resizeProperties.offsetY = Y_OFFSETS[(Y_OFFSETS.indexOf(oldOffsetY) + 1) %
+            Y_OFFSETS.length];
+        
+        alert('(offsetX, offsetY) changed from: (' + oldOffsetX + ', ' + oldOffsetY + ') to: ' +
+            '(' + resizeProperties.offsetX + ', ' + resizeProperties.offsetY + ')');
+      }
+
+      function toggleResizeCustomClosePosition() {
+        var oldCustomClosePosition = resizeProperties.customClosePosition;
+        var oldIndex = CUSTOM_CLOSE_POSITIONS.indexOf(oldCustomClosePosition);
+        var newIndex = (oldIndex + 1) % CUSTOM_CLOSE_POSITIONS.length;
+        resizeProperties.customClosePosition = CUSTOM_CLOSE_POSITIONS[newIndex];
+
+        alert('customClosePosition changed from: ' + oldCustomClosePosition + ' to: ' +
+            resizeProperties.customClosePosition);
+      }
+      
+      function toggleResizeAllowOffscreen() {
+        var oldAllowOffscreen = resizeProperties.allowOffscreen;
+        resizeProperties.allowOffscreen = !oldAllowOffscreen;
+
+        alert('allowOffscreen changed from: ' + oldAllowOffscreen + ' to: ' +
+            resizeProperties.allowOffscreen);
+      }
+
+      function getResizeProperties() {
+        var resizeProperties = mraid.getResizeProperties();
+        alert('Resize properties are set to: ' + JSON.stringify(resizeProperties, null, '  '))
+      }
+
+      function getCurrentPosition() {
+        var currentPosition = mraid.getCurrentPosition();
+        alert('Current position set to: ' + JSON.stringify(currentPosition, null, '  '))
+      }
+
+      mraid.addEventListener('error', function(message, action) {
+        alert('MRAID error: ' + message + ' (action: ' + action + ')');
+      });
+
+      mraid.addEventListener('stateChange', function(state) {
+        console.log('State changed to: ' + state);
+      });
+    </script>
+  </head>
+  <body>
+    <div>
+      <button style='display:inline-block' onclick='resize()'>
+        resize()
+      </button>
+      <button style='display:inline-block' onclick='closeAd()'>
+        close()
+      </button>
+    </div>
+    <div>
+      <button style='display:inline-block' onclick='getCurrentPosition()'>
+        getCurrentPosition()
+      </button>
+      <button style='display:inline-block' onclick='getResizeProperties()'>
+        getResizeProperties()
+      </button>
+    </div>
+    <div>
+      <button style='display:inline-block' onclick='toggleResizeDimensions()'>
+        Toggle dimensions
+      </button>
+      <button style='display:inline-block' onclick='toggleResizeOffsets()'>
+        Toggle offsets
+      </button>
+      <button style='display:inline-block' onclick='toggleResizeCustomClosePosition()'>
+        Toggle custom close position
+      </button>
+      <button style='display:inline-block' onclick='toggleResizeAllowOffscreen()'>
+        Toggle allow offscreen
+      </button>
+    </div>
+  </body>
+</html>

@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -29,7 +29,6 @@ public class VastVideoCtaButtonWidget extends ImageView {
     private boolean mIsVideoComplete;
     private boolean mHasCompanionAd;
     private boolean mHasClickthroughUrl;
-    private boolean mHasSocialActions;
 
     public VastVideoCtaButtonWidget(@NonNull final Context context, final int videoViewId,
             final boolean hasCompanionAd, final boolean hasClickthroughUrl) {
@@ -37,9 +36,8 @@ public class VastVideoCtaButtonWidget extends ImageView {
 
         mHasCompanionAd = hasCompanionAd;
         mHasClickthroughUrl = hasClickthroughUrl;
-        mHasSocialActions = false;
 
-        setId((int) Utils.generateUniqueId());
+        setId(View.generateViewId());
 
         final int width = Dips.dipsToIntPixels(DrawableConstants.CtaButton.WIDTH_DIPS, context);
         final int height = Dips.dipsToIntPixels(DrawableConstants.CtaButton.HEIGHT_DIPS, context);
@@ -74,14 +72,6 @@ public class VastVideoCtaButtonWidget extends ImageView {
         mCtaButtonDrawable.setCtaText(customCtaText);
     }
 
-    void setHasSocialActions(final boolean hasSocialActions) {
-        mHasSocialActions = hasSocialActions;
-    }
-
-    boolean getHasSocialActions() {
-        return mHasSocialActions;
-    }
-
     void notifyVideoSkippable() {
         mIsVideoSkippable = true;
         updateLayoutAndVisibility();
@@ -89,6 +79,11 @@ public class VastVideoCtaButtonWidget extends ImageView {
 
     void notifyVideoComplete() {
         mIsVideoSkippable = true;
+        mIsVideoComplete = true;
+        updateLayoutAndVisibility();
+    }
+
+    void notifyVideoClickable() {
         mIsVideoComplete = true;
         updateLayoutAndVisibility();
     }
@@ -107,8 +102,7 @@ public class VastVideoCtaButtonWidget extends ImageView {
         }
 
         // If video has finished playing and there's a companion ad, do not show CTA button
-        // Unless the ad has social actions
-        if (mIsVideoComplete && mHasCompanionAd && !mHasSocialActions) {
+        if (mIsVideoComplete && mHasCompanionAd) {
             setVisibility(View.GONE);
             return;
         }

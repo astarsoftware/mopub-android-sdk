@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -7,6 +7,9 @@ package com.mopub.mobileads;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+import com.mopub.common.Constants;
 import com.mopub.common.Preconditions;
 
 import java.io.Serializable;
@@ -42,10 +45,15 @@ class VastResource implements Serializable {
         JAVASCRIPT
     }
 
+    @Expose @SerializedName(Constants.VAST_RESOURCE)
     @NonNull private String mResource;
+    @Expose @SerializedName(Constants.VAST_TYPE)
     @NonNull private Type mType;
+    @Expose @SerializedName(Constants.VAST_CREATIVE_TYPE)
     @NonNull private CreativeType mCreativeType;
+    @Expose @SerializedName(Constants.VAST_WIDTH)
     private int mWidth;
+    @Expose @SerializedName(Constants.VAST_HEIGHT)
     private int mHeight;
 
     /**

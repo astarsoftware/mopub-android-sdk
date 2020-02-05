@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -58,20 +58,6 @@ public class AdTypeTranslatorTest {
         customEventName = AdTypeTranslator.getCustomEventName(AdFormat.BANNER, "interstitial", "admob_full", headers);
 
         assertThat(customEventName).isEqualTo("com.mopub.mobileads.GooglePlayServicesInterstitial");
-    }
-
-    @Test
-    public void getCustomEventName_shouldBeMillenialBanner() {
-        customEventName = AdTypeTranslator.getCustomEventName(AdFormat.BANNER, "millennial_native", null, headers);
-
-        assertThat(customEventName).isEqualTo("com.mopub.mobileads.MillennialBanner");
-    }
-
-    @Test
-    public void getCustomEventName_shouldBeMillennialIntersitial() {
-        customEventName = AdTypeTranslator.getCustomEventName(AdFormat.INTERSTITIAL, "interstitial", "millennial_full", headers);
-
-        assertThat(customEventName).isEqualTo("com.mopub.mobileads.MillennialInterstitial");
     }
 
     @Test

@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -53,6 +53,11 @@ public class HeaderUtils {
         return formatIntHeader(extractHeader(headers, responseHeader));
     }
 
+    @NonNull
+    public static Integer extractIntegerHeader(JSONObject headers, ResponseHeader responseHeader, int defaultValue) {
+        return formatIntHeader(extractHeader(headers, responseHeader), defaultValue);
+    }
+
     public static boolean extractBooleanHeader(JSONObject headers, ResponseHeader responseHeader, boolean defaultValue) {
         return formatBooleanHeader(extractHeader(headers, responseHeader), defaultValue);
     }
@@ -97,6 +102,15 @@ public class HeaderUtils {
             return defaultValue;
         }
         return headerValue.equals("1");
+    }
+
+    @NonNull
+    private static Integer formatIntHeader(String headerValue, int defaultValue) {
+        final Integer value = formatIntHeader(headerValue);
+        if (value == null) {
+            return defaultValue;
+        }
+        return value;
     }
 
     @Nullable

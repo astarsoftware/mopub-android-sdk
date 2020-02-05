@@ -1,4 +1,10 @@
+// Copyright 2018-2020 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.tests;
+
+import android.os.SystemClock;
 
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.filters.LargeTest;
@@ -62,11 +68,12 @@ public class ViewPagerTest extends MoPubBaseTestCase {
 
         onView(withId(R.id.gallery_pager)).perform(swipeLeft()); //swipe left to bring ad to view
         onView(withId(R.id.gallery_pager)).perform(swipeLeft()); //swipe left to bring ad to view
+        SystemClock.sleep(2000); // wait for view to be fully displayed
 
         ViewInteraction nativeMainImageElement = onView(allOf(withId(R.id.native_main_image))); //show MoPub browser on Ad click
         adDetailPage.clickElement(nativeMainImageElement);
 
-        final ViewInteraction browserLinkElement = onView(withText(WEB_PAGE_LINK));
+        final ViewInteraction browserLinkElement = onView(allOf(withText(WEB_PAGE_LINK)));
 
         assertTrue(adDetailPage.waitForElement(browserLinkElement));
     }

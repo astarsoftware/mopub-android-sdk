@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -229,17 +229,6 @@ public class VastXmlManagerAggregatorTest {
             "                                    <link rel=\"stylesheet\" href=\"https://ton.twimg.com/exchange-media/staging/video_companions_style-29c86cb8e4193a6c4da8.css\">" +
             "                                    <div class=\"ads-by-twitter\">" +
             "                                    Ads by <div class=\"larry\"></div>" +
-            "                                    </div>" +
-            "                                ]]>" +
-            "                            </HTMLResource>" +
-            "                        </Companion>" +
-            "                        <Companion height=\"22\" width=\"130\" adSlotID=\"socialActions\">" +
-            "                            <HTMLResource>" +
-            "                                <![CDATA[" +
-            "                                    <link rel=\"stylesheet\" href=\"https://ton.twimg.com/exchange-media/staging/video_companions_style-29c86cb8e4193a6c4da8.css\">" +
-            "                                    <div class=\"social-actions\">" +
-            "                                    <a href=\"mopubshare://tweet?screen_name=frappuccino&tweet_id=590877845037056000\" class=\"retweet-button\"><div class=\"icon\"></div>310&nbsp;</a>" +
-            "                                    <a href=\"twitter://intent/favorite?id=590877845037056000\" class=\"like-button\"><div class=\"icon\"></div>1118&nbsp;</a>" +
             "                                    </div>" +
             "                                ]]>" +
             "                            </HTMLResource>" +
@@ -751,127 +740,6 @@ public class VastXmlManagerAggregatorTest {
                 Arrays.asList(companionXmlManager1, companionXmlManager2),
                 VastXmlManagerAggregator.CompanionOrientation.PORTRAIT);
         assertThat(bestCompanionAd.getVastResource().getResource()).isEqualTo("image_url1");
-    }
-
-    @Test
-    public void getSocialActionsCompanionAds_shouldReturnSocialActionsCompanionAds() throws Exception {
-        final VastCompanionAdXmlManager adsByXmlManager =
-                initializeCompanionXmlManagerMock(65, 20, null, "HTMLResource", null,
-                        "<p>Ads by</p>", "adsBy");
-        final VastCompanionAdXmlManager socialActionsXmlManager =
-                initializeCompanionXmlManagerMock(130, 30, null, "HTMLResource", null,
-                        "<p>Retweet Like</p>", "socialActions");
-
-        final Map<String, VastCompanionAdConfig> socialActionsCompanionAds =
-                subject.getSocialActionsCompanionAds(
-                        Arrays.asList(adsByXmlManager, socialActionsXmlManager));
-        final VastCompanionAdConfig adsByVastConfig = socialActionsCompanionAds.get("adsBy");
-        final VastCompanionAdConfig socialActionsVastConfig = socialActionsCompanionAds
-                .get("socialActions");
-
-        assertThat(adsByVastConfig.getWidth()).isEqualTo(65);
-        assertThat(adsByVastConfig.getHeight()).isEqualTo(20);
-        assertThat(adsByVastConfig.getVastResource().getResource()).isEqualTo("<p>Ads by</p>");
-        assertThat(socialActionsVastConfig.getWidth()).isEqualTo(130);
-        assertThat(socialActionsVastConfig.getHeight()).isEqualTo(30);
-        assertThat(socialActionsVastConfig.getVastResource().getResource())
-                .isEqualTo("<p>Retweet Like</p>");
-    }
-
-    @Test
-    public void getSocialActionsCompanionAds_withoutSocialActions_shouldNotReturnSocialActionsCompanionAds() throws Exception {
-        final VastCompanionAdXmlManager adsByXmlManager =
-                initializeCompanionXmlManagerMock(65, 20, null, "HTMLResource", null,
-                        "<p>Ads by</p>", "NOTadsBy");
-        final VastCompanionAdXmlManager socialActionsXmlManager =
-                initializeCompanionXmlManagerMock(130, 30, null, "HTMLResource", null,
-                        "<p>Retweet Like</p>", "NOTsocialActions");
-
-        final Map<String, VastCompanionAdConfig> socialActionsCompanionAds =
-                subject.getSocialActionsCompanionAds(
-                        Arrays.asList(adsByXmlManager, socialActionsXmlManager));
-
-        assertThat(socialActionsCompanionAds.size()).isEqualTo(0);
-    }
-
-    @Test
-    public void getSocialActionsCompanionAds_withoutHTMLResource_shouldNotReturnSocialActionsCompanionAds() throws Exception {
-        final VastCompanionAdXmlManager adsByXmlManager =
-                initializeCompanionXmlManagerMock(65, 20, null, "HTMLResource", null, null,
-                        "adsBy");
-        final VastCompanionAdXmlManager socialActionsXmlManager =
-                initializeCompanionXmlManagerMock(130, 30, null, "HTMLResource", null,
-                        null, "socialActions");
-
-        final Map<String, VastCompanionAdConfig> socialActionsCompanionAds =
-                subject.getSocialActionsCompanionAds(
-                        Arrays.asList(adsByXmlManager, socialActionsXmlManager));
-        final VastCompanionAdConfig adsByVastConfig = socialActionsCompanionAds.get("adsBy");
-        final VastCompanionAdConfig socialActionsVastConfig = socialActionsCompanionAds
-                .get("socialActions");
-
-        assertThat(socialActionsCompanionAds.size()).isEqualTo(0);
-    }
-
-    @Test
-    public void getSocialActionsCompanionAds_whenTooWide_shouldNotReturnSocialActionsCompanionAds() throws Exception {
-        final VastCompanionAdXmlManager adsByXmlManager =
-                initializeCompanionXmlManagerMock(76, 20, null, "HTMLResource", null,
-                        "<p>Ads by</p>", "adsBy");
-        final VastCompanionAdXmlManager socialActionsXmlManager =
-                initializeCompanionXmlManagerMock(151, 30, null, "HTMLResource", null,
-                        "<p>Retweet Like</p>", "socialActions");
-
-        final Map<String, VastCompanionAdConfig> socialActionsCompanionAds =
-                subject.getSocialActionsCompanionAds(
-                        Arrays.asList(adsByXmlManager, socialActionsXmlManager));
-
-        assertThat(socialActionsCompanionAds.size()).isEqualTo(0);
-    }
-
-    @Test
-    public void getSocialActionsCompanionAds_whenTooTall_shouldNotReturnSocialActionsCompanionAds() throws Exception {
-        final VastCompanionAdXmlManager adsByXmlManager =
-                initializeCompanionXmlManagerMock(65, 51, null, "HTMLResource", null,
-                        "<p>Ads by</p>", "adsBy");
-        final VastCompanionAdXmlManager socialActionsXmlManager =
-                initializeCompanionXmlManagerMock(130, 51, null, "HTMLResource", null,
-                        "<p>Retweet Like</p>", "socialActions");
-
-        final Map<String, VastCompanionAdConfig> socialActionsCompanionAds =
-                subject.getSocialActionsCompanionAds(
-                        Arrays.asList(adsByXmlManager, socialActionsXmlManager));
-
-        assertThat(socialActionsCompanionAds.size()).isEqualTo(0);
-    }
-
-    @Test
-    public void evaluateVastXmlManager_withSocialActions_shouldKeepSocialActionsFromInLineAndNotOverwriteFromWrapper() throws Exception {
-        ShadowMoPubHttpUrlConnection.addPendingResponse(200, TEST_NESTED_VAST_XML_STRING);
-        VastVideoConfig vastVideoConfig = subject.evaluateVastXmlManager(
-                TEST_VAST_XML_STRING, new ArrayList<VastTracker>());
-
-        VastCompanionAdConfig adsByCompanionAd = vastVideoConfig.getSocialActionsCompanionAds()
-                .get(VastXmlManagerAggregator.ADS_BY_AD_SLOT_ID);
-        assertThat(adsByCompanionAd.getVastResource().getType())
-                .isEqualTo(VastResource.Type.HTML_RESOURCE);
-        assertThat(adsByCompanionAd.getVastResource().getResource().trim())
-                .isEqualTo(
-                        "<link rel=\"stylesheet\" href=\"https://ton.twimg.com/exchange-media/staging/video_companions_style-29c86cb8e4193a6c4da8.css\">" +
-                                "                                    <div class=\"ads-by-twitter\">" +
-                                "                                    Ads by <div class=\"larry\"></div>" +
-                                "                                    </div>");
-        VastCompanionAdConfig socialActionsCompanionAd = vastVideoConfig
-                .getSocialActionsCompanionAds()
-                .get(VastXmlManagerAggregator.SOCIAL_ACTIONS_AD_SLOT_ID);
-        assertThat(socialActionsCompanionAd.getVastResource()
-                .getType()).isEqualTo(VastResource.Type.HTML_RESOURCE);
-        assertThat(socialActionsCompanionAd.getVastResource().getResource().trim())
-        .isEqualTo("<link rel=\"stylesheet\" href=\"https://ton.twimg.com/exchange-media/staging/video_companions_style-29c86cb8e4193a6c4da8.css\">" +
-                "                                    <div class=\"social-actions\">" +
-                "                                    <a href=\"mopubshare://tweet?screen_name=frappuccino&tweet_id=590877845037056000\" class=\"retweet-button\"><div class=\"icon\"></div>310&nbsp;</a>" +
-                "                                    <a href=\"twitter://intent/favorite?id=590877845037056000\" class=\"like-button\"><div class=\"icon\"></div>1118&nbsp;</a>" +
-                "                                    </div>");
     }
 
     @Test

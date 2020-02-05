@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -8,11 +8,12 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import androidx.annotation.Nullable;
 
 import com.mopub.common.AdReport;
 import com.mopub.common.CreativeOrientation;
@@ -86,7 +87,6 @@ public class MoPubActivity extends BaseInterstitialActivity {
         final HtmlInterstitialWebView htmlInterstitialWebView = HtmlInterstitialWebViewFactory.create(
                 context.getApplicationContext(), adReport, customEventInterstitialListener, clickthroughUrl);
 
-        htmlInterstitialWebView.enablePlugins(false);
         htmlInterstitialWebView.enableJavascriptCaching();
 
         htmlInterstitialWebView.setWebViewClient(new WebViewClient() {
@@ -128,7 +128,6 @@ public class MoPubActivity extends BaseInterstitialActivity {
                 mHtmlInterstitialWebView = (HtmlInterstitialWebView) config.getWebView();
                 mHtmlInterstitialWebView.init(new BroadcastingInterstitialListener(), clickthroughUrl,
                         mAdReport != null ? mAdReport.getDspCreativeId() : null);
-                mHtmlInterstitialWebView.enablePlugins(true);
                 mHtmlInterstitialWebView.loadUrl(WEB_VIEW_DID_APPEAR.getUrl());
 
                 mExternalViewabilitySessionManager = config.getViewabilityManager();

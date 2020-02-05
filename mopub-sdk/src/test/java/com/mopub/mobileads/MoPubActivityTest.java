@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -9,15 +9,17 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import com.mopub.common.AdReport;
 import com.mopub.common.CreativeOrientation;
 import com.mopub.common.test.support.SdkTestRunner;
+import com.mopub.common.util.UtilsTest;
 import com.mopub.mobileads.test.support.TestHtmlInterstitialWebViewFactory;
 
 import org.junit.Before;
@@ -89,6 +91,13 @@ public class MoPubActivityTest {
     }
 
     @Test
+    public void create_callsHideNavigationBar(){
+        View decorView = subject.getWindow().getDecorView();
+
+        assertThat(decorView.getSystemUiVisibility()).isEqualTo(UtilsTest.FLAGS);
+    }
+
+    @Test
     public void onCreate_shouldHaveLockedOrientation() {
         // Since robolectric doesn't set a requested orientation, verifying that we have a value tells us that one was set.
         assertThat(subject.getRequestedOrientation()).isIn(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT,
@@ -101,7 +110,6 @@ public class MoPubActivityTest {
                 customEventInterstitialListener, "clickthroughUrl",
                 testBroadcastIdentifier);
 
-        verify(htmlInterstitialWebView).enablePlugins(eq(false));
         verify(htmlInterstitialWebView).loadHtmlResponse(mockAdReport.getResponseString());
     }
 

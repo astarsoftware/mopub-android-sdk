@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -14,14 +14,15 @@ import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.location.Location;
 import android.os.Build;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.widget.FrameLayout;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.mopub.common.AdFormat;
 import com.mopub.common.AdReport;
@@ -46,8 +47,9 @@ import static com.mopub.common.logging.MoPubLog.AdLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdLogEvent.SHOW_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdLogEvent.SHOW_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM_WITH_THROWABLE;
-import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR;
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR_WITH_THROWABLE;
 import static com.mopub.mobileads.MoPubErrorCode.ADAPTER_NOT_FOUND;
+import static java.lang.Math.ceil;
 
 public class MoPubView extends FrameLayout {
     public interface BannerAdListener {
@@ -241,7 +243,7 @@ public class MoPubView extends FrameLayout {
                         .setAccessible()
                         .execute();
             } catch (Exception e) {
-                MoPubLog.log(ERROR, "Error invalidating adapter", e);
+                MoPubLog.log(ERROR_WITH_THROWABLE, "Error invalidating adapter", e);
             }
         }
     }
@@ -292,7 +294,7 @@ public class MoPubView extends FrameLayout {
                         .setAccessible()
                         .execute();
             } catch (Exception e) {
-                MoPubLog.log(ERROR, "Error loading custom event", e);
+                MoPubLog.log(ERROR_WITH_THROWABLE, "Error loading custom event", e);
             }
         } else {
             MoPubLog.log(CUSTOM, "Could not load custom event -- missing banner module");
@@ -413,7 +415,7 @@ public class MoPubView extends FrameLayout {
         // MoPubAdSize only applies to height
         if (mMoPubAdSize != MoPubAdSize.MATCH_VIEW) {
             final float density = mContext.getResources().getDisplayMetrics().density;
-            resolvedAdSize.y = (int) (mMoPubAdSize.toInt() * density);
+            resolvedAdSize.y = (int) ( ceil(mMoPubAdSize.toInt() * density) );
         } else if (getParent() != null && layoutParams != null && layoutParams.height < 0) {
             resolvedAdSize.y = ((View) getParent()).getHeight();
         }

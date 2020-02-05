@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -660,7 +660,7 @@ public class
         assertThat(networkInitSettings.size()).isEqualTo(1);
         assertThat(networkInitSettings.containsKey(testCustomEventClassName)).isTrue();
         assertThat(networkInitSettings.get(testCustomEventClassName))
-                .isEqualTo("{\"adunit_format\":\"full\",\"k1\":\"v1\",\"k2\":\"v2\"}");
+                .isEqualTo("{\"adunit_format\":\"full\",\"com_mopub_vast_click_exp_enabled\":\"false\",\"k1\":\"v1\",\"k2\":\"v2\"}");
     }
 
     @Test
@@ -696,7 +696,7 @@ public class
         // Verify that TestCustomEvent has new init params saved in SharedPrefs.
         assertThat(networkInitSettings.size()).isEqualTo(1);
         assertThat(networkInitSettings.containsKey(testCustomEventClassName)).isTrue();
-        assertThat(networkInitSettings.get(testCustomEventClassName)).isEqualTo("{\"adunit_format\":\"full\",\"k3\":\"v3\"}");
+        assertThat(networkInitSettings.get(testCustomEventClassName)).isEqualTo("{\"adunit_format\":\"full\",\"com_mopub_vast_click_exp_enabled\":\"false\",\"k3\":\"v3\"}");
     }
 
     @Test

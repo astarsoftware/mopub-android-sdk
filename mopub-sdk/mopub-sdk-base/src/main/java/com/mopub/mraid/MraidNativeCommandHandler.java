@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -280,26 +280,6 @@ public class MraidNativeCommandHandler {
             throw new IllegalArgumentException("invalid day of month " + number);
         }
         return dayOfMonth;
-    }
-
-    void downloadImage(final Context context, final String uriString,
-            final MraidCommandFailureListener failureListener) {
-        final DownloadImageAsyncTask downloadImageAsyncTask = new DownloadImageAsyncTask(context,
-                new DownloadImageAsyncTask.DownloadImageAsyncTaskListener() {
-                    @Override
-                    public void onSuccess() {
-                        MoPubLog.log(CUSTOM, "Image successfully saved.");
-                    }
-
-                    @Override
-                    public void onFailure() {
-                        Toast.makeText(context, "Image failed to download.", Toast.LENGTH_SHORT).show();
-                        MoPubLog.log(CUSTOM, "Error downloading and saving image file.");
-                        failureListener.onFailure(new MraidCommandException("Error " +
-                                "downloading and saving image file."));
-                    }
-                });
-        AsyncTasks.safeExecuteOnExecutor(downloadImageAsyncTask, uriString);
     }
 
     /**

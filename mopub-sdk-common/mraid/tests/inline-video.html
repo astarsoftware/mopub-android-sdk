@@ -1,0 +1,71 @@
+<html>
+<head>
+  <script src='mraid.js'></script>
+  <script>
+    /*
+    Enables testing  inline video
+    */
+
+    function supportsInlineVideo() {
+      var supportsInlineVideo = mraid.supports('inlineVideo');
+      alert(supportsInlineVideo);
+    }
+
+    mraid.addEventListener('error', function(message, action) {
+      alert('MRAID error: ' + message + ' (action: ' + action + ')');
+    });
+  </script>
+</head>
+  <body>
+    <video id='video' width='150' height='150' preload='none' controls autobuffer webkit-playsinline autoplay>
+        <source src='http://www.nasa.gov/downloadable/videos/orion-_im_on_board_-_colin_baker.mp4' type='video/mp4'>
+        <!-- More videos for testing. -->
+        <!--<source src='https://bennugd-vlc.googlecode.com/files/big_buck_bunny_480p.webm' type='video/webm'>-->
+        <!--<source src='http://broken-links.com/tests/media/BigBuck.m4v' type='video/m4v'>-->
+    </video>
+    <br/>
+    <button style='display:inline-block' onclick='supportsInlineVideo();'>
+        supportsInlineVideo()
+    </button>
+
+    <div id='msg'></div>
+
+    <script>
+      // Array of the events we want to track
+      var events = new Array('abort', 'canplay', 'canplaythrough', 'click', 'durationchange',
+        'emptied', 'ended', 'error', 'loadeddata', 'loadedmetadata', 'loadstart', 'pause', 'play',
+        'playing', 'progress', 'ratechange', 'seeked', 'seeking', 'stalled', 'suspend',
+        'timeupdate', 'volumechange', 'waiting');
+
+      var videoElement = document.getElementById('video');
+      var messageElement = document.getElementById('msg');
+
+      // Add event listeners to the video
+      for (var i = 0; i < events.length; i++) {
+        videoElement.addEventListener(events[i], showEvent);
+      }
+
+      function showEvent(e) {
+        var addMsg = undefined;
+        if (e.type == 'click') {
+          // This is necessary for certain video formats to play
+          videoElement.play();
+          addMsg = e.type;
+        } else if (e.type == 'durationchange') {
+          addMsg = e.type + '[' + videoElement.duration + ']';
+        } else if (e.type == 'seeked') {
+          addMsg = e.type + '[' + videoElement.currentTime + ']';
+        } else if (e.type == 'timeupdate') {
+          // Do nothing as there are a lot of these
+        } else if (e.type == 'volumechange') {
+          addMsg = 'volume ' + (videoElement.muted ? 'muted' : videoElement.volume);
+        } else {
+          addMsg = e.type;
+        }
+        if (addMsg) {
+          messageElement.innerHTML = addMsg + ((messageElement.innerHTML == '') ? '':', ') + messageElement.innerHTML;
+        }
+      }
+    </script>
+  </body>
+</html>

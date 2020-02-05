@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -35,6 +35,7 @@ public class StaticNativeAdTest {
         subject.addImpressionTracker("impressionUrl");
         subject.setImpressionMinTimeViewed(500);
         subject.setImpressionMinPercentageViewed(10);
+        subject.setSponsored("sponsored");
     }
 
     @Test
@@ -56,6 +57,7 @@ public class StaticNativeAdTest {
         assertThat(subject.getImpressionTrackers()).containsOnly("impressionUrl");
         assertThat(subject.getImpressionMinTimeViewed()).isEqualTo(500);
         assertThat(subject.getImpressionMinPercentageViewed()).isEqualTo(10);
+        assertThat(subject.getSponsored()).isEqualTo("sponsored");
     }
 
     @Test

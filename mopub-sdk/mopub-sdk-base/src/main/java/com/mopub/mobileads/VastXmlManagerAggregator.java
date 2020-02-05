@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -8,11 +8,12 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Point;
 import android.os.AsyncTask;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.Display;
 import android.view.WindowManager;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.mopub.common.MoPubHttpUrlConnection;
 import com.mopub.common.Preconditions;
@@ -37,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR;
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR_WITH_THROWABLE;
 import static com.mopub.network.TrackingRequest.makeVastTrackingHttpRequest;
 
 
@@ -51,7 +52,6 @@ public class VastXmlManagerAggregator extends AsyncTask<String, Void, VastVideoC
     private static final String MOPUB = "MoPub";
 
     public static final String ADS_BY_AD_SLOT_ID = "adsBy";
-    public static final String SOCIAL_ACTIONS_AD_SLOT_ID = "socialActions";
 
     /**
      * Listener for when the xml parsing is done.
@@ -128,7 +128,7 @@ public class VastXmlManagerAggregator extends AsyncTask<String, Void, VastVideoC
             final String vastXml = strings[0];
             return evaluateVastXmlManager(vastXml, new ArrayList<VastTracker>());
         } catch (Exception e) {
-            MoPubLog.log(ERROR, "Unable to generate VastVideoConfig.", e);
+            MoPubLog.log(ERROR_WITH_THROWABLE, "Unable to generate VastVideoConfig.", e);
             return null;
         }
     }
@@ -178,7 +178,7 @@ public class VastXmlManagerAggregator extends AsyncTask<String, Void, VastVideoC
         try {
             xmlManager.parseVastXml(vastXml);
         } catch (Exception e) {
-            MoPubLog.log(ERROR, "Failed to parse VAST XML", e);
+            MoPubLog.log(ERROR_WITH_THROWABLE, "Failed to parse VAST XML", e);
             makeVastTrackingHttpRequest(errorTrackers, VastErrorCode.XML_PARSING_ERROR, null,
                     null, mContext);
             return null;
@@ -276,11 +276,6 @@ public class VastXmlManagerAggregator extends AsyncTask<String, Void, VastVideoC
                     }
                 }
 
-                if (vastVideoConfig.getSocialActionsCompanionAds().isEmpty()) {
-                    vastVideoConfig.setSocialActionsCompanionAds(
-                            getSocialActionsCompanionAds(companionAdXmlManagers));
-                }
-
                 populateMoPubCustomElements(xmlManager, vastVideoConfig);
 
                 return vastVideoConfig;
@@ -332,8 +327,6 @@ public class VastXmlManagerAggregator extends AsyncTask<String, Void, VastVideoC
                                 CompanionOrientation.LANDSCAPE),
                         getBestCompanionAd(companionAdXmlManagers,
                                 CompanionOrientation.PORTRAIT));
-                vastVideoConfig.setSocialActionsCompanionAds(
-                        getSocialActionsCompanionAds(companionAdXmlManagers));
                 errorTrackers.addAll(vastInLineXmlManager.getErrorTrackers());
                 vastVideoConfig.addErrorTrackers(errorTrackers);
                 populateVideoViewabilityTracker(vastInLineXmlManager, vastVideoConfig);
@@ -410,7 +403,7 @@ public class VastXmlManagerAggregator extends AsyncTask<String, Void, VastVideoC
         try {
             vastRedirectXml = followVastRedirect(vastAdTagUri);
         } catch (Exception e) {
-            MoPubLog.log(ERROR, "Failed to follow VAST redirect", e);
+            MoPubLog.log(ERROR_WITH_THROWABLE, "Failed to follow VAST redirect", e);
             if (!wrapperErrorTrackers.isEmpty()) {
                 makeVastTrackingHttpRequest(wrapperErrorTrackers, VastErrorCode.WRAPPER_TIMEOUT,
                                 null, null, mContext);
@@ -618,58 +611,6 @@ public class VastXmlManagerAggregator extends AsyncTask<String, Void, VastVideoC
             );
         }
         return null;
-    }
-
-    @VisibleForTesting
-    @NonNull
-    Map<String, VastCompanionAdConfig> getSocialActionsCompanionAds(
-            @NonNull final List<VastCompanionAdXmlManager> managers) {
-        Preconditions.checkNotNull(managers, "managers cannot be null");
-
-        final Map<String, VastCompanionAdConfig> socialActionsCompanionAds =
-                new HashMap<String, VastCompanionAdConfig>();
-
-        for (VastCompanionAdXmlManager companionXmlManager : managers) {
-            final Integer width = companionXmlManager.getWidth();
-            final Integer height = companionXmlManager.getHeight();
-            if (width == null || height == null) {
-                continue;
-            }
-
-            final String adSlotId = companionXmlManager.getAdSlotId();
-            if (ADS_BY_AD_SLOT_ID.equals(adSlotId)) {
-                // adsBy companion ads must be 25-75dips wide and 10-50dips tall
-                if (width < 25 || width > 75 || height < 10 || height > 50) {
-                    continue;
-                }
-            } else if (SOCIAL_ACTIONS_AD_SLOT_ID.equals(adSlotId)) {
-                // socialActions companion ads must be 50-150dips wide and 10-50dips tall
-                if (width < 50 || width > 150 || height < 10 || height > 50) {
-                    continue;
-                }
-            } else {
-                // Social Actions companion ads must have adsBy or socialActions as adSlotId
-                continue;
-            }
-
-            VastResource vastResource = VastResource.fromVastResourceXmlManager(
-                    companionXmlManager.getResourceXmlManager(), VastResource.Type.HTML_RESOURCE,
-                    width, height);
-            if (vastResource == null) {
-                continue;
-            }
-
-            socialActionsCompanionAds.put(adSlotId,
-                    new VastCompanionAdConfig(
-                        width,
-                        height,
-                        vastResource,
-                        companionXmlManager.getClickThroughUrl(),
-                        companionXmlManager.getClickTrackers(),
-                        companionXmlManager.getCompanionCreativeViewTrackers()));
-        }
-
-        return socialActionsCompanionAds;
     }
 
     /**

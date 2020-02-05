@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <script src='mraid.js'></script>
+    <script>
+      /*
+      Enables testing whether the ad support the following hative actions:
+
+      1. sms
+      2. tel
+      3. calendar
+      4. storePicture
+      5. inlineVideo
+      */
+
+      function supports() {
+        var supports =
+            'sms: ' + mraid.supports('sms') + "\n" +
+            'tel: ' + mraid.supports('tel') + "\n" +
+            'calendar: ' + mraid.supports('calendar') + "\n" +
+            'storePicture: ' + mraid.supports('storePicture') + "\n" +
+            'inlineVideo: ' + mraid.supports('inlineVideo');
+        alert(supports);
+      }
+
+      mraid.addEventListener('error', function(message, action) {
+        alert('MRAID error: ' + message + ' (action: ' + action + ')');
+      });
+    </script>
+  </head>
+  <body>
+    <div>
+      <button style='display:inline-block' onclick='supports()'>
+        supports()
+      </button>
+    </div>
+  </body>
+</html>

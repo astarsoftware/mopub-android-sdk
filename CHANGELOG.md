@@ -1,3 +1,31 @@
+## Version 5.11.0 (January 28, 2020)
+- **Features**
+  - Raise the minimum Android SDK to Android 4.4 (API level 19).
+  - Update GDPR logic to allow MoPub to reacquire consent for new vendors.
+  - Update our support for OpenRTB Native Ads to version 1.2 and add an optional `sponsored` text field for native ads.
+  - Upgrade ExoPlayer to 2.11.0.
+  - Add switch to use AndroidX MediaPlayer instead of the default Android MediaPlayer for VAST Video. This adds the dependencies `androidx.media2:media2-session`, `androidx.media2:media2-widget`, and `androidx.media2:media2-player`, all on version 1.0.1.
+  - Add dependency on `androidx.core:core-ktx` version 1.1.0.
+  - Add dependency on `com.google.code.gson:gson` version 2.8.6.
+  - Add the ability to test manual native ads in the sample app.
+
+- **Bug Fixes**
+  - Fix an issue with rate limiting for rewarded ads.
+  - Fix a compliance issue with Facebook Audience Network native for the sample app.
+  - Increase consistency for immersive mode across VAST, MRAID, and HTML ads.
+
+## Version 5.10.0 (October 30, 2019)
+- **Features**
+  - Activities no longer need to be declared when using maven or `.aar`s.
+  - Upgrade Android Gradle plugin dependency to 3.5.1.
+  - Add the `androidx.appcompat:appcompat` dependency to support default themes in MoPub activities.
+  - Add support for the Verizon native ad renderer.
+  - Sample app now has an example manual native integration.
+
+- **Bug Fixes**
+  - VAST skip trackers are no longer always fired when the video is closed. They only fire if the video is closed when the video still has time remaining.
+  - Adding new ad units to the sample app is now immediate.
+
 ## Version 5.9.1 (September 23, 2019)
 - **Bug Fixes**
   - Now sends ad width in pixels instead of dips when setting a `MoPubAdSize`.

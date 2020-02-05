@@ -1,34 +1,46 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.network;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.os.Build;
+import android.webkit.WebSettings;
 
 import com.mopub.common.test.support.SdkTestRunner;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.rule.PowerMockRule;
 import org.robolectric.Robolectric;
-import org.robolectric.annotation.Config;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
+@PowerMockIgnore({ "org.mockito.*", "org.robolectric.*", "android.*", "org.json.*"})
+@PrepareForTest({WebSettings.class})
 @RunWith(SdkTestRunner.class)
 public class NetworkingTest {
     private Activity context;
 
+    @Rule
+    public PowerMockRule rule = new PowerMockRule();
+
     @Before
     public void setUp() {
         context = Robolectric.buildActivity(Activity.class).create().get();
+        mockStatic(WebSettings.class);
+
+        PowerMockito.when(WebSettings.getDefaultUserAgent(context)).thenReturn("some android user agent");
     }
 
     @After
@@ -44,28 +56,15 @@ public class NetworkingTest {
         assertThat(userAgent).isEqualTo("some cached user agent");
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    @Config(sdk = Build.VERSION_CODES.JELLY_BEAN)
     @Test
-    public void getUserAgent_withSdkVersion16_shouldIncludeAndroid() {
+    public void getUserAgent_shouldIncludeAndroid() {
         String userAgent = Networking.getUserAgent(context);
 
-        assertThat(userAgent).containsIgnoringCase("android");
+        assertThat(userAgent).isEqualTo("some android user agent");
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Test
-    public void getUserAgent_withSdkVersionGreaterThan16_shouldIncludeAndroid() {
-        String userAgent = Networking.getUserAgent(context);
-
-        assertThat(userAgent).containsIgnoringCase("android");
-    }
-
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR1)
-    @Test
-    public void getUserAgent_withSdkVersionGreaterThan16_whenOnABackgroundThread_shouldReturnHttpAgent() throws InterruptedException {
+    public void getUserAgent_whenOnABackgroundThread_shouldReturnHttpAgent() throws InterruptedException {
         final String[] userAgent = new String[1];
         final CountDownLatch latch = new CountDownLatch(1);
         new Thread() {

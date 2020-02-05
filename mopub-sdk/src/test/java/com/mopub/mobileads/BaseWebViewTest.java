@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -6,7 +6,6 @@ package com.mopub.mobileads;
 
 
 import android.app.Activity;
-import android.os.Build.VERSION_CODES;
 import android.view.ViewGroup;
 import android.webkit.WebSettings;
 
@@ -17,7 +16,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
-import org.robolectric.annotation.Config;
 import org.robolectric.fakes.RoboWebSettings;
 import org.robolectric.shadows.ShadowWebView;
 
@@ -34,18 +32,6 @@ public class BaseWebViewTest {
     @Before
     public void setup() {
         context = Robolectric.buildActivity(Activity.class).create().get();
-    }
-
-    @Config(sdk = VERSION_CODES.JELLY_BEAN)
-    @Test
-    public void constructor_beforeJellyBeanMr1_shouldDisablePluginsByDefault() throws Exception {
-        subject = new BaseWebView(context);
-
-        WebSettings webSettings = subject.getSettings();
-        assertThat(webSettings.getPluginState()).isEqualTo(WebSettings.PluginState.OFF);
-
-        subject.enablePlugins(true);
-        assertThat(webSettings.getPluginState()).isEqualTo(WebSettings.PluginState.ON);
     }
 
     @Test
@@ -71,16 +57,6 @@ public class BaseWebViewTest {
         final WebSettings webSettings = subject.getSettings();
         assertThat(webSettings.getAllowFileAccessFromFileURLs()).isEqualTo(false);
         assertThat(webSettings.getAllowUniversalAccessFromFileURLs()).isEqualTo(false);
-    }
-
-    @Config(sdk = VERSION_CODES.JELLY_BEAN_MR2)
-    @Test
-    public void constructor_atLeastJellybeanMr2_shouldPass() throws Exception {
-        subject = new BaseWebView(context);
-
-        subject.enablePlugins(true);
-
-        // pass
     }
 
     @Test

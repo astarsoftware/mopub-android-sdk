@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -56,7 +56,7 @@ public abstract class BaseVideoViewController {
         mBaseVideoViewControllerListener.onSetContentView(mLayout);
     }
 
-    protected abstract VideoView getVideoView();
+    protected abstract View getVideoView();
     protected abstract void onPause();
     protected abstract void onResume();
     protected abstract void onDestroy();

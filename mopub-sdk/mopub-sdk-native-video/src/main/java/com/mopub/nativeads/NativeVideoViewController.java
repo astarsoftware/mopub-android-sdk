@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -11,13 +11,14 @@ import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.VideoView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.mopub.common.Constants;
 import com.mopub.common.Preconditions;
@@ -31,7 +32,7 @@ import com.mopub.nativeads.MoPubCustomEventVideoNative.MoPubVideoNativeAd;
 import com.mopub.nativeads.NativeFullScreenVideoView.Mode;
 import com.mopub.nativeads.NativeVideoController.NativeVideoProgressRunnable;
 
-import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR;
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR_WITH_THROWABLE;
 
 public class NativeVideoViewController extends BaseVideoViewController implements TextureView
         .SurfaceTextureListener, NativeVideoController.Listener,
@@ -224,7 +225,7 @@ public class NativeVideoViewController extends BaseVideoViewController implement
 
     @Override
     public void onError(final Exception e) {
-        MoPubLog.log(ERROR, "Error playing back video.", e);
+        MoPubLog.log(ERROR_WITH_THROWABLE, "Error playing back video.", e);
         mError = true;
         maybeChangeState();
     }

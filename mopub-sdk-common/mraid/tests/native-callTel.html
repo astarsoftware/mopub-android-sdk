@@ -1,0 +1,29 @@
+<html>
+  <head>
+    <script src='mraid.js'></script>
+    <script>
+      /*
+      Enables the following tests:
+
+      1. Calling a telephone number
+      2. Calling an invalid telephone number, which should fail with an error
+      */
+
+      console.log('This test contains a link with an "tel://" url. Clicking on it should ' +
+          'allow making a native telephone call.');
+
+      mraid.addEventListener('error', function(message, action) {
+        alert('MRAID error: ' + message + ' (action: ' + action + ')');
+      });
+    </script>
+  </head>
+  <body>
+    <button><a style="text-decoration:none" href="tel://1234567890">
+      Dial phone number
+    </a></button>
+    <!-- The alert exists to help test that we don't have an XSS bug in our error handling logic -->
+    <button><a style="text-decoration:none" href="tel://asdf' + alert('malformed') + '">
+      Malformed phone number
+    </a></button>
+  </body>
+</html>

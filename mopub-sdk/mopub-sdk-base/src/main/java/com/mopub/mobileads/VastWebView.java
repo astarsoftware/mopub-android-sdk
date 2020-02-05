@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -6,21 +6,21 @@ package com.mopub.mobileads;
 
 import android.content.Context;
 import android.graphics.Color;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.view.MotionEvent;
 import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.mopub.common.Constants;
 import com.mopub.common.Preconditions;
 import com.mopub.common.VisibleForTesting;
-import com.mopub.common.util.Utils;
 import com.mopub.network.Networking;
 
 /**
  * A WebView customized for Vast video needs.
  */
-class VastWebView extends BaseWebView {
+public class VastWebView extends BaseWebView {
     interface VastWebViewClickListener {
         void onVastWebViewClick();
     }
@@ -33,11 +33,9 @@ class VastWebView extends BaseWebView {
         disableScrollingAndZoom();
         getSettings().setJavaScriptEnabled(true);
 
-        enablePlugins(true);
-
         setBackgroundColor(Color.TRANSPARENT);
         setOnTouchListener(new VastWebViewOnTouchListener());
-        setId((int) Utils.generateUniqueId());
+        setId(View.generateViewId());
     }
 
     void loadData(String data) {
@@ -67,7 +65,26 @@ class VastWebView extends BaseWebView {
      */
     @NonNull
     static VastWebView createView(@NonNull final Context context,
-            @NonNull final VastResource vastResource) {
+                                  @NonNull final VastResource vastResource) {
+        Preconditions.checkNotNull(context);
+        Preconditions.checkNotNull(vastResource);
+
+        VastWebView webView = new VastWebView(context);
+        vastResource.initializeWebView(webView);
+
+        return webView;
+    }
+
+    /**
+     * Creates and populates a webview.
+     *
+     * @param context      the context.
+     * @param vastResource A resource describing the contents of the webview
+     * @return a fully populated webview
+     */
+    @NonNull
+    static VastWebView createView(@NonNull final Context context,
+                                  @NonNull final VastResourceTwo vastResource) {
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(vastResource);
 

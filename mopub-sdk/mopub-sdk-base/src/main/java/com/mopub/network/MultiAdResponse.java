@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -6,10 +6,13 @@ package com.mopub.network;
 
 
 import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+
 
 import com.astarsoftware.dependencies.DependencyInjector;
 import com.astarsoftware.notification.NotificationCenter;
@@ -386,7 +389,7 @@ public class MultiAdResponse implements Iterator<AdResponse> {
         // Process server extras if they are present:
         String customEventData = extractHeader(jsonHeaders, ResponseHeader.CUSTOM_EVENT_DATA);
 
-        // Some server-supported custom events (like Millennial banners) use a different header field
+        // Some server-supported custom events (like AdMob banners) use a different header field
         if (TextUtils.isEmpty(customEventData)) {
             customEventData = extractHeader(jsonHeaders, ResponseHeader.NATIVE_PARAMS);
         }
@@ -413,6 +416,15 @@ public class MultiAdResponse implements Iterator<AdResponse> {
             // Used by Banner, Interstitial
             serverExtras.put(DataKeys.CLICKTHROUGH_URL_KEY, clickTrackingUrl);
         }
+
+        // Flag for immediate VAST clickability
+        // Enable the experiment on a value of 1
+        // Disable the experiment for everything else
+        final int shouldEnableVastClickInt = extractIntegerHeader(jsonHeaders,
+                ResponseHeader.VAST_CLICK_ENABLED,
+                0);
+        serverExtras.put(DataKeys.VAST_CLICK_EXP_ENABLED_KEY,
+                Boolean.toString(shouldEnableVastClickInt == 1));
 
         serverExtras.put(DataKeys.ADUNIT_FORMAT, adUnitFormat);
 

@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -8,6 +8,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+
 import androidx.annotation.NonNull;
 
 import com.mopub.common.Preconditions;
@@ -22,6 +23,7 @@ import static com.mopub.simpleadsdemo.MoPubSQLiteHelper.COLUMN_AD_TYPE;
 import static com.mopub.simpleadsdemo.MoPubSQLiteHelper.COLUMN_AD_UNIT_ID;
 import static com.mopub.simpleadsdemo.MoPubSQLiteHelper.COLUMN_DESCRIPTION;
 import static com.mopub.simpleadsdemo.MoPubSQLiteHelper.COLUMN_ID;
+import static com.mopub.simpleadsdemo.MoPubSQLiteHelper.COLUMN_KEYWORDS;
 import static com.mopub.simpleadsdemo.MoPubSQLiteHelper.COLUMN_USER_GENERATED;
 import static com.mopub.simpleadsdemo.MoPubSQLiteHelper.TABLE_AD_CONFIGURATIONS;
 import static com.mopub.simpleadsdemo.MoPubSampleAdUnit.AdType;
@@ -34,7 +36,8 @@ class AdUnitDataSource {
             COLUMN_AD_UNIT_ID,
             COLUMN_DESCRIPTION,
             COLUMN_USER_GENERATED,
-            COLUMN_AD_TYPE
+            COLUMN_AD_TYPE,
+            COLUMN_KEYWORDS
     };
 
     AdUnitDataSource(final Context context) {
@@ -53,8 +56,9 @@ class AdUnitDataSource {
 
     private MoPubSampleAdUnit createSampleAdUnit(final MoPubSampleAdUnit sampleAdUnit,
             final boolean isUserGenerated) {
-        deleteAllAdUnitsWithAdUnitIdAndAdType(sampleAdUnit.getAdUnitId(),
+        deleteAllAdUnitsWithAdUnitIdAndAdTypeAndKeywords(sampleAdUnit.getAdUnitId(),
                 sampleAdUnit.getFragmentClassName(),
+                sampleAdUnit.getKeywords(),
                 isUserGenerated);
 
         final ContentValues values = new ContentValues();
@@ -63,6 +67,7 @@ class AdUnitDataSource {
         values.put(COLUMN_DESCRIPTION, sampleAdUnit.getDescription());
         values.put(COLUMN_USER_GENERATED, userGenerated);
         values.put(COLUMN_AD_TYPE, sampleAdUnit.getFragmentClassName());
+        values.put(COLUMN_KEYWORDS, sampleAdUnit.getKeywords());
 
         final SQLiteDatabase database = mDatabaseHelper.getWritableDatabase();
         final long insertId = database.insert(TABLE_AD_CONFIGURATIONS, null, values);
@@ -88,17 +93,21 @@ class AdUnitDataSource {
         database.close();
     }
 
-    private void deleteAllAdUnitsWithAdUnitIdAndAdType(@NonNull final String adUnitId,
-            @NonNull final String adType, boolean isUserGenerated) {
+    private void deleteAllAdUnitsWithAdUnitIdAndAdTypeAndKeywords(@NonNull final String adUnitId,
+                                                                  @NonNull final String adType,
+                                                                  @NonNull final String keywords,
+                                                                  boolean isUserGenerated) {
         Preconditions.checkNotNull(adUnitId);
         Preconditions.checkNotNull(adType);
+        Preconditions.checkNotNull(keywords);
 
         final String userGenerated = isUserGenerated ? "1" : "0";
         final SQLiteDatabase database = mDatabaseHelper.getWritableDatabase();
         final int numDeletedRows = database.delete(TABLE_AD_CONFIGURATIONS,
-                COLUMN_AD_UNIT_ID + " = '" + adUnitId +
-                "' AND " + COLUMN_USER_GENERATED + " = " + userGenerated + " AND " +
-                COLUMN_AD_TYPE + " = '" + adType + "'", null);
+                COLUMN_AD_UNIT_ID + " = '" + adUnitId
+                        + "' AND " + COLUMN_USER_GENERATED + " = " + userGenerated
+                        + " AND " + COLUMN_AD_TYPE + " = '" + adType + "'"
+                        + " AND " + COLUMN_KEYWORDS + " = '" + keywords + "'", null);
         MoPubLog.log(CUSTOM, numDeletedRows + " rows deleted with adUnitId: " + adUnitId);
         database.close();
     }
@@ -127,7 +136,7 @@ class AdUnitDataSource {
         final HashSet<MoPubSampleAdUnit> allAdUnits = new HashSet<>(getAllAdUnits());
 
         for (final MoPubSampleAdUnit defaultAdUnit :
-                SampleAppDefaultAdUnits.getDefaultAdUnits(mContext)) {
+                SampleAppAdUnits.Defaults.getAdUnits(mContext)) {
             if (!allAdUnits.contains(defaultAdUnit)) {
                 createDefaultSampleAdUnit(defaultAdUnit);
             }
@@ -140,6 +149,7 @@ class AdUnitDataSource {
         final String description = cursor.getString(2);
         final int userGenerated = cursor.getInt(3);
         final AdType adType = AdType.fromFragmentClassName(cursor.getString(4));
+        final String keywords = cursor.getString(5);
 
         if (adType == null) {
             return null;
@@ -148,6 +158,7 @@ class AdUnitDataSource {
         return new MoPubSampleAdUnit.Builder(adUnitId, adType)
                 .description(description)
                 .isUserDefined(userGenerated == 1)
+                .keywords(keywords)
                 .id(id)
                 .build();
     }

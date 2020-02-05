@@ -1,13 +1,14 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.common.logging;
 
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
-import android.text.TextUtils;
 
 import com.mopub.common.Preconditions;
 
@@ -16,9 +17,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static java.text.MessageFormat.format;
-
 import static com.mopub.common.util.Strings.getDelimitedString;
+import static java.text.MessageFormat.format;
 
 public class MoPubLog {
 
@@ -214,7 +214,7 @@ public class MoPubLog {
         logDeprecated(message, throwable);
     }
 
-    private interface MPLogEventType {
+    protected interface MPLogEventType {
         @NonNull
         String getMessage(@Nullable final Object... args);
 
@@ -563,7 +563,12 @@ public class MoPubLog {
 
         // Params:
         // Custom message string
-        ERROR(LogLevel.DEBUG, "SDK Error Log - {0}, {1}");
+        ERROR(LogLevel.DEBUG, "SDK Error Log - {0}"),
+
+        // Params:
+        // Custom message string
+        // Throwable message string
+        ERROR_WITH_THROWABLE(LogLevel.DEBUG, "SDK Error Log - {0}, {1}");
 
         private LogLevel mLogLevel;
         private String mMessageFormat;

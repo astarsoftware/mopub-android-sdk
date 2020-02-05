@@ -1,0 +1,32 @@
+<html>
+  <head>
+    <script src='mraid.js'></script>
+    <script>
+      /*
+      Enables the following tests:
+
+      1. Opening an external browser
+      */
+
+      function openUrl() {
+        mraid.open('http://www.mopub.com');
+      }
+
+      function openInvalidUrl() {
+        mraid.open('NOT A URL');
+      }
+
+      mraid.addEventListener('error', function(message, action) {
+        alert('MRAID error: ' + message + ' (action: ' + action + ')');
+      });
+    </script>
+  </head>
+  <body>
+    <button style='display:inline-block' onclick='openUrl()'>
+      open()
+    </button>
+    <button style='display:inline-block' onclick='openInvalidUrl()'>
+      Open an invalid URL
+    </button>
+  </body>
+</html>

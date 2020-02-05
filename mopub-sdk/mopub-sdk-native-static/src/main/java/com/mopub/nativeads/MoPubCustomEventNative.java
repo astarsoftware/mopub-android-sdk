@@ -1,14 +1,15 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.nativeads;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.mopub.common.DataKeys;
 import com.mopub.common.VisibleForTesting;
@@ -132,7 +133,9 @@ public class MoPubCustomEventNative extends CustomEventNative {
             STAR_RATING("starrating", false),
 
             PRIVACY_INFORMATION_ICON_IMAGE_URL("privacyicon", false),
-            PRIVACY_INFORMATION_ICON_CLICKTHROUGH_URL("privacyclkurl", false);
+            PRIVACY_INFORMATION_ICON_CLICKTHROUGH_URL("privacyclkurl", false),
+
+            SPONSORED("sponsored", false);
 
             @NonNull
             final String name;
@@ -284,6 +287,8 @@ public class MoPubCustomEventNative extends CustomEventNative {
                     case PRIVACY_INFORMATION_ICON_CLICKTHROUGH_URL:
                         setPrivacyInformationIconClickThroughUrl((String) value);
                         break;
+                    case SPONSORED:
+                        setSponsored((String) value);
                     default:
                         MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unable to add JSON key to internal mapping: " + key.name);
                         break;

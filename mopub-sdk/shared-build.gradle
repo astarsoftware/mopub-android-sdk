@@ -1,8 +1,10 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 
 repositories {
     google()
@@ -13,19 +15,19 @@ repositories {
 }
 
 project.group = 'com.mopub'
-project.version = '5.9.1'
+project.version = '5.11.0'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     lintOptions { abortOnError false }
 
     defaultConfig {
-        versionCode 73
-        versionName version
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
-        consumerProguardFiles project(':ThirdParty:Java:Android:MoPub:mopub-sdk').file('proguard.txt')
-    }
+		versionCode 76
+		versionName version
+		minSdkVersion rootProject.ext.minSdkVersion
+		targetSdkVersion rootProject.ext.targetSdkVersion
+		consumerProguardFiles project(':ThirdParty:Java:Android:MoPub:mopub-sdk').file('proguard.txt')
+	}
 
     sourceSets {
         main {
@@ -79,4 +81,18 @@ android {
 dependencies {
     api 'androidx.legacy:legacy-support-v4:1.0.0'
     api 'androidx.annotation:annotation:1.1.0'
+    api "androidx.media2:media2-session:$media2_version"
+    api "androidx.media2:media2-widget:$media2_version"
+    api "androidx.media2:media2-player:$media2_version"
+
+    implementation "androidx.core:core-ktx:1.1.0"
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+}
+
+apply plugin: 'kotlin-allopen'
+
+allOpen {
+    annotation('com.mopub.mobileads.Mockable')
 }

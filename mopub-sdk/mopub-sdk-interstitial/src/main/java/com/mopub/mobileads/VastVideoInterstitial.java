@@ -1,11 +1,12 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.mobileads;
 
-import androidx.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.Nullable;
 
 import com.mopub.common.CacheService;
 import com.mopub.common.CreativeOrientation;
@@ -20,11 +21,11 @@ import org.json.JSONObject;
 import java.util.Map;
 
 import static com.mopub.common.DataKeys.CREATIVE_ORIENTATION_KEY;
+import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.SHOW_ATTEMPTED;
-import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
-import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR;
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR_WITH_THROWABLE;
 
 class VastVideoInterstitial extends ResponseBodyInterstitial implements VastManager.VastManagerListener {
     public static final String ADAPTER_NAME = VastVideoInterstitial.class.getSimpleName();
@@ -57,7 +58,7 @@ class VastVideoInterstitial extends ResponseBodyInterstitial implements VastMana
         try {
             mVideoTrackers = new JSONObject(videoTrackers);
         } catch (JSONException e) {
-            MoPubLog.log(ERROR, "Failed to parse video trackers to JSON: " + videoTrackers, e);
+            MoPubLog.log(ERROR_WITH_THROWABLE, "Failed to parse video trackers to JSON: " + videoTrackers, e);
             mVideoTrackers = null;
         }
     }

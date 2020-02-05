@@ -1,9 +1,10 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.nativeads;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +13,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.mopub.common.test.support.SdkTestRunner;
-import com.mopub.common.util.Utils;
 import com.mopub.nativeads.MoPubCustomEventNative.MoPubStaticNativeAd;
 import com.mopub.network.MaxWidthImageLoader;
 import com.mopub.network.MoPubRequestQueue;
@@ -27,14 +27,15 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @RunWith(SdkTestRunner.class)
 public class MoPubStaticNativeAdRendererTest {
@@ -49,10 +50,12 @@ public class MoPubStaticNativeAdRendererTest {
     @Mock private ImageView mainImageView;
     @Mock private ImageView iconImageView;
     @Mock private ImageView privacyInformationIconImageView;
+    @Mock private TextView sponsoredView;
     @Mock private ImageView badView;
     @Mock private MoPubRequestQueue mockRequestQueue;
     @Mock private MaxWidthImageLoader mockImageLoader;
     @Mock private ImageLoader.ImageContainer mockImageContainer;
+    @Mock private Context context;
 
     @Before
     public void setUp() throws Exception {
@@ -60,7 +63,7 @@ public class MoPubStaticNativeAdRendererTest {
         Networking.setImageLoaderForTesting(mockImageLoader);
         when(mockImageContainer.getBitmap()).thenReturn(mock(Bitmap.class));
 
-        when(relativeLayout.getId()).thenReturn((int) Utils.generateUniqueId());
+        when(relativeLayout.getId()).thenReturn(View.generateViewId());
 
         mStaticNativeAd = new StaticNativeAd() {};
         mStaticNativeAd.setTitle("test title");
@@ -69,6 +72,7 @@ public class MoPubStaticNativeAdRendererTest {
         mStaticNativeAd.setClickDestinationUrl("destinationUrl");
         mStaticNativeAd.setMainImageUrl("testUrl");
         mStaticNativeAd.setIconImageUrl("testUrl");
+        mStaticNativeAd.setSponsored("sponsored");
 
         setViewIdInLayout(titleView, relativeLayout);
         setViewIdInLayout(textView, relativeLayout);
@@ -76,6 +80,7 @@ public class MoPubStaticNativeAdRendererTest {
         setViewIdInLayout(mainImageView, relativeLayout);
         setViewIdInLayout(iconImageView, relativeLayout);
         setViewIdInLayout(privacyInformationIconImageView, relativeLayout);
+        setViewIdInLayout(sponsoredView, relativeLayout);
         setViewIdInLayout(badView, relativeLayout);
 
         viewBinder = new ViewBinder.Builder(relativeLayout.getId())
@@ -85,13 +90,18 @@ public class MoPubStaticNativeAdRendererTest {
                 .mainImageId(mainImageView.getId())
                 .iconImageId(iconImageView.getId())
                 .privacyInformationIconImageId(privacyInformationIconImageView.getId())
+                .sponsoredTextId(sponsoredView.getId())
                 .build();
+
+        when(context.getString(anyInt(), eq("sponsored"))).thenReturn("sponsored by string plus " +
+                "sponsored");
+        when(sponsoredView.getContext()).thenReturn(context);
 
         subject = new MoPubStaticNativeAdRenderer(viewBinder);
     }
 
     private void setViewIdInLayout(View mockView, RelativeLayout mockLayout) {
-        int id = (int) Utils.generateUniqueId();
+        int id = (int) View.generateViewId();
         when(mockView.getId()).thenReturn(id);
         when(relativeLayout.findViewById(eq(id))).thenReturn(mockView);
     }
@@ -128,6 +138,8 @@ public class MoPubStaticNativeAdRendererTest {
         verify(titleView).setText(eq("test title"));
         verify(textView).setText(eq("test text"));
         verify(callToActionView).setText(eq("test call to action"));
+        verify(sponsoredView).setText("sponsored by string plus sponsored");
+        verify(sponsoredView).setVisibility(View.VISIBLE);
 
         // not testing images due to testing complexity
     }
@@ -164,6 +176,14 @@ public class MoPubStaticNativeAdRendererTest {
     }
 
     @Test
+    public void renderAdView_withNoSponsoredText_shouldSetViewInvisible() {
+        mStaticNativeAd.setSponsored(null);
+        subject.renderAdView(relativeLayout, mStaticNativeAd);
+
+        verify(sponsoredView).setVisibility(View.INVISIBLE);
+    }
+
+    @Test
     public void getOrCreateNativeViewHolder_withViewHolder_shouldNotReCreateNativeViewHolder() {
         subject.renderAdView(relativeLayout, mStaticNativeAd);
         StaticNativeViewHolder expectedViewHolder = subject.mViewHolderMap.get(relativeLayout);
@@ -182,6 +202,7 @@ public class MoPubStaticNativeAdRendererTest {
         assertThat(actualViewHolder.iconImageView).isEqualTo(expectedViewHolder.iconImageView);
         assertThat(actualViewHolder.privacyInformationIconImageView).isEqualTo(
                 expectedViewHolder.privacyInformationIconImageView);
+        assertThat(actualViewHolder.sponsoredTextView).isEqualTo(expectedViewHolder.sponsoredTextView);
     }
 
     @Test

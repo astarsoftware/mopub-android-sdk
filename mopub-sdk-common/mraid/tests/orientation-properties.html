@@ -1,0 +1,94 @@
+<html>
+  <head>
+    <script src='mraid.js'></script>
+    <script>
+      /*
+      Enables the following tests:
+
+      1. Reading default orientation properties
+      2. Disallowing orientation changes, then expanding and rotating the device
+      3. Allowing orientation changes, then expanding and rotating the device
+      4. Setting forceOrientation to landscape, then expanding
+      5. Setting forceOrientation to portrait, then expanding
+      6. Setting forceOrientation to none, then expanding
+      7. Setting forceOrientation to landscape or portrait after expanding
+      8. Resizing, then setting orientation properties, then expanding
+      */
+
+      var resizeProperties = {
+        height: 400,
+        width: 320,
+        offsetX: 0,
+        offsetY: 0
+      };
+
+      function resize() {
+        mraid.setResizeProperties(resizeProperties);
+        mraid.resize();
+      }
+
+      function expand() {
+        mraid.expand();
+      }
+
+      function closeAd() {
+        mraid.close();
+      }
+
+      function getOrientationProperties() {
+        var props = mraid.getOrientationProperties();
+        alert('Orientation properties: ' + JSON.stringify(props, null, '  '));
+      }
+
+      function forceOrientation(orientation) {
+        var props = mraid.getOrientationProperties();
+        props.forceOrientation = orientation;
+
+        console.log('Changing forceOrientation to ' + orientation);
+        mraid.setOrientationProperties(props);
+      }
+
+      function toggleAllowOrientationChange() {
+        var props = mraid.getOrientationProperties();
+        props.allowOrientationChange = !props.allowOrientationChange;
+
+        console.log('Changing allowOrientationChanges to ' + props.allowOrientationChange);
+        mraid.setOrientationProperties(props);
+      }
+
+      mraid.addEventListener('error', function(message, action) {
+        alert('MRAID error: ' + message + ' (action: ' + action + ')');
+      });
+    </script>
+  </head>
+  <body>
+    <div>
+      <button style='display:inline-block' onclick='expand()'>
+        expand()
+      </button>
+      <button style='display:inline-block' onclick='resize()'>
+        resize()
+      </button>
+      <button style='display:inline-block' onclick='closeAd()'>
+        close()
+      </button>
+    </div>
+    <div>
+      <button style='display:inline-block' onclick='getOrientationProperties()'>
+        getOrientationProperties()
+      </button>
+      <button style='display:inline-block' onclick='forceOrientation("landscape")'>
+        Force to landscape
+      </button>
+      <button style='display:inline-block' onclick='forceOrientation("portrait")'>
+        Force to portrait
+      </button>
+      <button style='display:inline-block' onclick='forceOrientation("none")'>
+        Don't force
+      </button>
+      <button style='display:inline-block' onclick='toggleAllowOrientationChange()'>
+        Toggle allow orientation change
+      </button>
+    </div>
+  </body>
+</html>

@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -168,7 +168,7 @@ public class PersonalInfoManagerTest {
     }
 
     @Test
-    public void shouldShowConsentDialog_withGdprAppliesTrue_withShouldReacquireConsentTrue_withConsentStatusYes_withConsentStatusUnknown_shouldReturnTrue() {
+    public void shouldShowConsentDialog_withGdprAppliesTrue_withShouldReacquireConsentTrue_shouldReturnTrue() {
         personalInfoData.setGdprApplies(true);
         personalInfoData.setShouldReacquireConsent(true);
 
@@ -177,21 +177,15 @@ public class PersonalInfoManagerTest {
 
         personalInfoData.setConsentStatus(ConsentStatus.UNKNOWN);
         assertThat(subject.shouldShowConsentDialog()).isTrue();
-    }
-
-    @Test
-    public void shouldShowConsentDialog_withGdprAppliesTrue_withShouldReacquireConsentTrue_withConsentStatusNotYesOrUnknown_shouldReturnFalse() {
-        personalInfoData.setGdprApplies(true);
-        personalInfoData.setShouldReacquireConsent(true);
 
         personalInfoData.setConsentStatus(ConsentStatus.EXPLICIT_NO);
-        assertThat(subject.shouldShowConsentDialog()).isFalse();
+        assertThat(subject.shouldShowConsentDialog()).isTrue();
 
         personalInfoData.setConsentStatus(ConsentStatus.POTENTIAL_WHITELIST);
-        assertThat(subject.shouldShowConsentDialog()).isFalse();
+        assertThat(subject.shouldShowConsentDialog()).isTrue();
 
         personalInfoData.setConsentStatus(ConsentStatus.DNT);
-        assertThat(subject.shouldShowConsentDialog()).isFalse();
+        assertThat(subject.shouldShowConsentDialog()).isTrue();
     }
 
     @Test
@@ -858,19 +852,22 @@ public class PersonalInfoManagerTest {
     }
 
     @Test
-    public void attemptStateTransition_withYesToNo_shouldClearPersonalDataExceptUdid() {
+    public void attemptStateTransition_withYesToNo_shouldUpdatePersonalDataExcept() {
         personalInfoData.setGdprApplies(true);
         personalInfoData.setConsentStatus(ConsentStatus.EXPLICIT_YES);
         personalInfoData.setConsentedPrivacyPolicyVersion("1");
         personalInfoData.setConsentedVendorListVersion("2");
         personalInfoData.setConsentedVendorListIabFormat("3");
+        personalInfoData.setCurrentPrivacyPolicyVersion("4");
+        personalInfoData.setCurrentVendorListVersion("5");
+        personalInfoData.setCurrentVendorListIabFormat("6");
         personalInfoData.setUdid("udid");
 
         subject.attemptStateTransition(ConsentStatus.EXPLICIT_NO, "reason");
 
-        assertThat(personalInfoData.getConsentedPrivacyPolicyVersion()).isEqualTo(null);
-        assertThat(personalInfoData.getConsentedVendorListVersion()).isEqualTo(null);
-        assertThat(personalInfoData.getConsentedVendorListIabFormat()).isEqualTo(null);
+        assertThat(personalInfoData.getConsentedPrivacyPolicyVersion()).isEqualTo("4");
+        assertThat(personalInfoData.getConsentedVendorListVersion()).isEqualTo("5");
+        assertThat(personalInfoData.getConsentedVendorListIabFormat()).isEqualTo("6");
         assertThat(personalInfoData.getUdid()).isEqualTo("udid");
         assertThat(personalInfoData.getConsentChangeReason()).isEqualTo("reason");
         assertThat(subject.getPersonalInfoConsentStatus()).isEqualTo(ConsentStatus.EXPLICIT_NO);
@@ -897,6 +894,58 @@ public class PersonalInfoManagerTest {
                 ConsentStatus.POTENTIAL_WHITELIST);
         verify(mockConsentStatusChangeListener).onConsentStateChange(ConsentStatus.UNKNOWN,
                 ConsentStatus.POTENTIAL_WHITELIST, false);
+        assertThat(personalInfoData.getLastChangedMs()).isNotEqualTo("old_time");
+    }
+
+    @Test
+    public void attemptStateTransition_withReacquireConsent_withExplicitYes_shouldStillDoStateTransitionsWhenSame() {
+        personalInfoData.setGdprApplies(true);
+        personalInfoData.setShouldReacquireConsent(true);
+        personalInfoData.setConsentStatus(ConsentStatus.EXPLICIT_YES);
+        personalInfoData.setConsentedPrivacyPolicyVersion("1");
+        personalInfoData.setConsentedVendorListVersion("2");
+        personalInfoData.setConsentedVendorListIabFormat("3");
+        personalInfoData.setCurrentPrivacyPolicyVersion("4");
+        personalInfoData.setCurrentVendorListVersion("5");
+        personalInfoData.setCurrentVendorListIabFormat("6");
+        personalInfoData.setUdid("udid");
+
+        subject.attemptStateTransition(ConsentStatus.EXPLICIT_YES, "reason");
+
+        assertThat(personalInfoData.getConsentedPrivacyPolicyVersion()).isEqualTo("4");
+        assertThat(personalInfoData.getConsentedVendorListVersion()).isEqualTo("5");
+        assertThat(personalInfoData.getConsentedVendorListIabFormat()).isEqualTo("6");
+        assertThat(personalInfoData.getUdid()).isEqualTo("udid");
+        assertThat(personalInfoData.getConsentChangeReason()).isEqualTo("reason");
+        assertThat(subject.getPersonalInfoConsentStatus()).isEqualTo(ConsentStatus.EXPLICIT_YES);
+        verify(mockConsentStatusChangeListener).onConsentStateChange(ConsentStatus.EXPLICIT_YES,
+                ConsentStatus.EXPLICIT_YES, true);
+        assertThat(personalInfoData.getLastChangedMs()).isNotEqualTo("old_time");
+    }
+
+    @Test
+    public void attemptStateTransition_withReacquireConsent_withExplicitNo_shouldStillDoStateTransitionsWhenSame() {
+        personalInfoData.setGdprApplies(true);
+        personalInfoData.setShouldReacquireConsent(true);
+        personalInfoData.setConsentStatus(ConsentStatus.EXPLICIT_NO);
+        personalInfoData.setConsentedPrivacyPolicyVersion("1");
+        personalInfoData.setConsentedVendorListVersion("2");
+        personalInfoData.setConsentedVendorListIabFormat("3");
+        personalInfoData.setCurrentPrivacyPolicyVersion("4");
+        personalInfoData.setCurrentVendorListVersion("5");
+        personalInfoData.setCurrentVendorListIabFormat("6");
+        personalInfoData.setUdid("udid");
+
+        subject.attemptStateTransition(ConsentStatus.EXPLICIT_NO, "reason");
+
+        assertThat(personalInfoData.getConsentedPrivacyPolicyVersion()).isEqualTo("4");
+        assertThat(personalInfoData.getConsentedVendorListVersion()).isEqualTo("5");
+        assertThat(personalInfoData.getConsentedVendorListIabFormat()).isEqualTo("6");
+        assertThat(personalInfoData.getUdid()).isEqualTo("udid");
+        assertThat(personalInfoData.getConsentChangeReason()).isEqualTo("reason");
+        assertThat(subject.getPersonalInfoConsentStatus()).isEqualTo(ConsentStatus.EXPLICIT_NO);
+        verify(mockConsentStatusChangeListener).onConsentStateChange(ConsentStatus.EXPLICIT_NO,
+                ConsentStatus.EXPLICIT_NO, false);
         assertThat(personalInfoData.getLastChangedMs()).isNotEqualTo("old_time");
     }
 }

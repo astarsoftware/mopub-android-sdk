@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -85,7 +85,11 @@ public enum ResponseHeader {
     FORCE_GDPR_APPLIES("force_gdpr_applies"),
 
     // Enable logging with rewrite
-    ENABLE_DEBUG_LOGGING("enable_debug_logging");
+    ENABLE_DEBUG_LOGGING("enable_debug_logging"),
+
+    // Experiment keys
+    VAST_CLICK_ENABLED("vast-click-enabled"),
+    VAST_VIDEO_PLAYER_VERSION("vast-player-version");
 
     private final String key;
     ResponseHeader(String key) {

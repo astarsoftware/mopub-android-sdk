@@ -1,13 +1,13 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.network;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.net.SSLCertificateSocketFactory;
 import android.os.Build;
+
 import androidx.annotation.Nullable;
 
 import com.mopub.TestSdkHelper;
@@ -84,7 +84,7 @@ public class CustomSSLSocketFactoryTest {
         verify(mockSSLSocket).setEnabledProtocols(any(String[].class));
         verify(mockSSLSocket).startHandshake();
         verify(mockSSLSocket).getSession();
-        verify(mockSSLSocket).setHostname(any(String.class));
+        verify(mockSSLCertificateSocketFactory).setHostname(any(Socket.class), eq("hostname"));
         verifyNoMoreInteractions(mockSocket);
     }
 
@@ -102,34 +102,8 @@ public class CustomSSLSocketFactoryTest {
         verify(mockSSLSocket).setEnabledProtocols(any(String[].class));
         verify(mockSSLSocket).startHandshake();
         verify(mockSSLSocket).getSession();
-        verify(mockSSLSocket).setHostname(any(String.class));
+        verify(mockSSLCertificateSocketFactory).setHostname(any(Socket.class), eq("hostname"));
         verifyNoMoreInteractions(mockSSLSocket);
-    }
-
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    @Test
-    public void setHostnameOnSocket_withAtLeastJellyBeanMR1_shouldEnableServerNameIdentification() {
-        TestSdkHelper.setReportedSdkLevel(Build.VERSION_CODES.JELLY_BEAN_MR1);
-
-        final SSLSocket mockSSLSocket = mock(SSLSocket.class);
-
-        CustomSSLSocketFactory.setHostnameOnSocket(mockSSLCertificateSocketFactory, mockSSLSocket,
-                "hostname");
-
-        verify(mockSSLCertificateSocketFactory).setHostname(mockSSLSocket, "hostname");
-    }
-
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    @Test
-    public void setHostnameOnSocket_withBelowJellyBeanMR1_shouldEnableServerNameIdentification() {
-        TestSdkHelper.setReportedSdkLevel(Build.VERSION_CODES.JELLY_BEAN);
-
-        final SSLSocket mockSSLSocket = mock(SSLSocket.class);
-
-        CustomSSLSocketFactory.setHostnameOnSocket(mockSSLCertificateSocketFactory, mockSSLSocket,
-                "hostname");
-
-        verify(mockSSLCertificateSocketFactory, never()).setHostname(mockSSLSocket, "hostname");
     }
 
     @Test

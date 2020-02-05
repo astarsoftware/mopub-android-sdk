@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -344,4 +344,43 @@ public class MoPubViewTest {
             wrapper.broadcastReceiver.onReceive(context, intent);
         }
     }
+
+    @Test
+    public void loadAd_withIrrationalDensity_shouldRoundhHeightUp_1() {
+        final float density = 1.9800001f;
+        final MoPubView.MoPubAdSize adSize = MoPubView.MoPubAdSize.HEIGHT_50;
+
+        // Set the expected screen dimensions
+        final Resources spyResources = spy(context.getResources());
+        final DisplayMetrics mockDisplayMetrics = mock(DisplayMetrics.class);
+        mockDisplayMetrics.widthPixels = 1080;
+        mockDisplayMetrics.heightPixels = 1920;
+        mockDisplayMetrics.density = density;
+        when(spyResources.getDisplayMetrics()).thenReturn(mockDisplayMetrics);
+        when(context.getResources()).thenReturn(spyResources);
+
+        final Point point = new Point(0, adSize.toInt() * 2);
+        subject.loadAd(adSize);
+        verify(adViewController).setRequestedAdSize(point);
+    }
+
+    @Test
+    public void loadAd_withIrrationalDensity_shouldRoundhHeightUp_2() {
+        final float density = 1.98f;
+        final MoPubView.MoPubAdSize adSize = MoPubView.MoPubAdSize.HEIGHT_50;
+
+        // Set the expected screen dimensions
+        final Resources spyResources = spy(context.getResources());
+        final DisplayMetrics mockDisplayMetrics = mock(DisplayMetrics.class);
+        mockDisplayMetrics.widthPixels = 1080;
+        mockDisplayMetrics.heightPixels = 1920;
+        mockDisplayMetrics.density = density;
+        when(spyResources.getDisplayMetrics()).thenReturn(mockDisplayMetrics);
+        when(context.getResources()).thenReturn(spyResources);
+
+        final Point point = new Point(0, adSize.toInt() * 2 - 1);
+        subject.loadAd(adSize);
+        verify(adViewController).setRequestedAdSize(point);
+    }
+
 }

@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import android.util.Base64;
 import android.view.View;
@@ -15,6 +17,7 @@ import android.widget.Toast;
 
 import com.astarsoftware.android.AndroidUtils;
 import com.mopub.common.AdReport;
+import com.mopub.common.Preconditions;
 import com.mopub.common.VisibleForTesting;
 import com.mopub.common.util.DateAndTime;
 import com.mopub.common.util.Intents;
@@ -40,12 +43,15 @@ public class AdAlertReporter {
     private final String mDateString;
 
     private final View mView;
+    @NonNull
     private final Context mContext;
     private Intent mEmailIntent;
     private String mParameters;
     private String mResponse;
 
-    public AdAlertReporter(final Context context, final View view, @Nullable final AdReport adReport) {
+    public AdAlertReporter(@NonNull final Context context, final View view, @Nullable final AdReport adReport) {
+        Preconditions.checkNotNull(context);
+
         mView = view;
         mContext = context;
 
@@ -70,7 +76,10 @@ public class AdAlertReporter {
         try {
             Intents.startActivity(mContext, mEmailIntent);
         } catch (IntentNotResolvableException e) {
-            Toast.makeText(mContext, "No email client available", Toast.LENGTH_SHORT).show();
+            final Context applicationContext = mContext.getApplicationContext();
+            if (applicationContext != null) {
+                Toast.makeText(applicationContext, "No email client available", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 

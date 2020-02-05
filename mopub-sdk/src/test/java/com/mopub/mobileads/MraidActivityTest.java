@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -9,16 +9,18 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import com.mopub.common.AdReport;
 import com.mopub.common.Constants;
 import com.mopub.common.test.support.SdkTestRunner;
+import com.mopub.common.util.UtilsTest;
 import com.mopub.mraid.MraidBridge;
 import com.mopub.mraid.MraidBridge.MraidWebView;
 import com.mopub.mraid.MraidController;
@@ -80,19 +82,19 @@ public class MraidActivityTest {
     }
 
     @Test
-    public void preRenderHtml_shouldEnableJavascriptCachingForDummyWebView() {
+    public void create_callsHideNavigationBar(){
+        Activity subject = Robolectric.buildActivity(MraidActivity.class).create().get();
+        View decorView = subject.getWindow().getDecorView();
+
+        assertThat(decorView.getSystemUiVisibility()).isEqualTo(UtilsTest.FLAGS);
+    }
+
+    @Test
+    public void preRenderHtml_shouldEnableJavascriptCaching() {
         MraidActivity.preRenderHtml(mraidInterstitial, customEventInterstitialListener, HTML_DATA,
                 mockMraidWebView, testBroadcastIdentifier, mraidController);
 
         verify(mockMraidWebView).enableJavascriptCaching();
-    }
-
-    @Test
-    public void preRenderHtml_shouldDisablePluginsForDummyWebView() {
-        MraidActivity.preRenderHtml(mraidInterstitial, customEventInterstitialListener, HTML_DATA,
-                mockMraidWebView, testBroadcastIdentifier, mraidController);
-
-        verify(mockMraidWebView).enablePlugins(false);
     }
 
     @Test
@@ -115,7 +117,6 @@ public class MraidActivityTest {
         MraidActivity.preRenderHtml(mraidInterstitial, subject, customEventInterstitialListener,
                 testBroadcastIdentifier, adReport);
 
-        verify(mockMraidWebView).enablePlugins(eq(false));
         verify(mraidController).setMraidListener(any(MraidListener.class));
         verify(mockMraidWebView).setWebViewClient(any(WebViewClient.class));
         verify(mraidBridge).setContentHtml(eq("3:27"));

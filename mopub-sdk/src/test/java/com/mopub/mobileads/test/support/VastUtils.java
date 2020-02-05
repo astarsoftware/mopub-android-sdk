@@ -1,10 +1,11 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.mobileads.test.support;
 
 import com.mopub.mobileads.VastTracker;
+import com.mopub.mobileads.VastTrackerTwo;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -28,7 +29,7 @@ public class VastUtils {
 
     public static List<VastTracker> stringsToVastTrackers(String... strings) {
         List<VastTracker> vastTrackers = new ArrayList<VastTracker>(strings.length);
-        for (int i=0; i<strings.length; i++) {
+        for (int i = 0; i < strings.length; i++) {
             vastTrackers.add(new VastTracker(strings[i]));
         }
         return vastTrackers;
@@ -37,6 +38,22 @@ public class VastUtils {
     public static List<String> vastTrackersToStrings(List<VastTracker> vastTrackers) {
         List<String> strings = new ArrayList<String>(vastTrackers.size());
         for (VastTracker vastTracker : vastTrackers) {
+            strings.add(vastTracker.getContent());
+        }
+        return strings;
+    }
+
+    public static List<VastTrackerTwo> stringsToVastTrackerTwos(String... strings) {
+        List<VastTrackerTwo> vastTrackers = new ArrayList<>(strings.length);
+        for (int i = 0; i < strings.length; i++) {
+            vastTrackers.add(new VastTrackerTwo.Builder(strings[i]).build());
+        }
+        return vastTrackers;
+    }
+
+    public static List<String> vastTrackerTwosToStrings(List<VastTrackerTwo> vastTrackers) {
+        List<String> strings = new ArrayList<>(vastTrackers.size());
+        for (VastTrackerTwo vastTracker : vastTrackers) {
             strings.add(vastTracker.getContent());
         }
         return strings;

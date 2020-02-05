@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -23,7 +23,7 @@ public class VastVideoProgressBarWidget extends ImageView {
     public VastVideoProgressBarWidget(@NonNull final Context context) {
         super(context);
 
-        setId((int) Utils.generateUniqueId());
+        setId(View.generateViewId());
 
         mProgressBarDrawable = new ProgressBarDrawable(context);
         setImageDrawable(mProgressBarDrawable);

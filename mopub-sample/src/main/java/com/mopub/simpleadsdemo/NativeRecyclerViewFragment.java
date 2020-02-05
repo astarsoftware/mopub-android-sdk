@@ -1,23 +1,23 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.simpleadsdemo;
 
 
-import android.location.Location;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.mopub.nativeads.FacebookAdRenderer;
 import com.mopub.nativeads.FlurryCustomEventNative;
@@ -30,6 +30,7 @@ import com.mopub.nativeads.MoPubRecyclerAdapter;
 import com.mopub.nativeads.MoPubStaticNativeAdRenderer;
 import com.mopub.nativeads.MoPubVideoNativeAdRenderer;
 import com.mopub.nativeads.RequestParameters;
+import com.mopub.nativeads.VerizonNativeAdRenderer;
 import com.mopub.nativeads.ViewBinder;
 
 import java.util.EnumSet;
@@ -65,26 +66,7 @@ public class NativeRecyclerViewFragment extends Fragment {
         viewHolder.mLoadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                // If your app already has location access, include it here.
-                final Location location = null;
-                final String keywords = viewHolder.mKeywordsField.getText().toString();
-                final String userDataKeywords = viewHolder.mUserDataKeywordsField.getText().toString();
-
-                // Setting desired assets on your request helps native ad networks and bidders
-                // provide higher-quality ads.
-                final EnumSet<RequestParameters.NativeAdAsset> desiredAssets = EnumSet.of(
-                        RequestParameters.NativeAdAsset.TITLE,
-                        RequestParameters.NativeAdAsset.TEXT,
-                        RequestParameters.NativeAdAsset.ICON_IMAGE,
-                        RequestParameters.NativeAdAsset.MAIN_IMAGE,
-                        RequestParameters.NativeAdAsset.CALL_TO_ACTION_TEXT);
-
-                mRequestParameters = new RequestParameters.Builder()
-                        .location(location)
-                        .keywords(keywords)
-                        .userDataKeywords(userDataKeywords)
-                        .desiredAssets(desiredAssets)
-                        .build();
+                updateRequestParameters(viewHolder);
 
                 if (mRecyclerAdapter != null) {
                     mRecyclerAdapter.refreshAds(mAdConfiguration.getAdUnitId(), mRequestParameters);
@@ -96,6 +78,7 @@ public class NativeRecyclerViewFragment extends Fragment {
         viewHolder.mAdUnitIdView.setText(adUnitId);
         viewHolder.mKeywordsField.setText(getArguments().getString(MoPubListFragment.KEYWORDS_KEY, ""));
         viewHolder.mUserDataKeywordsField.setText(getArguments().getString(MoPubListFragment.USER_DATA_KEYWORDS_KEY, ""));
+        updateRequestParameters(viewHolder);
 
         final RecyclerView.Adapter originalAdapter = new DemoRecyclerAdapter();
 
@@ -110,6 +93,7 @@ public class NativeRecyclerViewFragment extends Fragment {
                         .iconImageId(R.id.native_icon_image)
                         .callToActionId(R.id.native_cta)
                         .privacyInformationIconImageId(R.id.native_privacy_information_icon_image)
+                        .sponsoredTextId(R.id.native_sponsored_text_view)
                         .build()
         );
 
@@ -122,6 +106,7 @@ public class NativeRecyclerViewFragment extends Fragment {
                         .iconImageId(R.id.native_icon_image)
                         .callToActionId(R.id.native_cta)
                         .privacyInformationIconImageId(R.id.native_privacy_information_icon_image)
+                        .sponsoredTextId(R.id.native_sponsored_text_view)
                         .build());
 
         // Set up a renderer for Facebook video ads.
@@ -167,8 +152,20 @@ public class NativeRecyclerViewFragment extends Fragment {
                         .privacyInformationIconImageId(R.id.native_privacy_information_icon_image)
                         .build());
 
+        // Set up a renderer for Verizon ads.
+        final VerizonNativeAdRenderer verizonNativeAdRenderer = new VerizonNativeAdRenderer(
+                new ViewBinder.Builder(R.layout.native_ad_list_item)
+                        .titleId(R.id.native_title)
+                        .textId(R.id.native_text)
+                        .mainImageId(R.id.native_main_image)
+                        .iconImageId(R.id.native_icon_image)
+                        .callToActionId(R.id.native_cta)
+                        .privacyInformationIconImageId(R.id.native_privacy_information_icon_image)
+                        .build());
+
         // The first renderer that can handle a particular native ad gets used.
         // We are prioritizing network renderers.
+        mRecyclerAdapter.registerAdRenderer(verizonNativeAdRenderer);
         mRecyclerAdapter.registerAdRenderer(googlePlayServicesAdRenderer);
         mRecyclerAdapter.registerAdRenderer(flurryRenderer);
         mRecyclerAdapter.registerAdRenderer(facebookAdRenderer);
@@ -178,8 +175,29 @@ public class NativeRecyclerViewFragment extends Fragment {
         mRecyclerView.setAdapter(mRecyclerAdapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mLayoutType = LayoutType.LINEAR;
-        mRecyclerAdapter.loadAds(mAdConfiguration.getAdUnitId());
+        mRecyclerAdapter.loadAds(mAdConfiguration.getAdUnitId(), mRequestParameters);
         return view;
+    }
+
+    private void updateRequestParameters(@NonNull final DetailFragmentViewHolder views) {
+        final String keywords = views.mKeywordsField.getText().toString();
+        final String userDataKeywords = views.mUserDataKeywordsField.getText().toString();
+
+        // Setting desired assets on your request helps native ad networks and bidders
+        // provide higher-quality ads.
+        final EnumSet<RequestParameters.NativeAdAsset> desiredAssets = EnumSet.of(
+                RequestParameters.NativeAdAsset.TITLE,
+                RequestParameters.NativeAdAsset.TEXT,
+                RequestParameters.NativeAdAsset.ICON_IMAGE,
+                RequestParameters.NativeAdAsset.MAIN_IMAGE,
+                RequestParameters.NativeAdAsset.CALL_TO_ACTION_TEXT,
+                RequestParameters.NativeAdAsset.SPONSORED);
+
+        mRequestParameters = new RequestParameters.Builder()
+                .keywords(keywords)
+                .userDataKeywords(userDataKeywords)
+                .desiredAssets(desiredAssets)
+                .build();
     }
 
     void toggleRecyclerLayout() {

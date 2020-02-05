@@ -1,17 +1,18 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.mobileads;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import androidx.annotation.NonNull;
+
 import com.mopub.common.VisibleForTesting;
 import com.mopub.common.util.Dips;
-import com.mopub.common.util.Utils;
 import com.mopub.mobileads.resource.DrawableConstants;
 import com.mopub.mobileads.resource.RadialCountdownDrawable;
 
@@ -22,7 +23,7 @@ public class VastVideoRadialCountdownWidget extends ImageView {
     public VastVideoRadialCountdownWidget(@NonNull final Context context) {
         super(context);
 
-        setId((int) Utils.generateUniqueId());
+        setId(View.generateViewId());
 
         final int sideLength = Dips.dipsToIntPixels(DrawableConstants.RadialCountdown.SIDE_LENGTH_DIPS, context);
         final int topMargin = Dips.dipsToIntPixels(DrawableConstants.RadialCountdown.TOP_MARGIN_DIPS, context);

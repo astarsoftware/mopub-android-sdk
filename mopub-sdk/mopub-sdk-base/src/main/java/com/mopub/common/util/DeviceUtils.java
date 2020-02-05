@@ -1,10 +1,9 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.common.util;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
@@ -15,20 +14,19 @@ import android.content.res.Configuration;
 import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Build;
 import android.os.StatFs;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+
 import com.mopub.common.CreativeOrientation;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
-
 
 import java.io.File;
 import java.net.SocketException;
@@ -214,33 +212,23 @@ public class DeviceUtils {
      * @param context Needs a context (application is fine) to determine width/height.
      * @return Width and height of the device
      */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public static Point getDeviceDimensions(@NonNull final Context context) {
         Integer bestWidthPixels = null;
         Integer bestHeightPixels = null;
 
         final WindowManager windowManager = (WindowManager) context.getSystemService(
                 Context.WINDOW_SERVICE);
-        final Display display = windowManager.getDefaultDisplay();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+        if (windowManager != null) {
+            final Display display = windowManager.getDefaultDisplay();
             final Point screenSize = new Point();
             display.getRealSize(screenSize);
             bestWidthPixels = screenSize.x;
             bestHeightPixels = screenSize.y;
-        } else {
-            try {
-                bestWidthPixels = (Integer) new MethodBuilder(display,
-                        "getRawWidth").execute();
-                bestHeightPixels = (Integer) new MethodBuilder(display,
-                        "getRawHeight").execute();
-            } catch (Exception e) {
-                // Best effort. If this fails, just get the height and width normally,
-                // which may not capture the pixels used in the notification bar.
-                MoPubLog.log(CUSTOM, "Display#getRawWidth/Height failed.", e);
-            }
         }
 
-        if (bestWidthPixels == null || bestHeightPixels == null) {
+        // If we are unable to get the window, we have to use the screen dimensions minus the
+        // notification bar, etc.
+        if (bestWidthPixels == null) {
             final DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
             bestWidthPixels = displayMetrics.widthPixels;
             bestHeightPixels = displayMetrics.heightPixels;

@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -9,7 +9,6 @@ import androidx.annotation.Nullable;
 
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.common.util.Strings;
 import com.mopub.mobileads.util.XmlUtils;
 
 import org.w3c.dom.Node;
@@ -108,7 +107,7 @@ class VastLinearXmlManager {
                     continue;
                 }
                 offsetString = offsetString.trim();
-                if (Strings.isPercentageTracker(offsetString)) {
+                if (VastFractionalProgressTrackerTwo.Companion.isPercentageTracker(offsetString)) {
                     String trackingUrl = XmlUtils.getNodeValue(progressNode);
                     try {
                         final float trackingFraction =
@@ -169,10 +168,10 @@ class VastLinearXmlManager {
                     continue;
                 }
                 offsetString = offsetString.trim();
-                if (Strings.isAbsoluteTracker(offsetString)) {
+                if (VastAbsoluteProgressTracker.isAbsoluteTracker(offsetString)) {
                     String trackingUrl = XmlUtils.getNodeValue(progressNode);
                     try {
-                        Integer trackingMilliseconds = Strings.parseAbsoluteOffset(offsetString);
+                        Integer trackingMilliseconds = VastAbsoluteProgressTracker.parseAbsoluteOffset(offsetString);
                         if (trackingMilliseconds != null && trackingMilliseconds >= 0) {
                             trackers.add(new VastAbsoluteProgressTracker(trackingUrl, trackingMilliseconds));
                         }

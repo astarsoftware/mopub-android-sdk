@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -13,6 +13,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import android.text.TextUtils;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+import com.mopub.common.Constants;
 import com.mopub.common.MoPubBrowser;
 import com.mopub.common.Preconditions;
 import com.mopub.common.UrlAction;
@@ -29,11 +32,17 @@ import static com.mopub.network.TrackingRequest.makeVastTrackingHttpRequest;
 public class VastCompanionAdConfig implements Serializable {
     private static final long serialVersionUID = 0L;
 
+    @Expose @SerializedName(Constants.VAST_WIDTH)
     private final int mWidth;
+    @Expose @SerializedName(Constants.VAST_HEIGHT)
     private final int mHeight;
+    @Expose @SerializedName(Constants.VAST_RESOURCE)
     @NonNull private final VastResource mVastResource;
+    @Expose @SerializedName(Constants.VAST_URL_CLICKTHROUGH)
     @Nullable private final String mClickThroughUrl;
+    @Expose @SerializedName(Constants.VAST_TRACKERS_CLICK)
     @NonNull private final List<VastTracker> mClickTrackers;
+    @Expose @SerializedName(Constants.VAST_TRACKERS_IMPRESSION)
     @NonNull private final List<VastTracker> mCreativeViewTrackers;
 
     public VastCompanionAdConfig(

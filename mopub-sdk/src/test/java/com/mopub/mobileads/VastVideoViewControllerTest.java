@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -71,7 +71,6 @@ import static com.mopub.mobileads.VastVideoViewController.MAX_VIDEO_DURATION_FOR
 import static com.mopub.mobileads.VastVideoViewController.RESUMED_VAST_CONFIG;
 import static com.mopub.mobileads.VastVideoViewController.VAST_VIDEO_CONFIG;
 import static com.mopub.mobileads.VastXmlManagerAggregator.ADS_BY_AD_SLOT_ID;
-import static com.mopub.mobileads.VastXmlManagerAggregator.SOCIAL_ACTIONS_AD_SLOT_ID;
 import static com.mopub.volley.toolbox.ImageLoader.ImageListener;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
@@ -203,16 +202,6 @@ public class VastVideoViewControllerTest {
         when(mMockVastIconConfig.getVastResource()).thenReturn(vastResource);
         vastVideoConfig.setVastIconConfig(mMockVastIconConfig);
 
-
-        final ArrayList<VastTracker> vastTrackers = new ArrayList<>();
-        VastCompanionAdConfig socialActionsCompanionAd =
-                new VastCompanionAdConfig(65, 20, vastResource, "", vastTrackers, vastTrackers);
-        Map<String, VastCompanionAdConfig> socialActionsCompanionAds =
-                new HashMap<String, VastCompanionAdConfig>();
-        socialActionsCompanionAds.put(ADS_BY_AD_SLOT_ID, socialActionsCompanionAd);
-        socialActionsCompanionAds.put(SOCIAL_ACTIONS_AD_SLOT_ID, socialActionsCompanionAd);
-        vastVideoConfig.setSocialActionsCompanionAds(socialActionsCompanionAds);
-
         when(mockMediaMetadataRetriever.getFrameAtTime(anyLong(), anyInt())).thenReturn(mockBitmap);
 
         bundle.putSerializable(VAST_VIDEO_CONFIG, vastVideoConfig);
@@ -289,28 +278,6 @@ public class VastVideoViewControllerTest {
         assertThat(iconView.getParent()).isEqualTo(subject.getLayout());
         assertThat(iconView.getVisibility()).isEqualTo(View.INVISIBLE);
         assertThat(((VastWebView)iconView).getVastWebViewClickListener()).isNotNull();
-    }
-
-    @Test
-    public void constructor_withAdsByCompanion_shouldAddAdsByViewToLayout() throws Exception {
-        initializeSubject();
-
-        View adsByView = subject.createAdsByView((Activity) context);
-        assertThat(adsByView.getVisibility()).isEqualTo(View.VISIBLE);
-        assertThat(subject.getHasSocialActions()).isTrue();
-        assertThat(subject.getCtaButtonWidget().getHasSocialActions()).isTrue();
-        assertThat(((VastWebView) adsByView).getVastWebViewClickListener()).isNotNull();
-    }
-
-    @Test
-    public void constructor_withSocialActionsCompanion_shouldAddSocialActionsViewToLayout() throws Exception {
-        initializeSubject();
-
-        View socialActionsView = subject.getSocialActionsView();
-        assertThat(socialActionsView.getVisibility()).isEqualTo(View.INVISIBLE);
-        assertThat(subject.getHasSocialActions()).isTrue();
-        assertThat(subject.getCtaButtonWidget().getHasSocialActions()).isTrue();
-        assertThat(((VastWebView) socialActionsView).getVastWebViewClickListener()).isNotNull();
     }
 
     @Test
@@ -1259,7 +1226,6 @@ public class VastVideoViewControllerTest {
     public void onCompletion_whenCompanionAdAvailable_shouldShowCompanionAdAndHideBlurredLastVideoFrame() throws Exception {
         final VastVideoConfig vastVideoConfig =
                 (VastVideoConfig) bundle.getSerializable(VAST_VIDEO_CONFIG);
-        vastVideoConfig.setSocialActionsCompanionAds(new HashMap<String, VastCompanionAdConfig>());
         bundle.putSerializable(VAST_VIDEO_CONFIG, vastVideoConfig);
         initializeSubject();
 
@@ -1399,30 +1365,6 @@ public class VastVideoViewControllerTest {
 
         assertThat(topGradientStripWidget.getVisibility()).isEqualTo(View.GONE);
         assertThat(bottomGradientStripWidget.getVisibility()).isEqualTo(View.GONE);
-    }
-
-    @Test
-    public void onCompletion_withSocialActions_shouldShowCompanionAdAndShowBlurredLastVideoFrame() throws Exception {
-        initializeSubject();
-
-        final View companionView = subject.getLandscapeCompanionAdView();
-        final ImageView blurredLastVideoFrameImageView = subject.getBlurredLastVideoFrameImageView();
-
-        assertThat(subject.getVideoView().getVisibility()).isEqualTo(View.VISIBLE);
-        assertThat(companionView.getVisibility()).isEqualTo(View.INVISIBLE);
-        assertThat(blurredLastVideoFrameImageView.getVisibility()).isEqualTo(View.INVISIBLE);
-
-        getShadowVideoView().getOnPreparedListener().onPrepared(null);
-        Robolectric.getBackgroundThreadScheduler().unPause();
-        Robolectric.getForegroundThreadScheduler().unPause();
-        Thread.sleep(NETWORK_DELAY);
-
-        getShadowVideoView().getOnCompletionListener().onCompletion(null);
-
-        assertThat(subject.getVastVideoView().getBlurLastVideoFrameTask()).isNotNull();
-        assertThat(subject.getVideoView().getVisibility()).isEqualTo(View.INVISIBLE);
-        assertThat(companionView.getVisibility()).isEqualTo(View.VISIBLE);
-        assertThat(blurredLastVideoFrameImageView.getVisibility()).isEqualTo(View.VISIBLE);
     }
 
     @Test
@@ -2039,12 +1981,10 @@ public class VastVideoViewControllerTest {
 
         verify(mockRequestQueue).add(
                 argThat(isUrl("close?errorcode=&asseturi=video_url&contentplayhead=00:00:15.094")));
-        verify(mockRequestQueue).add(
-                argThat(isUrl("skip?errorcode=&asseturi=video_url&contentplayhead=00:00:15.094")));
     }
 
     @Test
-    public void onClickCloseButtonTextView_whenCloseButtonIsVisible_shouldFireCloseTrackers() throws Exception {
+    public void onClickCloseButtonTextView_whenCloseButtonIsVisible_whenGteDuration_shouldFireCloseTrackers() throws Exception {
         initializeSubject();
         spyOnVideoView();
         // Because it's almost never exactly 15 seconds
@@ -2062,8 +2002,77 @@ public class VastVideoViewControllerTest {
 
         verify(mockRequestQueue).add(
                 argThat(isUrl("close?errorcode=&asseturi=video_url&contentplayhead=00:00:15.203")));
+    }
+
+    @Test
+    public void onClickCloseButtonTextView_whenCloseButtonIsVisible_whenLessThanDuration_shouldFireCloseTrackers_shouldFireSkipTrackers() throws Exception {
+        initializeSubject();
+        spyOnVideoView();
+        // Because it's almost never exactly 15 seconds
+        when(spyVideoView.getDuration()).thenReturn(15000);
+        when(spyVideoView.getCurrentPosition()).thenReturn(14999);
+        getShadowVideoView().getOnPreparedListener().onPrepared(null);
+
+        subject.setCloseButtonVisible(true);
+
+        // We don't have direct access to the CloseButtonWidget text's close event, so we manually
+        // invoke its onTouchListener's onTouch callback with a fake MotionEvent.ACTION_UP action.
+        View.OnTouchListener closeButtonTextViewOnTouchListener =
+                shadowOf(subject.getCloseButtonWidget().getTextView()).getOnTouchListener();
+        closeButtonTextViewOnTouchListener.onTouch(null, GestureUtils.createActionUp(0, 0));
+
         verify(mockRequestQueue).add(
-                argThat(isUrl("skip?errorcode=&asseturi=video_url&contentplayhead=00:00:15.203")));
+                argThat(isUrl("skip?errorcode=&asseturi=video_url&contentplayhead=00:00:14.999")));
+        verify(mockRequestQueue).add(
+                argThat(isUrl("close?errorcode=&asseturi=video_url&contentplayhead=00:00:15.000")));
+    }
+
+    @Test
+    public void onClickCloseButtonTextView_whenCompletionNotFired_whenCloseButtonIsVisible_whenGreaterThanDuration_shouldFireCloseTrackers_shouldFireCompleteTrackers_shouldNotFireSkipTrackers() throws Exception {
+        initializeSubject();
+        spyOnVideoView();
+        // Because it's almost never exactly 15 seconds
+        when(spyVideoView.getDuration()).thenReturn(15000);
+        when(spyVideoView.getCurrentPosition()).thenReturn(15001);
+        getShadowVideoView().getOnPreparedListener().onPrepared(null);
+
+        subject.setCloseButtonVisible(true);
+
+        // We don't have direct access to the CloseButtonWidget text's close event, so we manually
+        // invoke its onTouchListener's onTouch callback with a fake MotionEvent.ACTION_UP action.
+        View.OnTouchListener closeButtonTextViewOnTouchListener =
+                shadowOf(subject.getCloseButtonWidget().getTextView()).getOnTouchListener();
+        closeButtonTextViewOnTouchListener.onTouch(null, GestureUtils.createActionUp(0, 0));
+
+        verify(mockRequestQueue).add(argThat(isUrl(
+                "complete?errorcode=&asseturi=video_url&contentplayhead=00:00:15.000")));
+        verify(mockRequestQueue).add(
+                argThat(isUrl("close?errorcode=&asseturi=video_url&contentplayhead=00:00:15.000")));
+        verifyNoMoreInteractions(mockRequestQueue);
+    }
+
+    @Test
+    public void onClickCloseButtonTextView_whenCompletionNotFired_whenCloseButtonIsVisible_whenEqualToDuration_shouldFireCloseTrackers_shouldFireCompleteTrackers_shouldNotFireSkipTrackers() throws Exception {
+        initializeSubject();
+        spyOnVideoView();
+        // Because it's almost never exactly 15 seconds
+        when(spyVideoView.getDuration()).thenReturn(15000);
+        when(spyVideoView.getCurrentPosition()).thenReturn(15000);
+        getShadowVideoView().getOnPreparedListener().onPrepared(null);
+
+        subject.setCloseButtonVisible(true);
+
+        // We don't have direct access to the CloseButtonWidget text's close event, so we manually
+        // invoke its onTouchListener's onTouch callback with a fake MotionEvent.ACTION_UP action.
+        View.OnTouchListener closeButtonTextViewOnTouchListener =
+                shadowOf(subject.getCloseButtonWidget().getTextView()).getOnTouchListener();
+        closeButtonTextViewOnTouchListener.onTouch(null, GestureUtils.createActionUp(0, 0));
+
+        verify(mockRequestQueue).add(argThat(isUrl(
+                "complete?errorcode=&asseturi=video_url&contentplayhead=00:00:15.000")));
+        verify(mockRequestQueue).add(
+                argThat(isUrl("close?errorcode=&asseturi=video_url&contentplayhead=00:00:15.000")));
+        verifyNoMoreInteractions(mockRequestQueue);
     }
 
     @Test
@@ -2150,14 +2159,13 @@ public class VastVideoViewControllerTest {
     }
 
     @Test
-    public void makeInteractable_shouldHideCountdownWidgetAndShowCtaAndCloseButtonWidgetsAndShowSocialActions() throws Exception {
+    public void makeInteractable_shouldHideCountdownWidgetAndShowCtaAndCloseButtonWidgets() throws Exception {
         initializeSubject();
 
         subject.makeVideoInteractable();
 
         assertThat(subject.getRadialCountdownWidget().getVisibility()).isEqualTo(View.GONE);
         assertThat(subject.getCloseButtonWidget().getVisibility()).isEqualTo(View.VISIBLE);
-        assertThat(subject.getSocialActionsView().getVisibility()).isEqualTo(View.VISIBLE);
     }
 
     private void initializeSubject() throws IllegalAccessException {

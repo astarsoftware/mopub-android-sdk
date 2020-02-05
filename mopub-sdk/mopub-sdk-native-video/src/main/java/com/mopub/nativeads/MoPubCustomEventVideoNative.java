@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -7,18 +7,19 @@ package com.mopub.nativeads;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.TextureView;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.mopub.common.DataKeys;
 import com.mopub.common.Preconditions;
+import com.mopub.common.VisibilityTracker;
 import com.mopub.common.VisibleForTesting;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Utils;
-import com.mopub.common.VisibilityTracker;
 import com.mopub.mobileads.MraidVideoPlayerActivity;
 import com.mopub.mobileads.VastManager;
 import com.mopub.mobileads.VastTracker;
@@ -143,7 +144,8 @@ public class MoPubCustomEventVideoNative extends CustomEventNative {
             CALL_TO_ACTION("ctatext", false),
             VAST_VIDEO("video", false),
             PRIVACY_INFORMATION_ICON_IMAGE_URL("privacyicon", false),
-            PRIVACY_INFORMATION_ICON_CLICKTHROUGH_URL("privacyclkurl", false);
+            PRIVACY_INFORMATION_ICON_CLICKTHROUGH_URL("privacyclkurl", false),
+            SPONSORED("sponsored", false);
 
             @NonNull final String mName;
             final boolean mRequired;
@@ -467,6 +469,8 @@ public class MoPubCustomEventVideoNative extends CustomEventNative {
                     case PRIVACY_INFORMATION_ICON_CLICKTHROUGH_URL:
                         setPrivacyInformationIconClickThroughUrl((String) value);
                         break;
+                    case SPONSORED:
+                        setSponsored((String) value);
                     default:
                         MoPubLog.log(CUSTOM, "Unable to add JSON key to internal mapping: " + key.mName);
                         break;

@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -40,6 +40,11 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
+/**
+ * These tests largely do nothing now since manifest merging takes care of activity declarations.
+ * However, it's still possible for publishers to bypass or override manifest merging, so we should
+ * still check.
+ */
 @RunWith(RobolectricTestRunner.class)
 public class ManifestUtilsTest {
     private Context context;
@@ -69,47 +74,50 @@ public class ManifestUtilsTest {
     }
 
     @Test
-    public void checkWebViewSdkActivitiesDeclared_shouldIncludeFourActivityDeclarations() throws Exception {
+    public void checkWebViewSdkActivitiesDeclared_shouldNotIncludeActivityDeclarations() throws Exception {
         ShadowLog.setupLogging();
 
         ManifestUtils.checkWebViewActivitiesDeclared(context);
 
-        assertLogIncludes(
+        assertLogDoesntInclude(
                 "com.mopub.mobileads.MoPubActivity",
                 "com.mopub.mobileads.MraidActivity",
                 "com.mopub.mobileads.RewardedMraidActivity",
                 "com.mopub.mobileads.MraidVideoPlayerActivity",
-                "com.mopub.common.MoPubBrowser"
+                "com.mopub.common.MoPubBrowser",
+                "com.mopub.common.privacy.ConsentDialogActivity"
         );
     }
 
     @Test
-    public void checkNativeSdkActivitiesDeclared_shouldIncludeOneActivityDeclaration() throws Exception {
+    public void checkNativeSdkActivitiesDeclared_shouldNotIncludeActivityDeclarations() throws Exception {
         ShadowLog.setupLogging();
 
         ManifestUtils.checkNativeActivitiesDeclared(context);
 
-        assertLogIncludes("com.mopub.common.MoPubBrowser");
         assertLogDoesntInclude(
                 "com.mopub.mobileads.MoPubActivity",
                 "com.mopub.mobileads.MraidActivity",
-                "com.mopub.mobileads.MraidVideoPlayerActivity"
+                "com.mopub.mobileads.RewardedMraidActivity",
+                "com.mopub.mobileads.MraidVideoPlayerActivity",
+                "com.mopub.common.MoPubBrowser",
+                "com.mopub.common.privacy.ConsentDialogActivity"
         );
     }
 
     @Test
-    public void checSdkActivitiesDeclared_shouldIncludeOneActivityDeclaration() throws Exception {
+    public void checkSdkActivitiesDeclared_shouldNotIncludeActivityDeclarations() throws Exception {
         ShadowLog.setupLogging();
 
         ManifestUtils.checkGdprActivitiesDeclared(context);
 
-        assertLogIncludes("com.mopub.common.privacy.ConsentDialogActivity");
         assertLogDoesntInclude(
                 "com.mopub.mobileads.MoPubActivity",
                 "com.mopub.mobileads.MraidActivity",
-                "com.mopub.mobileads.MraidVideoPlayerActivity",
                 "com.mopub.mobileads.RewardedMraidActivity",
-                "com.mopub.common.MoPubBrowser"
+                "com.mopub.mobileads.MraidVideoPlayerActivity",
+                "com.mopub.common.MoPubBrowser",
+                "com.mopub.common.privacy.ConsentDialogActivity"
         );
     }
 
@@ -146,7 +154,7 @@ public class ManifestUtilsTest {
     }
 
     @Test
-     public void displayWarningForMissingActivities_withOneMissingActivity_shouldLogOnlyThatOne() throws Exception {
+     public void displayWarningForMissingActivities_withOneMissingActivity_shouldNotLogMessage() throws Exception {
         addActivityToShadowPackageManager(context, MoPubActivity.class.getName());
         addActivityToShadowPackageManager(context, MraidActivity.class.getName());
         addActivityToShadowPackageManager(context, RewardedMraidActivity.class.getName());
@@ -157,42 +165,40 @@ public class ManifestUtilsTest {
 
         ManifestUtils.displayWarningForMissingActivities(context, requiredWebViewSdkActivities);
 
-        assertLogIncludes("com.mopub.common.MoPubBrowser");
         assertLogDoesntInclude(
                 "com.mopub.mobileads.MoPubActivity",
                 "com.mopub.mobileads.MraidActivity",
                 "com.mopub.mobileads.RewardedMraidActivity",
-                "com.mopub.mobileads.MraidVideoPlayerActivity"
+                "com.mopub.mobileads.MraidVideoPlayerActivity",
+                "com.mopub.common.MoPubBrowser",
+                "com.mopub.common.privacy.ConsentDialogActivity"
         );
     }
 
     @Test
-    public void displayWarningForMissingActivities_withAllMissingActivities_shouldLogMessage() throws Exception {
+    public void displayWarningForMissingActivities_withAllMissingActivities_shouldNotLogMessage() throws Exception {
         setDebugMode(true);
         ShadowLog.setupLogging();
 
         ManifestUtils.displayWarningForMissingActivities(context, requiredWebViewSdkActivities);
 
-        final List<ShadowLog.LogItem> logs = ShadowLog.getLogs();
-
-        assertLogIncludes(
+        assertLogDoesntInclude(
                 "com.mopub.mobileads.MoPubActivity",
                 "com.mopub.mobileads.MraidActivity",
                 "com.mopub.mobileads.RewardedMraidActivity",
                 "com.mopub.mobileads.MraidVideoPlayerActivity",
-                "com.mopub.common.MoPubBrowser"
+                "com.mopub.common.MoPubBrowser",
+                "com.mopub.common.privacy.ConsentDialogActivity"
         );
     }
 
     @Test
-    public void displayWarningForMissingActivities_withMissingActivities_withDebugTrue_shouldShowToast() throws Exception {
+    public void displayWarningForMissingActivities_withMissingActivities_withDebugTrue_shouldNotShowToast() throws Exception {
         setDebugMode(true);
 
         ManifestUtils.displayWarningForMissingActivities(context, requiredWebViewSdkActivities);
 
-        assertThat(ShadowToast.getLatestToast()).isNotNull();
-        final String toastText = ShadowToast.getTextOfLatestToast();
-        assertThat(toastText).isEqualTo("ERROR: YOUR MOPUB INTEGRATION IS INCOMPLETE.\nCheck logcat and update your AndroidManifest.xml with the correct activities and configuration.");
+        assertThat(ShadowToast.getLatestToast()).isNull();
     }
 
     @Test
@@ -415,7 +421,11 @@ public class ManifestUtilsTest {
     }
 
     private void assertLogDoesntInclude(final String... messages) {
-        final String logText = ShadowLog.getLogs().get(0).msg;
+        List<ShadowLog.LogItem> logs = ShadowLog.getLogs();
+        if (logs.isEmpty()) {
+            return;
+        }
+        final String logText = logs.get(0).msg;
         for (final String message : messages) {
             assertThat(logText).doesNotContain(message);
         }

@@ -1,12 +1,13 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.nativeads;
 
+import android.view.View;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.view.View;
 
 import com.mopub.common.Preconditions.NoThrow;
 import com.mopub.common.logging.MoPubLog;
@@ -36,6 +37,7 @@ public abstract class StaticNativeAd extends BaseNativeAd implements ImpressionI
     @Nullable private Double mStarRating;
     @Nullable private String mPrivacyInformationIconClickThroughUrl;
     @Nullable private String mPrivacyInformationIconImageUrl;
+    @Nullable private String mSponsored;
 
     // Impression logistics
     private boolean mImpressionRecorded;
@@ -127,6 +129,17 @@ public abstract class StaticNativeAd extends BaseNativeAd implements ImpressionI
         return mPrivacyInformationIconImageUrl;
     }
 
+    /**
+     * Returns the advertiser name for the sponsored field.
+     *
+     * @return String representing the advertiser name, or {@code null} if not set.
+     */
+    @Nullable
+    public String getSponsored() {
+        return mSponsored;
+    }
+
+
     // Extras Getters
     /**
      * Given a particular String key, return the associated Object value from the ad's extras map.
@@ -202,6 +215,10 @@ public abstract class StaticNativeAd extends BaseNativeAd implements ImpressionI
     final public void setPrivacyInformationIconImageUrl(
             @Nullable String privacyInformationIconImageUrl) {
         mPrivacyInformationIconImageUrl = privacyInformationIconImageUrl;
+    }
+
+    final public void setSponsored(@Nullable final String sponsored) {
+        mSponsored = sponsored;
     }
 
     final public void addExtra(@NonNull final String key, @Nullable final Object value) {

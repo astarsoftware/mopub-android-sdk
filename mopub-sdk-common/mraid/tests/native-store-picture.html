@@ -1,0 +1,33 @@
+<html>
+  <head>
+    <script src='mraid.js'></script>
+    <script>
+      /*
+      Enables the following tests:
+
+      1. Storing a photo from a URL
+      2. Attempting to store an invalid photo URL, which should fail with an error
+      */
+
+      function storePicture() {
+        mraid.storePicture('http://www.mopub.com/wp-content/themes/mopub/img/logo.png');
+      }
+
+      function storeInvalidPicture() {
+        mraid.storePicture('NOT A VALID URL');
+      }
+
+      mraid.addEventListener('error', function(message, action) {
+        alert('MRAID error: ' + message + ' (action: ' + action + ')');
+      });
+    </script>
+  </head>
+  <body>
+    <button style='display:inline-block' onclick='storePicture()'>
+      storePicture()
+    </button>
+    <button style='display:inline-block' onclick='storeInvalidPicture()'>
+      Store invalid picture URL
+    </button>
+  </body>
+</html>

@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -98,10 +98,5 @@ public class DrawableConstants {
     public static class PrivacyInfoIcon {
         public static final int LEFT_MARGIN_DIPS = 12;
         public static final int TOP_MARGIN_DIPS = 12;
-    }
-
-    public static class SocialActions {
-        public static final int ADS_BY_LEFT_MARGIN_DIPS = 6;
-        public static final int SOCIAL_ACTIONS_LEFT_MARGIN_DIPS = 16;
     }
 }

@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -7,9 +7,10 @@ package com.mopub.network;
 
 import android.content.Context;
 import android.os.Handler;
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.text.TextUtils;
 
 import com.mopub.common.AdFormat;
 import com.mopub.common.Preconditions;
@@ -22,9 +23,9 @@ import com.mopub.volley.VolleyError;
 
 import java.lang.ref.WeakReference;
 
+import static com.mopub.common.logging.MoPubLog.AdLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdLogEvent.REQUESTED;
 import static com.mopub.common.logging.MoPubLog.AdLogEvent.RESPONSE_RECEIVED;
-import static com.mopub.common.logging.MoPubLog.AdLogEvent.CUSTOM;
 
 /**
  * AdLoader implements several simple functions: communicate with Volley to download multiple ads
@@ -162,6 +163,7 @@ public class AdLoader {
                 if (RequestRateTracker.getInstance().isBlockedByRateLimit(mMultiAdRequest.mAdUnitId)) {
                     // report no fill
                     MoPubLog.log(MoPubLog.SdkLogEvent.CUSTOM, mMultiAdRequest.mAdUnitId + " is blocked by request rate limiting.");
+                    mFailed = true;
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {

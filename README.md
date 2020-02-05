@@ -37,7 +37,7 @@ The MoPub SDK is available via:
     }
 
     dependencies {
-        implementation('com.mopub:mopub-sdk:5.9.1@aar') {
+        implementation('com.mopub:mopub-sdk:5.11.0@aar') {
             transitive = true
         }
     }
@@ -59,27 +59,27 @@ The MoPub SDK is available via:
         // ... other project dependencies
 
         // For banners
-        implementation('com.mopub:mopub-sdk-banner:5.9.1@aar') {
+        implementation('com.mopub:mopub-sdk-banner:5.11.0@aar') {
             transitive = true
         }
         
         // For interstitials
-        implementation('com.mopub:mopub-sdk-interstitial:5.9.1@aar') {
+        implementation('com.mopub:mopub-sdk-interstitial:5.11.0@aar') {
             transitive = true
         }
 
         // For rewarded videos. This will automatically also include interstitials
-        implementation('com.mopub:mopub-sdk-rewardedvideo:5.9.1@aar') {
+        implementation('com.mopub:mopub-sdk-rewardedvideo:5.11.0@aar') {
             transitive = true
         }
 
         // For native static (images).
-        implementation('com.mopub:mopub-sdk-native-static:5.9.1@aar') {
+        implementation('com.mopub:mopub-sdk-native-static:5.11.0@aar') {
             transitive = true
         }
 
         // For native video. This will automatically also include native static
-        implementation('com.mopub:mopub-sdk-native-video:5.9.1@aar') {
+        implementation('com.mopub:mopub-sdk-native-video:5.11.0@aar') {
             transitive = true
         }
     }
@@ -107,17 +107,45 @@ The MoPub SDK is available via:
 ## New in this Version
 Please view the [changelog](https://github.com/mopub/mopub-android-sdk/blob/master/CHANGELOG.md) for a complete list of additions, fixes, and enhancements in the latest release.
 
+- **Features**
+  - Raise the minimum Android SDK to Android 4.4 (API level 19).
+  - Update GDPR logic to allow MoPub to reacquire consent for new vendors.
+  - Update our support for OpenRTB Native Ads to version 1.2 and add an optional `sponsored` text field for native ads.
+  - Upgrade ExoPlayer to 2.11.0.
+  - Add switch to use AndroidX MediaPlayer instead of the default Android MediaPlayer for VAST Video. This adds the dependencies `androidx.media2:media2-session`, `androidx.media2:media2-widget`, and `androidx.media2:media2-player`, all on version 1.0.1.
+  - Add dependency on `androidx.core:core-ktx` version 1.1.0.
+  - Add dependency on `com.google.code.gson:gson` version 2.8.6.
+  - Add the ability to test manual native ads in the sample app.
+
 - **Bug Fixes**
-  - Now sends ad width in pixels instead of dips when setting a `MoPubAdSize`.
+  - Fix an issue with rate limiting for rewarded ads.
+  - Fix a compliance issue with Facebook Audience Network native for the sample app.
+  - Increase consistency for immersive mode across VAST, MRAID, and HTML ads.
 
 ## Requirements
 
-- Android 4.1 (API Version 16) and up (**Updated in 4.12.0**)
+- Android 4.4 (API Version 19) and up (**Updated in 5.11.0**)
 - androidx.legacy:legacy-support-v4:1.0.0 (**Updated in 5.9.0**)
 - androidx.annotation:annotation:1.1.0 (**Updated in 5.9.0**)
+- androidx.appcompat:appcompat:1.1.0 (**Updated in 5.10.0**)
 - androidx.recyclerview:recyclerview:1.0.0 (**Updated in 5.9.0**)
+- androidx.core:core-ktx:1.1.0 (**Added in 5.11.0**)
+- com.google.code.gson:gson:2.8.6 (**Added in 5.11.0**)
+- androidx.media2:media2-session (**Added in 5.11.0**)
+- androidx.media2:media2-widget (**Added in 5.11.0**)
+- androidx.media2:media2-player (**Added in 5.11.0**)
 - MoPub Volley Library (mopub-volley-2.1.0.jar - available on JCenter) (**Updated in 5.6.0**)
-- **Recommended** Google Play Services (com.google.android.gms:play-services-ads-identifier:16.0.0 and com.google.android.gms:play-services-base:16.0.1) (**Updated in 5.6.0**)
+- **Recommended** Google Play Services (com.google.android.gms:play-services-ads-identifier:17.0.0 and com.google.android.gms:play-services-base:17.1.0) (**Updated in 5.10.0**)
+- If you are integrating with v5.6.0 or later of the MoPub SDK, specify the `sourceCompatibility` and `targetCompatibility` as below to prevent compilation errors with ExoPlayer 2.9.5 and later:
+
+    ```groovy
+    android {
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_7
+            targetCompatibility JavaVersion.VERSION_1_8
+        }
+    }
+    ```
 
 ## Upgrading to SDK 5.0
 
@@ -137,7 +165,7 @@ Normally, to add the MoPub SDK to your app via JCenter, your `build.gradle` woul
 
 ```	
 dependencies {
-    implementation('com.mopub:mopub-sdk:5.9.1@aar') {
+    implementation('com.mopub:mopub-sdk:5.11.0@aar') {
         transitive = true
     }
 }
@@ -146,7 +174,7 @@ Update to the following to exclude one or both viewability vendors:
 
 ```
 dependencies {
-    implementation('com.mopub:mopub-sdk:5.9.1@aar') {
+    implementation('com.mopub:mopub-sdk:5.11.0@aar') {
         transitive = true
         exclude module: 'libAvid-mopub' // To exclude AVID
         exclude module: 'moat-mobile-app-kit' // To exclude Moat

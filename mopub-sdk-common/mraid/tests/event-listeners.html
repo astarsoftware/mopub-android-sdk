@@ -1,0 +1,139 @@
+<html>
+  <head>
+    <script src="mraid.js"></script>
+    <script>
+      /*
+       Enables the following tests:
+
+       1. Removing a listener that has been added to an event.
+       2. Removing a listener for any event should have no effect on other event listeners.
+       3. Removing a listener that has not been added to an event.
+       4. Removing a listener for an event that has zero listeners.
+       4. Removing all listeners for an event that has listeners.
+       5. Removing all listeners for any event should have no effect on other event listeners.
+       6. Removing all listeners for an event that has zero listeners.
+       */
+
+      var resizeProperties = {
+        height: 400,
+        width: 320,
+        offsetX: 0,
+        offsetY: 0
+      };
+
+      var stateChangeEventListener1 = function(state) {
+        alert('[stateChange 1 test listener]: State changed to: ' + state);
+      };
+
+      var stateChangeEventListener2 = function(state) {
+        alert('[stateChange 2 test listener]: State changed to: ' + state);
+      };
+
+      var sizeChangeEventListener1 = function(width, height) {
+        alert('[sizeChange 1 test listener]: Size changed to (width)' + width
+            + ' (height)' + height);
+      };
+
+      var sizeChangeEventListener2 = function(width, height) {
+        alert('[sizeChange 2 test listener]: Size changed to (width)' + width +
+            ' (height)' + height);
+      };
+
+      function addStateChangeEventListener(listener) {
+        mraid.addEventListener('stateChange', listener);
+      }
+
+      function addSizeChangeEventListener(listener) {
+        mraid.addEventListener('sizeChange', listener);
+      }
+
+      function removeStateChangeEventListener(listener) {
+        mraid.removeEventListener('stateChange', listener);
+      }
+
+      function removeSizeChangeEventListener(listener) {
+        mraid.removeEventListener('sizeChange', listener);
+      }
+
+      function removeAllStateChangeEventListeners() {
+        mraid.removeEventListener('stateChange');
+      }
+
+      function removeAllSizeChangeEventListeners() {
+        mraid.removeEventListener('sizeChange');
+      }
+
+      function resize() {
+        mraid.setResizeProperties(resizeProperties);
+        mraid.resize();
+      }
+
+      function expand() {
+        mraid.expand();
+      }
+
+      function closeAd() {
+        mraid.close();
+      }
+
+      mraid.addEventListener('error', function(message, action) {
+        alert('MRAID error: ' + message + ' (action: ' + action + ')');
+      });
+    </script>
+  </head>
+  <body>
+    <div>
+      <button style='display:inline-block' onclick='expand()'>
+        expand()
+      </button>
+      <button style='display:inline-block' onclick='closeAd()'>
+        close()
+      </button>
+      <button style='display:inline-block' onclick='resize()'>
+        resize()
+      </button>
+    </div>
+    Add event listeners:
+    <div>
+      <button style='display:inline-block' onclick='addStateChangeEventListener(stateChangeEventListener1)'>
+        stateChange 1
+      </button>
+      <button style='display:inline-block' onclick='addStateChangeEventListener(stateChangeEventListener2)'>
+        stateChange 2
+      </button>
+    </div>
+    <div>
+      <button style='display:inline-block' onclick='addSizeChangeEventListener(sizeChangeEventListener1)'>
+        sizeChange 1
+      </button>
+      <button style='display:inline-block' onclick='addSizeChangeEventListener(sizeChangeEventListener2)'>
+        sizeChange 2
+      </button>
+    </div>
+    Remove event listeners:
+    <div>
+      <button style='display:inline-block' onclick='removeStateChangeEventListener(stateChangeEventListener1)'>
+        stateChange 1
+      </button>
+      <button style='display:inline-block' onclick='removeStateChangeEventListener(stateChangeEventListener2)'>
+        stateChange 2
+      </button>
+    </div>
+    <div>
+      <button style='display:inline-block' onclick='removeSizeChangeEventListener(sizeChangeEventListener1)'>
+        sizeChange 1
+      </button>
+      <button style='display:inline-block' onclick='removeSizeChangeEventListener(sizeChangeEventListener2)'>
+        sizeChange 2
+      </button>
+    </div>
+    <div>
+      <button style='display:inline-block' onclick='removeAllStateChangeEventListeners()'>
+        all stateChange
+      </button>
+      <button style='display:inline-block' onclick='removeAllSizeChangeEventListeners()'>
+        all sizeChange
+      </button>
+    </div>
+  </body>
+</html>

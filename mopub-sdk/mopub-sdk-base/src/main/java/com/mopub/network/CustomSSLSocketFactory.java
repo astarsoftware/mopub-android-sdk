@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -6,14 +6,12 @@ package com.mopub.network;
 
 import android.net.SSLCertificateSocketFactory;
 import android.os.Build;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.mopub.common.Preconditions;
 import com.mopub.common.VisibleForTesting;
-
-import com.mopub.common.logging.MoPubLog;
-import com.mopub.common.util.Reflection;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -27,21 +25,20 @@ import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
-import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
-
 /**
  * An {@link javax.net.ssl.SSLSocketFactory} that supports TLS settings for the MoPub ad servers.
  */
 public class CustomSSLSocketFactory extends SSLSocketFactory {
 
-    @Nullable private SSLSocketFactory mCertificateSocketFactory;
+    @Nullable private SSLCertificateSocketFactory mCertificateSocketFactory;
 
     private CustomSSLSocketFactory() {}
 
     @NonNull
     public static CustomSSLSocketFactory getDefault(final int handshakeTimeoutMillis) {
         CustomSSLSocketFactory factory = new CustomSSLSocketFactory();
-        factory.mCertificateSocketFactory = SSLCertificateSocketFactory.getDefault(handshakeTimeoutMillis, null);
+        factory.mCertificateSocketFactory =
+                (SSLCertificateSocketFactory) SSLCertificateSocketFactory.getDefault(handshakeTimeoutMillis, null);
 
         return factory;
     }
@@ -166,32 +163,8 @@ public class CustomSSLSocketFactory extends SSLSocketFactory {
 
         if (socket instanceof SSLSocket) {
             final SSLSocket sslSocket = (SSLSocket) socket;
-            setHostnameOnSocket((SSLCertificateSocketFactory) mCertificateSocketFactory, sslSocket,
-                    host);
+            mCertificateSocketFactory.setHostname(sslSocket, host);
             verifyServerName(sslSocket, host);
-        }
-    }
-
-    /**
-     * Calling setHostname on a socket turns on the server name identification feature.
-     * Unfortunately, this was introduced in Android version 17, so we do what we can.
-     */
-    @VisibleForTesting
-    static void setHostnameOnSocket(@NonNull final SSLCertificateSocketFactory certificateSocketFactory,
-            @NonNull final SSLSocket sslSocket, @Nullable final String host) {
-        Preconditions.checkNotNull(certificateSocketFactory);
-        Preconditions.checkNotNull(sslSocket);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            certificateSocketFactory.setHostname(sslSocket, host);
-        } else {
-            try {
-                new Reflection.MethodBuilder(sslSocket, "setHostname")
-                        .addParam(String.class, host)
-                        .execute();
-            } catch (Exception e) {
-                MoPubLog.log(CUSTOM, "Unable to call setHostname() on the socket");
-            }
         }
     }
 
@@ -222,7 +195,7 @@ public class CustomSSLSocketFactory extends SSLSocketFactory {
 
     @Deprecated
     @VisibleForTesting
-    void setCertificateSocketFactory(@NonNull final SSLSocketFactory sslSocketFactory) {
+    void setCertificateSocketFactory(@NonNull final SSLCertificateSocketFactory sslSocketFactory) {
         mCertificateSocketFactory = sslSocketFactory;
     }
 }

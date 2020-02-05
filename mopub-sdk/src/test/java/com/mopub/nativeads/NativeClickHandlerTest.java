@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -10,7 +10,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.mopub.common.test.support.SdkTestRunner;
-import com.mopub.common.util.Utils;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -44,14 +43,14 @@ public class NativeClickHandlerTest {
         subject = new NativeClickHandler(context);
 
         titleView = new TextView(context);
-        titleView.setId((int) Utils.generateUniqueId());
+        titleView.setId(View.generateViewId());
 
         relativeLayout = new RelativeLayout(context);
-        relativeLayout.setId((int) Utils.generateUniqueId());
+        relativeLayout.setId(View.generateViewId());
         relativeLayout.addView(titleView);
 
         relativeLayout2 = new RelativeLayout(context);
-        relativeLayout2.setId((int) Utils.generateUniqueId());
+        relativeLayout2.setId(View.generateViewId());
         relativeLayout2.addView(relativeLayout);
     }
 

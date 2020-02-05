@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -20,7 +20,6 @@ import java.util.Set;
 
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
 
-// API documentation: https://drive.google.com/drive/folders/0B8U0thTyT1GGZTdEWm03VTlfbm8
 class AvidViewabilitySession implements ExternalViewabilitySession {
     private static final String AVID_MANAGER_PATH =
             "com.integralads.avid.library.mopub.AvidManager";

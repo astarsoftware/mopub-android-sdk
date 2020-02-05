@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -17,8 +17,6 @@ import android.graphics.SurfaceTexture;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.GradientDrawable.Orientation;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.TextureView;
 import android.view.TextureView.SurfaceTextureListener;
@@ -28,11 +26,13 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.mopub.common.Preconditions;
 import com.mopub.common.VisibleForTesting;
 import com.mopub.common.util.Dips;
 import com.mopub.common.util.Drawables;
-import com.mopub.common.util.Utils;
 import com.mopub.mobileads.VastVideoProgressBarWidget;
 import com.mopub.mobileads.resource.CloseButtonDrawable;
 import com.mopub.mobileads.resource.CtaButtonDrawable;
@@ -122,12 +122,12 @@ public class NativeFullScreenVideoView extends RelativeLayout {
         videoTextureLayoutParams.addRule(CENTER_IN_PARENT);
 
         mVideoTexture = videoTexture;
-        mVideoTexture.setId((int) Utils.generateUniqueId());
+        mVideoTexture.setId(View.generateViewId());
         mVideoTexture.setLayoutParams(videoTextureLayoutParams);
         addView(mVideoTexture);
 
         mCachedVideoFrameView = cachedImageView;
-        mCachedVideoFrameView.setId((int) Utils.generateUniqueId());
+        mCachedVideoFrameView.setId(View.generateViewId());
         mCachedVideoFrameView.setLayoutParams(videoTextureLayoutParams);
         mCachedVideoFrameView.setBackgroundColor(Color.TRANSPARENT);
         addView(mCachedVideoFrameView);
@@ -136,7 +136,7 @@ public class NativeFullScreenVideoView extends RelativeLayout {
                 new RelativeLayout.LayoutParams(mPlayControlSizePx, mPlayControlSizePx);
         spinnerParams.addRule(RelativeLayout.CENTER_IN_PARENT);
         mLoadingSpinner = loadingSpinner;
-        mLoadingSpinner.setId((int) Utils.generateUniqueId());
+        mLoadingSpinner.setId(View.generateViewId());
         mLoadingSpinner.setBackground(new LoadingBackground(context));
         mLoadingSpinner.setLayoutParams(spinnerParams);
         mLoadingSpinner.setIndeterminate(true);
@@ -146,7 +146,7 @@ public class NativeFullScreenVideoView extends RelativeLayout {
                 RelativeLayout.LayoutParams.MATCH_PARENT, mGradientStripHeightPx);
         bottomGradientParams.addRule(RelativeLayout.ALIGN_BOTTOM, mVideoTexture.getId());
         mBottomGradient = bottomGradient;
-        mBottomGradient.setId((int) Utils.generateUniqueId());
+        mBottomGradient.setId(View.generateViewId());
         mBottomGradient.setLayoutParams(bottomGradientParams);
         final GradientDrawable bottomGradientDrawable = new GradientDrawable(Orientation.BOTTOM_TOP,
                 new int[] {GradientStrip.START_COLOR, GradientStrip.END_COLOR});
@@ -157,7 +157,7 @@ public class NativeFullScreenVideoView extends RelativeLayout {
                 RelativeLayout.LayoutParams.MATCH_PARENT, mGradientStripHeightPx);
         topGradientParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
         mTopGradient = topGradient;
-        mTopGradient.setId((int) Utils.generateUniqueId());
+        mTopGradient.setId(View.generateViewId());
         mTopGradient.setLayoutParams(topGradientParams);
         final GradientDrawable topGradientDrawable = new GradientDrawable(Orientation.TOP_BOTTOM,
                 new int[] {GradientStrip.START_COLOR, GradientStrip.END_COLOR});
@@ -165,7 +165,7 @@ public class NativeFullScreenVideoView extends RelativeLayout {
         addView(mTopGradient);
 
         mVideoProgress = videoProgress;
-        mVideoProgress.setId((int) Utils.generateUniqueId());
+        mVideoProgress.setId(View.generateViewId());
         mVideoProgress.setAnchorId(mVideoTexture.getId());
         mVideoProgress.calibrateAndMakeVisible(1000, 0);
         addView(mVideoProgress);
@@ -174,7 +174,7 @@ public class NativeFullScreenVideoView extends RelativeLayout {
                 new LayoutParams(LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         overlayParams.addRule(RelativeLayout.CENTER_IN_PARENT);
         mOverlay = overlay;
-        mOverlay.setId((int) Utils.generateUniqueId());
+        mOverlay.setId(View.generateViewId());
         mOverlay.setLayoutParams(overlayParams);
         mOverlay.setBackgroundColor(DrawableConstants.TRANSPARENT_GRAY);
         addView(mOverlay);
@@ -183,13 +183,13 @@ public class NativeFullScreenVideoView extends RelativeLayout {
                 new RelativeLayout.LayoutParams(mPlayControlSizePx, mPlayControlSizePx);
         playButtonParams.addRule(RelativeLayout.CENTER_IN_PARENT);
         mPlayButton = playButton;
-        mPlayButton.setId((int) Utils.generateUniqueId());
+        mPlayButton.setId(View.generateViewId());
         mPlayButton.setLayoutParams(playButtonParams);
         mPlayButton.setImageDrawable(Drawables.NATIVE_PLAY.createDrawable(context));
         addView(mPlayButton);
 
         mPrivacyInformationIcon = privacyInformationIcon;
-        mPrivacyInformationIcon.setId((int) Utils.generateUniqueId());
+        mPrivacyInformationIcon.setId(View.generateViewId());
         mPrivacyInformationIcon.setPadding(mClosePaddingPx, mClosePaddingPx, mClosePaddingPx * 2,
                 mClosePaddingPx * 2);
         addView(mPrivacyInformationIcon);
@@ -199,12 +199,12 @@ public class NativeFullScreenVideoView extends RelativeLayout {
             ctaDrawable.setCtaText(ctaText);
         }
         mCtaButton = ctaButton;
-        mCtaButton.setId((int) Utils.generateUniqueId());
+        mCtaButton.setId(View.generateViewId());
         mCtaButton.setImageDrawable(ctaDrawable);
         addView(mCtaButton);
 
         mCloseControl = closeControl;
-        mCloseControl.setId((int) Utils.generateUniqueId());
+        mCloseControl.setId(View.generateViewId());
         mCloseControl.setImageDrawable(new CloseButtonDrawable());
         mCloseControl.setPadding(mClosePaddingPx * 3, mClosePaddingPx, mClosePaddingPx, mClosePaddingPx * 3);
         addView(mCloseControl);

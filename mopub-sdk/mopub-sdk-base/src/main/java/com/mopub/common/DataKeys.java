@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -13,6 +13,7 @@ public class DataKeys {
     public static final String CLICKTHROUGH_URL_KEY = "clickthrough-url";
     public static final String CLICK_TRACKING_URL_KEY = "click-tracking-url";
     public static final String CREATIVE_ORIENTATION_KEY = "com_mopub_orientation";
+    public static final String VAST_CLICK_EXP_ENABLED_KEY = "com_mopub_vast_click_exp_enabled";
     public static final String JSON_BODY_KEY = "com_mopub_native_json";
     public static final String BROADCAST_IDENTIFIER_KEY = "broadcastIdentifier";
     public static final String AD_UNIT_ID_KEY = "com_mopub_ad_unit_id";

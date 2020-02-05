@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -24,7 +24,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.Robolectric;
-import org.robolectric.shadows.ShadowLooper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -180,6 +179,15 @@ public class AdLoaderTest {
         subject.loadNextAd(null);
 
         verify(mockListener).onErrorResponse(any(VolleyError.class));
+    }
+
+    @Test
+    public void loadNextAd_withRateLimiting_shouldCallOnErrorResponse_shouldSetFailed() throws NoSuchFieldException, IllegalAccessException {
+        RequestRateTracker.getInstance().registerRateLimit(adUnitId, 1000, "reason");
+        subject.loadNextAd(null);
+
+        verify(mockListener).onErrorResponse(any(VolleyError.class));
+        assertThat(getPrivateField("mFailed").getBoolean(subject)).isTrue();
     }
 
     @Test

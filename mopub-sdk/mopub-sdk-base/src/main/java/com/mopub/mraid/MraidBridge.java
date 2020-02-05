@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -119,10 +119,8 @@ public class MraidBridge {
         mMraidWebView = mraidWebView;
         mMraidWebView.getSettings().setJavaScriptEnabled(true);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            if (mPlacementType == PlacementType.INTERSTITIAL) {
-                mraidWebView.getSettings().setMediaPlaybackRequiresUserGesture(false);
-            }
+        if (mPlacementType == PlacementType.INTERSTITIAL) {
+            mraidWebView.getSettings().setMediaPlaybackRequiresUserGesture(false);
         }
 
         mMraidWebView.setScrollContainer(false);

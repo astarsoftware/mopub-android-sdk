@@ -1,0 +1,51 @@
+<html>
+  <head>
+    <script src='mraid.js'></script>
+    <script>
+      /*
+      Enables the following tests:
+
+      1. Creating a calendar event
+      2. Attempting to create an invalid calendar event, which should fail with an error
+
+      Some background on why this test creates a recurring event: It appears that a recent Google
+      Calendar update made it required to include a frequency value when creating events, because
+      the app crashes without it.The Google Calendar API docs for recurring events (https://developers.google.com/google-apps/calendar/v3/reference/events/insert#examples)
+      don't work with the MRAID createCalendarEvent function; the RRULE syntax just doesn't work and
+      the 'count' and 'until' fields are ignored. Thus, we're stuck with a daily repeating event for
+      this test.
+      */
+
+      function createCalendarEvent() {
+        mraid.createCalendarEvent({
+            description: "NASA's Dawn Space Probe visits the dwarf planet Ceres",
+            location: 'The Astroid Belt',
+            start: '2025-04-01T00:00-05:00',
+            end: '2025-04-01T00:00-05:30',
+            recurrence: { frequency: 'daily' }
+          });
+      }
+
+      function createInvalidCalendarEvent() {
+        mraid.createCalendarEvent({
+            description: 'Doctor appointment to perform surgery on the wrong leg',
+            location: 'Never going to happen',
+            start: 'FOO-04-29T00:00-05:00',
+            end: 'BAR-04-29T03:00-05:00'
+          });
+      }
+
+      mraid.addEventListener('error', function(message, action) {
+        alert('MRAID error: ' + message + ' (action: ' + action + ')');
+      });
+    </script>
+  </head>
+  <body>
+    <button style='display:inline-block' onclick='createCalendarEvent()'>
+      createCalendarEvent()
+    </button>
+    <button style='display:inline-block' onclick='createInvalidCalendarEvent()'>
+      Create invalid calendar event
+    </button>
+  </body>
+</html>

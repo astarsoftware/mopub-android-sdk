@@ -1,10 +1,12 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.mobileads;
 
 import androidx.annotation.Nullable;
+
+import android.content.Context;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -78,8 +80,9 @@ public class AdAlertGestureListener extends GestureDetector.SimpleOnGestureListe
     }
 
     void finishGestureDetection() {
-        if (mCurrentZigZagState == mCurrentZigZagState.FINISHED) {
-            mAdAlertReporter = new AdAlertReporter(mView.getContext(), mView, mAdReport);
+        final Context context = mView.getContext();
+        if (mCurrentZigZagState == ZigZagState.FINISHED && context != null) {
+            mAdAlertReporter = new AdAlertReporter(context, mView, mAdReport);
             mAdAlertReporter.send();
         }
         reset();

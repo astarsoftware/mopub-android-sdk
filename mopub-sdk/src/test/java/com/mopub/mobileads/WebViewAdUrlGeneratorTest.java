@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -133,33 +133,30 @@ public class WebViewAdUrlGeneratorTest {
         when(context.getResources()).thenReturn(spyResources);
         when(context.getPackageName()).thenReturn("testBundle");
 
-        // Only do this on Android 17+ because getRealSize doesn't exist before then.
-        // This is the default pathway.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            final WindowManager mockWindowManager = mock(WindowManager.class);
-            final Display mockDisplay = mock(Display.class);
-            doAnswer(new Answer() {
-                @Override
-                public Object answer(final InvocationOnMock invocationOnMock) throws Throwable {
-                    final Point point = (Point) invocationOnMock.getArguments()[0];
-                    point.x = TEST_SCREEN_WIDTH;
-                    point.y = TEST_SCREEN_HEIGHT;
-                    return null;
-                }
-            }).when(mockDisplay).getRealSize(any(Point.class));
-            when(mockWindowManager.getDefaultDisplay()).thenReturn(mockDisplay);
-            spyApplicationContext = spy(context.getApplicationContext());
-            when(spyApplicationContext.getResources()).thenReturn(spyResources);
-            when(spyApplicationContext.getPackageName()).thenReturn("testBundle");
-            PackageManager mockPackageManager = mock(PackageManager.class);
-            PackageInfo mockPackageInfo = mock(PackageInfo.class);
-            mockPackageInfo.versionName = BuildConfig.VERSION_NAME;
-            when(mockPackageManager.getPackageInfo(any(String.class), anyInt())).thenReturn(mockPackageInfo);
-            when(spyApplicationContext.getPackageManager()).thenReturn(mockPackageManager);
-            when(spyApplicationContext.getSystemService(Context.WINDOW_SERVICE)).thenReturn(mockWindowManager);
-            when(context.getApplicationContext()).thenReturn(spyApplicationContext);
-            when(spyApplicationContext.getApplicationContext()).thenReturn(spyApplicationContext);
-        }
+
+        final WindowManager mockWindowManager = mock(WindowManager.class);
+        final Display mockDisplay = mock(Display.class);
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(final InvocationOnMock invocationOnMock) throws Throwable {
+                final Point point = (Point) invocationOnMock.getArguments()[0];
+                point.x = TEST_SCREEN_WIDTH;
+                point.y = TEST_SCREEN_HEIGHT;
+                return null;
+            }
+        }).when(mockDisplay).getRealSize(any(Point.class));
+        when(mockWindowManager.getDefaultDisplay()).thenReturn(mockDisplay);
+        spyApplicationContext = spy(context.getApplicationContext());
+        when(spyApplicationContext.getResources()).thenReturn(spyResources);
+        when(spyApplicationContext.getPackageName()).thenReturn("testBundle");
+        PackageManager mockPackageManager = mock(PackageManager.class);
+        PackageInfo mockPackageInfo = mock(PackageInfo.class);
+        mockPackageInfo.versionName = BuildConfig.VERSION_NAME;
+        when(mockPackageManager.getPackageInfo(any(String.class), anyInt())).thenReturn(mockPackageInfo);
+        when(spyApplicationContext.getPackageManager()).thenReturn(mockPackageManager);
+        when(spyApplicationContext.getSystemService(Context.WINDOW_SERVICE)).thenReturn(mockWindowManager);
+        when(context.getApplicationContext()).thenReturn(spyApplicationContext);
+        when(spyApplicationContext.getApplicationContext()).thenReturn(spyApplicationContext);
 
         mockConsentData = mock(ConsentData.class);
         mockPersonalInfoManager = mock(PersonalInfoManager.class);

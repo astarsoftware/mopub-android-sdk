@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -129,6 +129,8 @@ public class MraidVideoPlayerActivity extends BaseVideoPlayerActivity implements
 
         if ("vast".equals(clazz)) {
             return new VastVideoViewController(this, getIntent().getExtras(), savedInstanceState, mBroadcastIdentifier, this);
+        } else if ("vast_new".equals(clazz)) {
+            return new VastVideoViewControllerTwo(this, getIntent().getExtras(), savedInstanceState, mBroadcastIdentifier, this);
         } else if ("mraid".equals(clazz)) {
             return new MraidVideoViewController(this, getIntent().getExtras(), savedInstanceState, this);
         } else if ("native".equals(clazz)) {

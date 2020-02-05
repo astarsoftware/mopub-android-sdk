@@ -1,14 +1,15 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.nativeads;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.widget.ImageView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
@@ -22,7 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
-import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR;
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR_WITH_THROWABLE;
 
 /**
  * Collection of helper methods to assist with image downloading and displaying
@@ -73,7 +74,8 @@ public class NativeImageHelper {
 
             @Override
             public void onErrorResponse(final VolleyError volleyError) {
-                MoPubLog.log(ERROR, "Failed to download a native ads image:", volleyError);
+                MoPubLog.log(ERROR_WITH_THROWABLE, "Failed to download a native ads image:",
+                        volleyError);
                 boolean anyPreviousErrors = anyFailures.getAndSet(true);
                 imageCounter.decrementAndGet();
                 if (!anyPreviousErrors) {

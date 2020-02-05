@@ -1,8 +1,16 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.common.util;
+
+import android.app.Activity;
+import android.view.View;
+import android.view.Window;
+
+import androidx.annotation.NonNull;
+
+import com.mopub.common.Preconditions;
 
 import java.security.MessageDigest;
 import java.util.Locale;
@@ -31,7 +39,7 @@ public class Utils {
     }
 
     /**
-     * Adaptation of View.generateViewId() from API 17.
+     * Adaptation of View.generateViewId() to get a unique id when not interacting with Views.
      * There is only a guarantee of ID uniqueness within a given session. Please do not store these
      * values between sessions.
      */
@@ -50,5 +58,41 @@ public class Utils {
 
     public static boolean bitMaskContainsFlag(final int bitMask, final int flag) {
         return (bitMask & flag) != 0;
+    }
+
+    public static void hideNavigationBar(@NonNull final Activity activity) {
+        Preconditions.checkNotNull(activity);
+
+        final Window window = activity.getWindow();
+        if (window != null) {
+            final View view = window.getDecorView();
+            hideNavigation(view);
+            view.setOnSystemUiVisibilityChangeListener(createHideNavigationListener(view));
+        }
+    }
+
+    static View.OnSystemUiVisibilityChangeListener createHideNavigationListener(
+            @NonNull final View view) {
+        Preconditions.checkNotNull(view);
+
+        return new View.OnSystemUiVisibilityChangeListener() {
+            @Override
+            public void onSystemUiVisibilityChange(int visibility) {
+                if ((visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0) {
+                    hideNavigation(view);
+                }
+            }
+        };
+    }
+
+    static void hideNavigation(@NonNull final View view) {
+        Preconditions.checkNotNull(view);
+
+        view.setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+        );
     }
 }

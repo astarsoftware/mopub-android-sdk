@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -18,6 +18,7 @@ import com.mopub.common.AdReport;
 import com.mopub.common.CloseableLayout;
 import com.mopub.common.CloseableLayout.OnCloseListener;
 import com.mopub.common.DataKeys;
+import com.mopub.common.util.Utils;
 
 import static com.mopub.common.DataKeys.BROADCAST_IDENTIFIER_KEY;
 
@@ -27,23 +28,6 @@ abstract class BaseInterstitialActivity extends Activity {
     @Nullable private Long mBroadcastIdentifier;
 
     public abstract View getAdView();
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        int flags = View.SYSTEM_UI_FLAG_LOW_PROFILE
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            flags |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-        }
-
-        mCloseableLayout.setSystemUiVisibility(flags);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +54,8 @@ abstract class BaseInterstitialActivity extends Activity {
         mCloseableLayout.addView(adView,
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         setContentView(mCloseableLayout);
+
+        Utils.hideNavigationBar(this);
     }
 
     @Override

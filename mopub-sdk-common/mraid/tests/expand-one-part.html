@@ -1,0 +1,85 @@
+<html>
+  <head>
+    <script src='mraid.js'></script>
+    <script>
+      /*
+      Enables the following tests:
+
+      1. Expanding a one part expansion
+      2. Expanding the ad, then closing
+      3. Setting expandProperties, then expanding an ad
+      4. Expanding the ad, then setting expandProperties, then closing, then expanding again
+      5. Expanding the ad, then closing, then closing again to completely hide the ad
+      6. Expanding an ad with useCustomClose = true
+      */
+
+      var expandProperties = {
+        width: 320,
+        height: 480,
+        useCustomClose: false,
+        isModal: false
+      };
+
+      function expand() {
+        mraid.expand();
+      }
+
+      function closeAd() {
+        mraid.close();
+      }
+
+      function getExpandProperties() {
+        var expandProperties = mraid.getExpandProperties();
+        alert('Expand properties are set to: ' + JSON.stringify(expandProperties, null, '  '))
+      }
+
+      function setExpandProperties() {
+        mraid.setExpandProperties(expandProperties);
+        alert('Expand properties were set to: ' + JSON.stringify(expandProperties, null, '  ') +
+            '.\nIn MRAID 2.0, width, height, and isModal will be ignored.');
+      }
+
+      function toggleUseCustomClose() {
+        expandProperties.useCustomClose = !expandProperties.useCustomClose;
+        mraid.useCustomClose(expandProperties.useCustomClose);
+
+        alert('useCustomClose set to: ' + expandProperties.useCustomClose);
+      }
+
+      function getCurrentPosition() {
+        var currentPosition = mraid.getCurrentPosition();
+        alert('Current position set to: ' + JSON.stringify(currentPosition, null, '  '))
+      }
+
+      mraid.addEventListener('error', function(message, action) {
+        alert('MRAID error: ' + message + ' (action: ' + action + ')');
+      });
+    </script>
+  </head>
+  <body>
+    <div>
+      <button style='display:inline-block' onclick='expand()'>
+        expand()
+      </button>
+      <button style='display:inline-block' onclick='closeAd()'>
+        close()
+      </button>
+    </div>
+    <div>
+      <button style='display:inline-block' onclick='getCurrentPosition()'>
+        getCurrentPosition()
+      </button>
+    </div>
+    <div>
+      <button style='display:inline-block' onclick='getExpandProperties()'>
+        getExpandProperties()
+      </button>
+      <button style='display:inline-block' onclick='setExpandProperties()'>
+        setExpandProperties()
+      </button>
+      <button style='display:inline-block' onclick='toggleUseCustomClose()'>
+        toggleUseCustomClose()
+      </button>
+    </div>
+  </body>
+</html>

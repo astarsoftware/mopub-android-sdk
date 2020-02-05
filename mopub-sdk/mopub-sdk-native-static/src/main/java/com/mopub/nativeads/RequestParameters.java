@@ -1,13 +1,14 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.nativeads;
 
 import android.location.Location;
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.text.TextUtils;
 
 import com.mopub.common.MoPub;
 
@@ -21,7 +22,8 @@ public class RequestParameters {
         ICON_IMAGE("iconimage"),
         MAIN_IMAGE("mainimage"),
         CALL_TO_ACTION_TEXT("ctatext"),
-        STAR_RATING("starrating");
+        STAR_RATING("starrating"),
+        SPONSORED("sponsored");
 
         private final String mAssetName;
 

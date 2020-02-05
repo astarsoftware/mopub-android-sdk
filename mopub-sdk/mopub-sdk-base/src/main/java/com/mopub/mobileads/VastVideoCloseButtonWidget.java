@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -6,18 +6,18 @@ package com.mopub.mobileads;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.mopub.common.VisibleForTesting;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Dips;
-import com.mopub.common.util.Utils;
 import com.mopub.mobileads.resource.CloseButtonDrawable;
 import com.mopub.mobileads.resource.DrawableConstants;
 import com.mopub.network.Networking;
@@ -26,7 +26,7 @@ import com.mopub.volley.toolbox.ImageLoader;
 
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
-import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR;
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR_WITH_THROWABLE;
 
 public class VastVideoCloseButtonWidget extends RelativeLayout {
     @NonNull private TextView mTextView;
@@ -42,7 +42,7 @@ public class VastVideoCloseButtonWidget extends RelativeLayout {
     public VastVideoCloseButtonWidget(@NonNull final Context context) {
         super(context);
 
-        setId((int) Utils.generateUniqueId());
+        setId(View.generateViewId());
 
         mEdgePadding = Dips.dipsToIntPixels(DrawableConstants.CloseButton.EDGE_PADDING, context);
         mImagePadding = Dips.dipsToIntPixels(DrawableConstants.CloseButton.IMAGE_PADDING_DIPS, context);
@@ -65,7 +65,7 @@ public class VastVideoCloseButtonWidget extends RelativeLayout {
 
     private void createImageView() {
         mImageView = new ImageView(getContext());
-        mImageView.setId((int) Utils.generateUniqueId());
+        mImageView.setId(View.generateViewId());
 
         final RelativeLayout.LayoutParams iconLayoutParams = new RelativeLayout.LayoutParams(
                 mWidgetHeight,
@@ -122,7 +122,7 @@ public class VastVideoCloseButtonWidget extends RelativeLayout {
 
             @Override
             public void onErrorResponse(final VolleyError volleyError) {
-                MoPubLog.log(ERROR, "Failed to load image.", volleyError);
+                MoPubLog.log(ERROR_WITH_THROWABLE, "Failed to load image.", volleyError);
             }
         });
     }

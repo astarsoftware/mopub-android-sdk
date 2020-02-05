@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -6,6 +6,7 @@ package com.mopub.common;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -24,12 +25,12 @@ import java.util.List;
 
 import static com.mopub.common.ExternalViewabilitySessionManager.ViewabilityVendor;
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
-import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR;
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR_WITH_THROWABLE;
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.INIT_FINISHED;
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.INIT_STARTED;
 
 public class MoPub {
-    public static final String SDK_VERSION = "5.9.1";
+    public static final String SDK_VERSION = "5.11.0";
 
     public enum LocationAwareness { NORMAL, TRUNCATED, DISABLED }
 
@@ -181,6 +182,11 @@ public class MoPub {
 
         MoPubLog.log(INIT_STARTED);
         MoPubLog.log(CUSTOM, "SDK initialize has been called with ad unit: " + sdkConfiguration.getAdUnitId());
+        final ApplicationInfo appInfo = context.getApplicationInfo();
+        if (appInfo != null) {
+            MoPubLog.log(CUSTOM, context.getPackageName() +
+                    " was built with target SDK version of " + appInfo.targetSdkVersion);
+        }
 
         if (context instanceof Activity) {
             final Activity activity = (Activity) context;
@@ -363,7 +369,7 @@ public class MoPub {
         } catch (NoSuchMethodException e) {
             MoPubLog.log(CUSTOM, "initializeRewardedVideo was called without the rewarded video module");
         } catch (Exception e) {
-            MoPubLog.log(ERROR, "Error while initializing rewarded video", e);
+            MoPubLog.log(ERROR_WITH_THROWABLE, "Error while initializing rewarded video", e);
         }
     }
 
@@ -419,11 +425,11 @@ public class MoPub {
             try {
                 sUpdateActivityMethod.invoke(null, activity);
             } catch (IllegalAccessException e) {
-                MoPubLog.log(ERROR, "Error while attempting to access the update activity method - this " +
-                        "should not have happened", e);
+                MoPubLog.log(ERROR_WITH_THROWABLE, "Error while attempting to access the update " +
+                        "activity method - this should not have happened", e);
             } catch (InvocationTargetException e) {
-                MoPubLog.log(ERROR, "Error while attempting to access the update activity method - this " +
-                        "should not have happened", e);
+                MoPubLog.log(ERROR_WITH_THROWABLE, "Error while attempting to access the update " +
+                        "activity method - this should not have happened", e);
             }
         }
     }

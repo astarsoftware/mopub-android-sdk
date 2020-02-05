@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -10,11 +10,11 @@ import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
-import androidx.annotation.NonNull;
 import android.view.Gravity;
 import android.view.WindowManager;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
+
+import androidx.annotation.NonNull;
 
 import com.mopub.common.VisibleForTesting;
 import com.mopub.common.util.Views;
@@ -31,7 +31,6 @@ public class BaseWebView extends WebView {
          */
         super(context.getApplicationContext());
 
-        enablePlugins(false);
         restrictDeviceContentAccess();
         WebViews.setDisableJSChromeClient(this);
 
@@ -63,19 +62,6 @@ public class BaseWebView extends WebView {
         // reference from HTML5VideoViewProcessor. Removing children fixes this problem.
         removeAllViews();
         super.destroy();
-    }
-
-    public void enablePlugins(final boolean enabled) {
-        // Android 4.3 and above has no concept of plugin states
-        if (VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN_MR2) {
-            return;
-        }
-
-        if (enabled) {
-            getSettings().setPluginState(WebSettings.PluginState.ON);
-        } else {
-            getSettings().setPluginState(WebSettings.PluginState.OFF);
-        }
     }
 
     /*

@@ -1,15 +1,16 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.mobileads;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.Display;
 import android.view.WindowManager;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.mopub.common.CacheService;
 import com.mopub.common.Preconditions;
@@ -19,7 +20,7 @@ import com.mopub.common.util.AsyncTasks;
 import com.mopub.mobileads.VideoDownloader.VideoDownloaderListener;
 
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
-import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR;
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR_WITH_THROWABLE;
 
 /**
  * Given a VAST xml document, this class manages the lifecycle of parsing and finding a video and
@@ -82,7 +83,7 @@ public class VastManager implements VastXmlManagerAggregator.VastXmlManagerAggre
             try {
                 AsyncTasks.safeExecuteOnExecutor(mVastXmlManagerAggregator, vastXml);
             } catch (Exception e) {
-                MoPubLog.log(ERROR, "Failed to aggregate vast xml", e);
+                MoPubLog.log(ERROR_WITH_THROWABLE, "Failed to aggregate vast xml", e);
                 mVastManagerListener.onVastVideoConfigurationPrepared(null);
             }
         }

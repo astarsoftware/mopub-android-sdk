@@ -1,0 +1,28 @@
+<html>
+  <head>
+    <script src='mraid.js'></script>
+    <script>
+      /*
+      Enables the following tests:
+
+      1. Reading the version
+      */
+
+      function getVersion() {
+        var version = mraid.getVersion();
+        alert(version);
+      }
+
+      mraid.addEventListener('error', function(message, action) {
+        alert('MRAID error: ' + message + ' (action: ' + action + ')');
+      });
+    </script>
+  </head>
+  <body>
+    <div>
+      <button style='display:inline-block' onclick='getVersion()'>
+        getVersion()
+      </button>
+    </div>
+  </body>
+</html>

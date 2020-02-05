@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -6,12 +6,10 @@ package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.content.Context;
-import android.os.Build;
 import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
-import com.mopub.TestSdkHelper;
 import com.mopub.common.Constants;
 import com.mopub.common.test.support.SdkTestRunner;
 import com.mopub.mobileads.test.support.GestureUtils;
@@ -23,7 +21,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowWebView;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -51,27 +48,10 @@ public class VastWebViewTest {
                 .isInstanceOf(VastWebView.VastWebViewOnTouchListener.class);
     }
 
-    @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Test
-    public void pluginState_atLeastJellybeanMr2_shouldDefaultToOff_shouldNeverBeEnabled()  {
+    public void pluginState_shouldDefaultToOff()  {
         subject = new VastWebView(Robolectric.buildActivity(Activity.class).create().get());
         assertThat(subject.getSettings().getPluginState()).isEqualTo(WebSettings.PluginState.OFF);
-
-        subject.enablePlugins(true);
-        assertThat(subject.getSettings().getPluginState()).isEqualTo(WebSettings.PluginState.OFF);
-    }
-
-    @Test
-    public void pluginState_BelowJellybeanMr2_shouldDefaultToOn_shouldAllowToggling() {
-        TestSdkHelper.setReportedSdkLevel(Build.VERSION_CODES.JELLY_BEAN);
-        subject = new VastWebView(context);
-        assertThat(subject.getSettings().getPluginState()).isEqualTo(WebSettings.PluginState.ON);
-
-        subject.enablePlugins(false);
-        assertThat(subject.getSettings().getPluginState()).isEqualTo(WebSettings.PluginState.OFF);
-
-        subject.enablePlugins(true);
-        assertThat(subject.getSettings().getPluginState()).isEqualTo(WebSettings.PluginState.ON);
     }
 
     @Test

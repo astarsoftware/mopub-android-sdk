@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -6,15 +6,13 @@ package com.mopub.network;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.Build;
 import android.os.Looper;
+import android.text.TextUtils;
+import android.webkit.WebSettings;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.collection.LruCache;
-
-import android.text.TextUtils;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
 
 import com.mopub.common.Constants;
 import com.mopub.common.Preconditions;
@@ -48,7 +46,7 @@ public class Networking {
         } catch (SecurityException e) {
             MoPubLog.log(CUSTOM, "Unable to get system user agent.");
         }
-        DEFAULT_USER_AGENT = userAgent;
+        DEFAULT_USER_AGENT = userAgent != null ? userAgent : "";
     }
 
     // These are volatile so that double-checked locking works.
@@ -172,11 +170,7 @@ public class Networking {
         // the Android system user agent.
         String userAgent = DEFAULT_USER_AGENT;
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                userAgent = WebSettings.getDefaultUserAgent(context);
-            } else {
-                userAgent = new WebView(context).getSettings().getUserAgentString();
-            }
+            userAgent = WebSettings.getDefaultUserAgent(context);
         } catch (Exception e) {
             MoPubLog.log(CUSTOM,
                     "Failed to get a user agent. Defaulting to the system user agent.");
@@ -217,6 +211,7 @@ public class Networking {
         sMaxWidthImageLoader = imageLoader;
     }
 
+    @Deprecated
     @VisibleForTesting
     public static synchronized void setUserAgentForTesting(String userAgent) {
         sUserAgent = userAgent;

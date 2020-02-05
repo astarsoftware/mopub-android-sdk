@@ -1,0 +1,34 @@
+<html>
+  <head>
+    <script src='mraid.js'></script>
+    <script>
+      /*
+      Enables the following tests:
+
+      1. Playing a native video
+      2. Play an invalid native video URL, which should fail with an error
+      */
+
+      function playVideo() {
+        mraid.playVideo(
+            'http://www.nasa.gov/downloadable/videos/orion-_im_on_board_-_colin_baker.mp4');
+      }
+
+      function playInvalidVideo() {
+        mraid.playVideo('BAAAAAAAAAAAAAAAAAAAART!');
+      }
+
+      mraid.addEventListener('error', function(message, action) {
+        alert('MRAID error: ' + message + ' (action: ' + action + ')');
+      });
+    </script>
+  </head>
+  <body>
+    <button style='display:inline-block' onclick='playVideo()'>
+      playVideo()
+    </button>
+    <button style='display:inline-block' onclick='playInvalidVideo()'>
+      Play invalid video URL
+    </button>
+  </body>
+</html>

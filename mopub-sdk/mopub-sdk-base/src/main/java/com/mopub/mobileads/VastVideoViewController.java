@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -14,8 +14,6 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -27,23 +25,24 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.VideoView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.mopub.common.ExternalViewabilitySession.VideoEvent;
 import com.mopub.common.ExternalViewabilitySessionManager;
 import com.mopub.common.IntentActions;
 import com.mopub.common.Preconditions;
 import com.mopub.common.VisibleForTesting;
+import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Dips;
-import com.mopub.common.util.Utils;
 import com.mopub.mobileads.resource.DrawableConstants;
 
 import java.io.Serializable;
 import java.util.Map;
 
-import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
 import static com.mopub.common.MoPubBrowser.MOPUB_BROWSER_REQUEST_CODE;
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
 import static com.mopub.mobileads.VastXmlManagerAggregator.ADS_BY_AD_SLOT_ID;
-import static com.mopub.mobileads.VastXmlManagerAggregator.SOCIAL_ACTIONS_AD_SLOT_ID;
 import static com.mopub.network.TrackingRequest.makeVastTrackingHttpRequest;
 
 public class VastVideoViewController extends BaseVideoViewController {
@@ -83,9 +82,6 @@ public class VastVideoViewController extends BaseVideoViewController {
     @Nullable private final VastIconConfig mVastIconConfig;
     @NonNull private final View mLandscapeCompanionAdView;
     @NonNull private final View mPortraitCompanionAdView;
-    @NonNull private final Map<String, VastCompanionAdConfig> mSocialActionsCompanionAds;
-    @NonNull private View mAdsByView;
-    @NonNull private final View mSocialActionsView;
     @NonNull private final View mIconView;
 
     @NonNull private final VastVideoViewProgressRunnable mProgressCheckerRunnable;
@@ -99,7 +95,6 @@ public class VastVideoViewController extends BaseVideoViewController {
     private boolean mVideoError;
     private boolean mHasSkipOffset = false;
     private boolean mIsCalibrationDone = false;
-    private boolean mHasSocialActions = false;
     private int mDuration;
 
     /**
@@ -139,7 +134,6 @@ public class VastVideoViewController extends BaseVideoViewController {
 
         mVastCompanionAdConfig = mVastVideoConfig.getVastCompanionAd(
                 activity.getResources().getConfiguration().orientation);
-        mSocialActionsCompanionAds = mVastVideoConfig.getSocialActionsCompanionAds();
         mVastIconConfig = mVastVideoConfig.getVastIconConfig();
 
         mClickThroughListener = new View.OnTouchListener() {
@@ -199,27 +193,9 @@ public class VastVideoViewController extends BaseVideoViewController {
 
         // Icon view
         mIconView = createIconView(activity, mVastIconConfig, View.INVISIBLE);
-        mIconView.getViewTreeObserver().addOnGlobalLayoutListener(
-                new ViewTreeObserver.OnGlobalLayoutListener() {
-                    @Override
-                    public void onGlobalLayout() {
-                        // Wait until mIconView has been laid out to get accurate height
-                        mAdsByView = createAdsByView(activity);
-                        mIconView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                    }
-                }
-        );
 
         // CTA button
         addCtaButtonWidget(activity);
-
-        // Social Actions
-        final int ctaHeight = Dips.dipsToIntPixels(DrawableConstants.CtaButton.HEIGHT_DIPS,
-                activity);
-        mSocialActionsView = createSocialActionsView(activity,
-                mSocialActionsCompanionAds.get(SOCIAL_ACTIONS_AD_SLOT_ID),
-                ctaHeight, RelativeLayout.ALIGN_TOP, mCtaButtonWidget, View.INVISIBLE,
-                DrawableConstants.SocialActions.SOCIAL_ACTIONS_LEFT_MARGIN_DIPS);
 
         // Close button snapped to top-right corner of screen
         // Always add last to layout since it must be visible above all other views
@@ -229,28 +205,6 @@ public class VastVideoViewController extends BaseVideoViewController {
         mProgressCheckerRunnable = new VastVideoViewProgressRunnable(this, mVastVideoConfig,
                 mainHandler);
         mCountdownRunnable = new VastVideoViewCountdownRunnable(this, mainHandler);
-    }
-
-    @VisibleForTesting
-    View createAdsByView(Activity activity) {
-        return createSocialActionsView(activity,
-                mSocialActionsCompanionAds.get(ADS_BY_AD_SLOT_ID),
-                mIconView.getHeight(),
-                RelativeLayout.RIGHT_OF, mIconView, View.VISIBLE,
-                DrawableConstants.SocialActions.ADS_BY_LEFT_MARGIN_DIPS
-        );
-    }
-
-    @Deprecated // Just use for testing
-    @VisibleForTesting
-    boolean getHasSocialActions() {
-        return mHasSocialActions;
-    }
-
-    @Deprecated // Just use for testing
-    @VisibleForTesting
-    View getSocialActionsView() {
-        return mSocialActionsView;
     }
 
     @Override
@@ -333,9 +287,7 @@ public class VastVideoViewController extends BaseVideoViewController {
 
     @Override
     protected void onBackPressed() {
-        if (!mIsVideoFinishedPlaying) {
-            mExternalViewabilitySessionManager.recordVideoEvent(VideoEvent.AD_SKIPPED, getCurrentPosition());
-        }
+        handleExitTrackers();
     }
 
     // Enable the device's back button when the video close button has been displayed
@@ -349,6 +301,24 @@ public class VastVideoViewController extends BaseVideoViewController {
         if (requestCode == MOPUB_BROWSER_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             getBaseVideoViewControllerListener().onFinish();
         }
+    }
+
+    private void handleExitTrackers() {
+        final int currentPosition = getCurrentPosition();
+        // if mIsVideoFinishedPlaying, then the appropriate trackers have already been fired
+        // a bug in the android.widget.VideoView cause onCompletion to sometimes not be called
+        if (!mIsVideoFinishedPlaying) {
+            // if our current position is less than the duration, we assume this is a skip
+            if (currentPosition < mDuration) {
+                mExternalViewabilitySessionManager.recordVideoEvent(VideoEvent.AD_SKIPPED, currentPosition);
+                mVastVideoConfig.handleSkip(getContext(), currentPosition);
+            } else {
+                mExternalViewabilitySessionManager.recordVideoEvent(VideoEvent.AD_COMPLETE, currentPosition);
+                mVastVideoConfig.handleComplete(getContext(), mDuration);
+            }
+        }
+
+        mVastVideoConfig.handleClose(getContext(), mDuration);
     }
 
     private void adjustSkipOffset() {
@@ -366,10 +336,15 @@ public class VastVideoViewController extends BaseVideoViewController {
         }
 
         // Override if skipoffset attribute is specified in VAST
-        final Integer skipOffsetMillis = mVastVideoConfig.getSkipOffsetMillis(videoDuration);
-        if (skipOffsetMillis != null) {
-            mShowCloseButtonDelay = skipOffsetMillis;
-            mHasSkipOffset = true;
+        try{
+            final Integer skipOffsetMillis = mVastVideoConfig.getSkipOffsetMillis(videoDuration);
+            if (skipOffsetMillis != null) {
+                mShowCloseButtonDelay = skipOffsetMillis;
+                mHasSkipOffset = true;
+            }
+        } catch (NumberFormatException e) {
+            MoPubLog.log(CUSTOM, "Failed to parse skipoffset "
+                    + mVastVideoConfig.getSkipOffsetString());
         }
     }
 
@@ -379,7 +354,7 @@ public class VastVideoViewController extends BaseVideoViewController {
         }
         final VastVideoView videoView = new VastVideoView(context);
 
-        videoView.setId((int) Utils.generateUniqueId());
+        videoView.setId(View.generateViewId());
 
         videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
@@ -390,7 +365,7 @@ public class VastVideoViewController extends BaseVideoViewController {
                 mDuration = mVideoView.getDuration();
                 mExternalViewabilitySessionManager.onVideoPrepared(getLayout(), mDuration);
                 adjustSkipOffset();
-                if (mVastCompanionAdConfig == null || mHasSocialActions) {
+                if (mVastCompanionAdConfig == null) {
                     videoView.prepareBlurredLastVideoFrame(mBlurredLastVideoFrameImageView,
                             mVastVideoConfig.getDiskMediaFileUrl());
                 }
@@ -420,20 +395,8 @@ public class VastVideoViewController extends BaseVideoViewController {
                 }
 
                 videoView.setVisibility(View.INVISIBLE);
-
                 mProgressBarWidget.setVisibility(View.GONE);
-
-                if (mHasSocialActions) {
-                    // Social Actions need the blurred last frame to fill the screen regardless
-                    // of the companion ad.
-                    if (mBlurredLastVideoFrameImageView.getDrawable() != null) {
-                        mBlurredLastVideoFrameImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                        mBlurredLastVideoFrameImageView.setVisibility(View.VISIBLE);
-                    }
-                    // Also, avoid removing DAA icon for social actions
-                } else {
-                    mIconView.setVisibility(View.GONE);
-                }
+                mIconView.setVisibility(View.GONE);
 
                 mTopGradientStripWidget.notifyVideoComplete();
                 mBottomGradientStripWidget.notifyVideoComplete();
@@ -549,20 +512,14 @@ public class VastVideoViewController extends BaseVideoViewController {
         final View.OnTouchListener closeOnTouchListener = new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                final int currentPosition;
-                if (mIsVideoFinishedPlaying) {
-                    currentPosition = mDuration;
-                } else {
-                    currentPosition = getCurrentPosition();
+                // consume and do nothing for MotionEvents other than ACTION_UP
+                if (motionEvent.getAction() != MotionEvent.ACTION_UP) {
+                    return true;
                 }
-                if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-                    mIsClosing = true;
-                    if (!mIsVideoFinishedPlaying) {
-                        mExternalViewabilitySessionManager.recordVideoEvent(VideoEvent.AD_SKIPPED, getCurrentPosition());
-                    }
-                    mVastVideoConfig.handleClose(getContext(), currentPosition);
-                    getBaseVideoViewControllerListener().onFinish();
-                }
+
+                mIsClosing = true;
+                handleExitTrackers();
+                getBaseVideoViewControllerListener().onFinish();
                 return true;
             }
         };
@@ -640,65 +597,6 @@ public class VastVideoViewController extends BaseVideoViewController {
     }
 
     /**
-     * Creates and lays out the webviews used to display the social actions.
-     *
-     * @param context The context.
-     * @param vastCompanionAdConfig The data used to populate the view.
-     * @param anchorHeight The height in pixels of the view to use as anchor for the view.
-     * @param layoutVerb The way to layout the view relative to the anchorView.
-     * @param anchorView The view to use as anchor when laying out the view.
-     * @param initialVisibility The visibility the view should have.
-     * @return the populated webview
-     */
-    @NonNull
-    @VisibleForTesting
-    View createSocialActionsView(@NonNull final Context context,
-            @Nullable final VastCompanionAdConfig vastCompanionAdConfig, final int anchorHeight,
-            final int layoutVerb, @NonNull final View anchorView, final int initialVisibility,
-            final int leftMarginDips) {
-        Preconditions.checkNotNull(context);
-        Preconditions.checkNotNull(anchorView);
-
-        if (vastCompanionAdConfig == null) {
-            final View emptyView = new View(context);
-            emptyView.setVisibility(View.INVISIBLE);
-            return emptyView;
-        }
-
-        mHasSocialActions = true;
-        mCtaButtonWidget.setHasSocialActions(mHasSocialActions);
-
-        VastWebView companionView = createCompanionVastWebView(context, vastCompanionAdConfig);
-
-        final int width = Dips.dipsToIntPixels(vastCompanionAdConfig.getWidth(), context);
-        final int height = Dips.dipsToIntPixels(vastCompanionAdConfig.getHeight(), context);
-        final int offset = (anchorHeight - height) / 2;
-        final int leftMargin = Dips.dipsToIntPixels(leftMarginDips, context);
-
-        final RelativeLayout.LayoutParams companionAdLayout =
-                new RelativeLayout.LayoutParams(width, height);
-        companionAdLayout.addRule(layoutVerb, anchorView.getId());
-        companionAdLayout.addRule(RelativeLayout.ALIGN_TOP, anchorView.getId());
-        companionAdLayout.setMargins(leftMargin, offset, 0, 0);
-
-        RelativeLayout relativeLayout = new RelativeLayout(context);
-        relativeLayout.setGravity(Gravity.CENTER_VERTICAL);
-        RelativeLayout.LayoutParams layoutParams =
-                new RelativeLayout.LayoutParams(
-                        RelativeLayout.LayoutParams.WRAP_CONTENT,
-                        RelativeLayout.LayoutParams.WRAP_CONTENT);
-
-        relativeLayout.addView(companionView, layoutParams);
-        mExternalViewabilitySessionManager.registerVideoObstruction(companionView);
-
-        getLayout().addView(relativeLayout, companionAdLayout);
-        mExternalViewabilitySessionManager.registerVideoObstruction(relativeLayout);
-
-        companionView.setVisibility(initialVisibility);
-        return companionView;
-    }
-
-    /**
      * Creates and lays out the webview used to display the icon.
      *
      * @param context the context.
@@ -768,7 +666,6 @@ public class VastVideoViewController extends BaseVideoViewController {
         mCloseButtonWidget.setVisibility(View.VISIBLE);
 
         mCtaButtonWidget.notifyVideoSkippable();
-        mSocialActionsView.setVisibility(View.VISIBLE);
     }
 
     boolean shouldBeInteractable() {

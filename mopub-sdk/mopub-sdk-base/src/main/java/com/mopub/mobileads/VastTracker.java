@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -6,6 +6,9 @@ package com.mopub.mobileads;
 
 import androidx.annotation.NonNull;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+import com.mopub.common.Constants;
 import com.mopub.common.Preconditions;
 
 import java.io.Serializable;
@@ -17,10 +20,16 @@ import java.io.Serializable;
 public class VastTracker implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Expose @SerializedName(Constants.VAST_TRACKER_MESSAGE_TYPE)
     @NonNull private final MessageType mMessageType;
+
+    @Expose @SerializedName(Constants.VAST_TRACKER_CONTENT)
     @NonNull private final String mContent;
-    private boolean mCalled;
+
+    @Expose @SerializedName(Constants.VAST_TRACKER_REPEATABLE)
     private boolean mIsRepeatable;
+
+    private boolean mCalled;
 
     enum MessageType { TRACKING_URL, QUARTILE_EVENT }
 

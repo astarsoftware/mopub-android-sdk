@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -9,13 +9,6 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.fragment.app.ListFragment;
-
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -30,6 +23,13 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.fragment.app.ListFragment;
+
 import com.mopub.common.MoPub;
 import com.mopub.common.Preconditions;
 import com.mopub.common.logging.MoPubLog;
@@ -39,7 +39,7 @@ import com.mopub.common.privacy.PersonalInfoManager;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR;
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR_WITH_THROWABLE;
 import static com.mopub.simpleadsdemo.MoPubSampleAdUnit.AdType;
 import static com.mopub.simpleadsdemo.Utils.logToast;
 
@@ -81,16 +81,19 @@ public class MoPubListFragment extends ListFragment implements TrashCanClickList
 
         final String format = deeplinkData.getQueryParameter(FORMAT_KEY);
         final AdType adType = AdType.fromDeeplinkString(format);
+        final String keywords = deeplinkData.getQueryParameter(KEYWORDS_KEY);
         if (adType == null) {
             logToast(getContext(), "Ignoring invalid ad format: " + format);
             return;
         }
 
         final String name = deeplinkData.getQueryParameter(NAME_KEY);
-        final MoPubSampleAdUnit adUnit = new MoPubSampleAdUnit.Builder(adUnitId,
-                adType).description(name == null ? "" : name).build();
+        final MoPubSampleAdUnit adUnit = new MoPubSampleAdUnit.Builder(adUnitId, adType)
+                .description(name == null ? "" : name)
+                .keywords(keywords == null ? "" : keywords)
+                .build();
         final MoPubSampleAdUnit newAdUnit = addAdUnit(adUnit);
-        enterAdFragment(newAdUnit, deeplinkData.getQueryParameter(KEYWORDS_KEY),
+        enterAdFragment(newAdUnit, keywords,
                 deeplinkData.getQueryParameter(USER_DATA_KEYWORDS_KEY));
     }
 
@@ -148,7 +151,7 @@ public class MoPubListFragment extends ListFragment implements TrashCanClickList
         final MoPubSampleAdUnit adConfiguration = mAdapter.getItem(position);
 
         if (adConfiguration != null) {
-            enterAdFragment(adConfiguration, null, null);
+            enterAdFragment(adConfiguration, adConfiguration.getKeywords(), null);
         }
     }
 
@@ -165,10 +168,10 @@ public class MoPubListFragment extends ListFragment implements TrashCanClickList
         try {
             fragment = fragmentClass.newInstance();
         } catch (java.lang.InstantiationException e) {
-            MoPubLog.log(ERROR, "Error creating fragment for class " + fragmentClass, e);
+            MoPubLog.log(ERROR_WITH_THROWABLE, "Error creating fragment for class " + fragmentClass, e);
             return;
         } catch (IllegalAccessException e) {
-            MoPubLog.log(ERROR, "Error creating fragment for class " + fragmentClass, e);
+            MoPubLog.log(ERROR_WITH_THROWABLE, "Error creating fragment for class " + fragmentClass, e);
             return;
         }
 
@@ -254,7 +257,7 @@ public class MoPubListFragment extends ListFragment implements TrashCanClickList
             }
         }
         mAdapter.add(createdAdUnit);
-        mAdapter.sort(MoPubSampleAdUnit.COMPARATOR);
+        syncDbAdapter();
         return createdAdUnit;
     }
 
@@ -345,6 +348,8 @@ public class MoPubListFragment extends ListFragment implements TrashCanClickList
                                     (Spinner) dialog.findViewById(R.id.add_ad_unit_type);
                             final EditText descriptionField =
                                     (EditText) dialog.findViewById(R.id.add_ad_unit_description);
+                            final EditText keywordsField =
+                                    (EditText) dialog.findViewById(R.id.add_ad_unit_keywords);
 
                             // Verify data:
                             try {
@@ -361,9 +366,12 @@ public class MoPubListFragment extends ListFragment implements TrashCanClickList
                             final String adUnitId = adUnitIdField.getText().toString();
                             final AdType adType = adTypes[adTypeSpinner.getSelectedItemPosition()];
                             final String description = descriptionField.getText().toString();
+                            final String keywords = keywordsField.getText().toString();
+
                             final MoPubSampleAdUnit sampleAdUnit =
                                     new MoPubSampleAdUnit.Builder(adUnitId, adType)
                                             .description(description)
+                                            .keywords(keywords)
                                             .isUserDefined(true)
                                             .build();
                             ((MoPubListFragment) getTargetFragment()).addAdUnit(sampleAdUnit);

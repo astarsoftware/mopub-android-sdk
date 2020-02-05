@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -9,7 +9,6 @@ import androidx.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.mopub.common.Preconditions;
-import com.mopub.common.util.DeviceUtils.ForceOrientation;
 import com.mopub.mobileads.util.XmlUtils;
 
 import org.w3c.dom.Document;
@@ -74,6 +73,7 @@ class VastXmlManager {
 
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         documentBuilderFactory.setCoalescing(true);
+        documentBuilderFactory.setExpandEntityReferences(false);
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
         mVastDoc = documentBuilder.parse(new InputSource(new StringReader(documentString)));
     }

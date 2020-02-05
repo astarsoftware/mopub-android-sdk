@@ -1,12 +1,13 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.nativeads;
 
+import android.view.View;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.view.View;
 
 import com.mopub.common.Preconditions;
 
@@ -25,6 +26,7 @@ public abstract class VideoNativeAd extends BaseNativeAd implements NativeVideoC
     @Nullable private String mPrivacyInformationIconClickThroughUrl;
     @Nullable private String mPrivacyInformationIconImageUrl;
     @Nullable private String mVastVideo;
+    @Nullable private String mSponsored;
 
     // Extras
     @NonNull
@@ -93,6 +95,17 @@ public abstract class VideoNativeAd extends BaseNativeAd implements NativeVideoC
     }
 
     /**
+     * Returns the advertiser name for the sponsored field.
+     *
+     * @return String representing the advertiser name, or {@code null} if not set.
+     */
+    @Nullable
+    public String getSponsored() {
+        return mSponsored;
+    }
+
+
+    /**
      * Given a particular String key, return the associated Object value from the ad's extras
      * map. See {@link VideoNativeAd#getExtras()} for more information.
      */
@@ -145,6 +158,10 @@ public abstract class VideoNativeAd extends BaseNativeAd implements NativeVideoC
     public void setPrivacyInformationIconImageUrl(
             @Nullable String privacyInformationIconImageUrl) {
         mPrivacyInformationIconImageUrl = privacyInformationIconImageUrl;
+    }
+
+    public void setSponsored(@Nullable String sponsored) {
+        mSponsored = sponsored;
     }
 
     final public void addExtra(@NonNull final String key, @Nullable final Object value) {

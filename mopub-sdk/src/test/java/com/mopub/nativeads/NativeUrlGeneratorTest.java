@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -14,7 +14,6 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.Uri;
-import android.os.Build;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
@@ -110,24 +109,20 @@ public class NativeUrlGeneratorTest {
         when(mockPackageManager.getPackageInfo(any(String.class), anyInt())).thenReturn(mockPackageInfo);
         when(spyApplicationContext.getPackageManager()).thenReturn(mockPackageManager);
 
-        // Only do this on Android 17+ because getRealSize doesn't exist before then.
-        // This is the default pathway.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            final WindowManager mockWindowManager = mock(WindowManager.class);
-            final Display mockDisplay = mock(Display.class);
-            doAnswer(new Answer() {
-                @Override
-                public Object answer(final InvocationOnMock invocationOnMock) {
-                    final Point point = (Point) invocationOnMock.getArguments()[0];
-                    point.x = TEST_SCREEN_WIDTH;
-                    point.y = TEST_SCREEN_HEIGHT;
-                    return null;
-                }
-            }).when(mockDisplay).getRealSize(any(Point.class));
-            when(mockWindowManager.getDefaultDisplay()).thenReturn(mockDisplay);
-            when(spyApplicationContext.getSystemService(Context.WINDOW_SERVICE)).thenReturn(mockWindowManager);
-            when(context.getApplicationContext()).thenReturn(spyApplicationContext);
-        }
+        final WindowManager mockWindowManager = mock(WindowManager.class);
+        final Display mockDisplay = mock(Display.class);
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(final InvocationOnMock invocationOnMock) {
+                final Point point = (Point) invocationOnMock.getArguments()[0];
+                point.x = TEST_SCREEN_WIDTH;
+                point.y = TEST_SCREEN_HEIGHT;
+                return null;
+            }
+        }).when(mockDisplay).getRealSize(any(Point.class));
+        when(mockWindowManager.getDefaultDisplay()).thenReturn(mockDisplay);
+        when(spyApplicationContext.getSystemService(Context.WINDOW_SERVICE)).thenReturn(mockWindowManager);
+        when(context.getApplicationContext()).thenReturn(spyApplicationContext);
 
         mockPersonalInfoManager = mock(PersonalInfoManager.class);
         when(mockPersonalInfoManager.getPersonalInfoConsentStatus()).thenReturn(ConsentStatus.UNKNOWN);

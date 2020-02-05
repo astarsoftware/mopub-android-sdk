@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -15,6 +15,7 @@ import com.mopub.common.util.Utils;
 import com.mopub.mobileads.VastErrorCode;
 import com.mopub.mobileads.VastMacroHelper;
 import com.mopub.mobileads.VastTracker;
+import com.mopub.mobileads.VastTrackerTwo;
 import com.mopub.volley.DefaultRetryPolicy;
 import com.mopub.volley.NetworkResponse;
 import com.mopub.volley.RequestQueue;
@@ -83,6 +84,36 @@ public class TrackingRequest extends MoPubRequest<Void> {
 
         List<String> trackers = new ArrayList<String>(vastTrackers.size());
         for (VastTracker vastTracker : vastTrackers) {
+            if (vastTracker == null) {
+                continue;
+            }
+            if (vastTracker.isTracked() && !vastTracker.isRepeatable()) {
+                continue;
+            }
+            trackers.add(vastTracker.getContent());
+            vastTracker.setTracked();
+        }
+
+        makeTrackingHttpRequest(
+                new VastMacroHelper(trackers)
+                        .withErrorCode(vastErrorCode)
+                        .withContentPlayHead(contentPlayHead)
+                        .withAssetUri(assetUri)
+                        .getUris(),
+                context
+        );
+    }
+
+    public static void makeVastTrackingTwoHttpRequest(
+            @NonNull final List<VastTrackerTwo> vastTrackers,
+            @Nullable final VastErrorCode vastErrorCode,
+            @Nullable final Integer contentPlayHead,
+            @Nullable final String assetUri,
+            @Nullable final Context context) {
+        Preconditions.checkNotNull(vastTrackers);
+
+        List<String> trackers = new ArrayList<String>(vastTrackers.size());
+        for (VastTrackerTwo vastTracker : vastTrackers) {
             if (vastTracker == null) {
                 continue;
             }

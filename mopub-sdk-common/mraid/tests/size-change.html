@@ -1,0 +1,83 @@
+<html>
+  <head>
+    <script src='mraid.js'></script>
+    <script>
+      /*
+      Enables the following tests:
+
+      1. Resizing before setting resize properties
+      2. Changing the size from a resized state, then resizing again
+      3. Decreasing the size to an invalid size
+      4. Resizing off the screen, and listening for viewable change events
+      */
+
+      var resizeProperties = {
+        height: 200,
+        width: 320,
+        offsetX: 0,
+        offsetY: 0
+      };
+
+      function resize() {
+        mraid.resize();
+      }
+
+      function increaseSize() {
+        resizeProperties.height += 100;
+        console.log('changing resize properties height to ' + resizeProperties.height);
+        mraid.setResizeProperties(resizeProperties);
+      }
+
+      function decreaseSize() {
+        resizeProperties.height -= 100;
+        console.log('changing resize properties height to ' + resizeProperties.height);
+        mraid.setResizeProperties(resizeProperties);
+      }
+
+      function isViewable() {
+        var isViewable = mraid.isViewable();
+        alert('Viewable: ' + isViewable);
+      }
+
+      function getCurrentPosition() {
+        var currentPosition = mraid.getCurrentPosition();
+        alert('Current position set to: ' + JSON.stringify(currentPosition, null, '  '))
+      }
+
+      mraid.addEventListener('sizeChange', function(width, height) {
+        console.log('size changed to width: ' + width + ' height: ' + height);
+      });
+
+      mraid.addEventListener('viewableChange', function(state) {
+        console.log('isViewable changed to: ' + state);
+      });
+
+      mraid.addEventListener('error', function(message, action) {
+        alert('MRAID error: ' + message + ' (action: ' + action + ')');
+      });
+    </script>
+  </head>
+  <body>
+    <div>
+      <button style='display:inline-block' onclick='resize()'>
+        resize()
+      </button>
+    </div>
+    <div>
+      <button style='display:inline-block' onclick='increaseSize()'>
+        Increase Resize Height
+      </button>
+      <button style='display:inline-block' onclick='decreaseSize()'>
+        Decrease Resize Height
+      </button>
+    </div>
+    <div>
+      <button style='display:inline-block' onclick='isViewable()'>
+        isViewable()
+      </button>
+      <button style='display:inline-block' onclick='getCurrentPosition()'>
+        getCurrentPosition()
+      </button>
+    </div>
+  </body>
+</html>

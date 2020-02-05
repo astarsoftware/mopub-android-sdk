@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -30,10 +30,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.mopub.mobileads.MoPubErrorCode;
 import com.mopub.mobileads.MoPubView;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import static android.view.View.GONE;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -57,9 +53,35 @@ public abstract class AbstractBannerDetailFragment extends Fragment implements B
     public abstract MoPubView.MoPubAdSize getAdSize();
     protected MoPubAdSizeSettings mMoPubAdSizeSettings;
 
-    private static final List<MoPubView.MoPubAdSize> mAdSizes = Arrays.asList(MoPubView.MoPubAdSize.values());
-    private static final List<String> mAdDimensionStrings =
-            Arrays.asList("MATCH_PARENT", "WRAP_CONTENT", "EXACT");
+    private enum AdSizeOption {
+        EXACT(0),
+        MATCH_PARENT(ViewGroup.LayoutParams.MATCH_PARENT), // -1
+        WRAP_CONTENT(ViewGroup.LayoutParams.WRAP_CONTENT); // -2
+
+        final int layoutParamValue;
+
+        AdSizeOption(final int layoutParamValue) {
+            this.layoutParamValue = layoutParamValue;
+        }
+
+        public int getLayoutParamsValue() {
+            // getLayoutParamsValue returns the height or width value equivalent from ViewGroup.LayoutParams
+            // ViewGroup.LayoutParams.MATCH_PARENT
+            return layoutParamValue;
+        }
+
+        public static AdSizeOption fromLayoutParamsValue(final int layoutParamsValue) {
+            switch(layoutParamsValue) {
+                case ViewGroup.LayoutParams.MATCH_PARENT:
+                    return MATCH_PARENT;
+                case ViewGroup.LayoutParams.WRAP_CONTENT:
+                    return WRAP_CONTENT;
+                default:
+                    return EXACT;
+            }
+        }
+    }
+
 
     private enum BannerCallbacks {
         LOADED("onBannerLoaded"),
@@ -102,15 +124,15 @@ public abstract class AbstractBannerDetailFragment extends Fragment implements B
         public String toString() {
             return String.format(DETAIL_STRING,
                     getAdSizeString(),
-                    getDimensionString(width),
-                    getDimensionString(height));
+                    getLayoutParamsString(width),
+                    getLayoutParamsString(height));
         }
 
         private String getAdSizeString() {
             return (adSize != null) ? adSize.toString() : null;
         }
 
-        private String getDimensionString(int dimension) {
+        private String getLayoutParamsString(int dimension) {
             switch (dimension) {
                 case MATCH_PARENT:
                     return "MATCH_PARENT";
@@ -136,7 +158,7 @@ public abstract class AbstractBannerDetailFragment extends Fragment implements B
         mViewHolder = DetailFragmentViewHolder.fromView(view);
 
         mMoPubSampleAdUnit = MoPubSampleAdUnit.fromBundle(getArguments());
-        mMoPubView = (MoPubView) view.findViewById(R.id.banner_mopubview);
+        mMoPubView = view.findViewById(R.id.banner_mopubview);
         final LinearLayout.LayoutParams layoutParams =
                 (LinearLayout.LayoutParams) mMoPubView.getLayoutParams();
         mMoPubView.setLayoutParams(layoutParams);
@@ -300,8 +322,8 @@ public abstract class AbstractBannerDetailFragment extends Fragment implements B
         @NonNull
         public Dialog onCreateDialog(final Bundle savedInstanceState) {
             AlertDialog dialog = new AlertDialog.Builder(getActivity())
-                    .setTitle("Set MoPubAdSize")
-                    .setPositiveButton("Save MoPubAdSize", new DialogInterface.OnClickListener() {
+                    .setTitle(R.string.ad_size_dialog_title)
+                    .setPositiveButton(R.string.ad_size_dialog_save_button, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(final DialogInterface dialogInterface, final int i) {
                             ((AbstractBannerDetailFragment) getTargetFragment())
@@ -309,7 +331,7 @@ public abstract class AbstractBannerDetailFragment extends Fragment implements B
                             dismiss();
                         }
                     })
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(final DialogInterface dialogInterface, final int i) {
                             dismiss();
@@ -329,16 +351,10 @@ public abstract class AbstractBannerDetailFragment extends Fragment implements B
             adWidthEditText = view.findViewById(R.id.ad_size_width_edit_text);
             adHeightEditText = view.findViewById(R.id.ad_size_height_edit_text);
 
-            final List<String> adSizeStrings = new ArrayList<>(mAdSizes.size());
-
-            for (final MoPubView.MoPubAdSize adSize : mAdSizes) {
-                adSizeStrings.add(adSize.name());
-            }
-
             final ArrayAdapter dimensionArrayAdapter = new ArrayAdapter<>(getActivity(),
                     android.R.layout.simple_spinner_dropdown_item,
                     android.R.id.text1,
-                    mAdDimensionStrings);
+                    AdSizeOption.values());
 
             adWidthEditText.addTextChangedListener(new TextWatcher() {
                 @Override
@@ -378,7 +394,7 @@ public abstract class AbstractBannerDetailFragment extends Fragment implements B
                     new AdapterView.OnItemSelectedListener() {
                         @Override
                         public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                            adSizeSettings.adSize = MoPubView.MoPubAdSize.valueOf((String) adapterView.getSelectedItem());
+                            adSizeSettings.adSize = (MoPubView.MoPubAdSize) adapterView.getSelectedItem();
 
                             updateViews();
                         }
@@ -393,10 +409,9 @@ public abstract class AbstractBannerDetailFragment extends Fragment implements B
                     new AdapterView.OnItemSelectedListener() {
                         @Override
                         public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                            if(mAdDimensionStrings.get(0).equals(adapterView.getSelectedItem())) { // "MATCH_PARENT"
-                                adSizeSettings.width = MATCH_PARENT;
-                            } else if(mAdDimensionStrings.get(1).equals(adapterView.getSelectedItem())) { // "WRAP_CONTENT"
-                                adSizeSettings.width = WRAP_CONTENT;
+                            final AdSizeOption selected = AdSizeOption.values()[i];
+                            if(!AdSizeOption.EXACT.equals(selected)) { // "MATCH_PARENT" or "WRAP_CONTENT"
+                                adSizeSettings.width = selected.getLayoutParamsValue();
                             } else if (adSizeSettings.width < 0) {
                                 adSizeSettings.width = 0;
                             }
@@ -414,10 +429,9 @@ public abstract class AbstractBannerDetailFragment extends Fragment implements B
                     new AdapterView.OnItemSelectedListener() {
                         @Override
                         public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                            if(mAdDimensionStrings.get(0).equals(adapterView.getSelectedItem())) { // "MATCH_PARENT"
-                                adSizeSettings.height = MATCH_PARENT;
-                            } else if(mAdDimensionStrings.get(1).equals(adapterView.getSelectedItem())) { // "WRAP_CONTENT"
-                                adSizeSettings.height = WRAP_CONTENT;
+                            final AdSizeOption selected = AdSizeOption.values()[i];
+                            if(!AdSizeOption.EXACT.equals(selected)) { // "MATCH_PARENT" or "WRAP_CONTENT"
+                                adSizeSettings.height = selected.getLayoutParamsValue();
                             } else if (adSizeSettings.height < 0) {
                                 adSizeSettings.height = 0;
                             }
@@ -432,7 +446,9 @@ public abstract class AbstractBannerDetailFragment extends Fragment implements B
                     };
 
             adSizeSpinner.setAdapter(new ArrayAdapter<>(getActivity(),
-                    android.R.layout.simple_spinner_dropdown_item, android.R.id.text1, adSizeStrings));
+                    android.R.layout.simple_spinner_dropdown_item,
+                    android.R.id.text1,
+                    MoPubView.MoPubAdSize.values()));
             adSizeSpinner.setOnItemSelectedListener(adSizeSelectionListener);
 
             adWidthSpinner.setAdapter(dimensionArrayAdapter);
@@ -449,34 +465,29 @@ public abstract class AbstractBannerDetailFragment extends Fragment implements B
 
         private void updateViews() {
             // MoPubAdSize
-            adSizeSpinner.setSelection(mAdSizes.indexOf(adSizeSettings.adSize));
+            adSizeSpinner.setSelection(adSizeSettings.adSize.ordinal());
 
             // View Width
-            if (adSizeSettings.width == MATCH_PARENT) {
+            final int width = AdSizeOption.fromLayoutParamsValue(adSizeSettings.width).ordinal();
+            adWidthSpinner.setSelection(width);
+
+            if (adSizeSettings.width == MATCH_PARENT || adSizeSettings.width == WRAP_CONTENT) {
                 adWidthEditText.setVisibility(GONE);
-                adWidthSpinner.setSelection(0); // "MATCH_PARENT"
-            } else if (adSizeSettings.width == WRAP_CONTENT) {
-                adWidthEditText.setVisibility(GONE);
-                adWidthSpinner.setSelection(1); // "WRAP_CONTENT"
             } else {
                 adWidthEditText.setVisibility(View.VISIBLE);
-                adWidthSpinner.setSelection(2); // "EXACT"
                 adWidthEditText.setText("" + adSizeSettings.width);
             }
 
             // View Height
-            if (adSizeSettings.height == MATCH_PARENT) {
+            final int height = AdSizeOption.fromLayoutParamsValue(adSizeSettings.height).ordinal();
+            adHeightSpinner.setSelection(height);
+
+            if (adSizeSettings.height == MATCH_PARENT || adSizeSettings.height == WRAP_CONTENT) {
                 adHeightEditText.setVisibility(GONE);
-                adHeightSpinner.setSelection(0); // "MATCH_PARENT"
-            } else if (adSizeSettings.height == WRAP_CONTENT) {
-                adHeightEditText.setVisibility(GONE);
-                adHeightSpinner.setSelection(1); // "WRAP_CONTENT"
             } else {
                 adHeightEditText.setVisibility(View.VISIBLE);
-                adHeightSpinner.setSelection(2); // "EXACT"
                 adHeightEditText.setText("" + adSizeSettings.height);
             }
-
         }
     }
 }

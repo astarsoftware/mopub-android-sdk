@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -13,6 +13,7 @@ import android.webkit.WebView;
 
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.VastVideoConfig;
+import com.mopub.mobileads.VastVideoConfigTwo;
 
 import java.util.HashSet;
 import java.util.Locale;
@@ -177,7 +178,34 @@ public class ExternalViewabilitySessionManager {
      * @param vastVideoConfig Configuration file used to store video viewability tracking tags.
      */
     public void createVideoSession(@NonNull final Activity activity, @NonNull final View view,
-            @NonNull final VastVideoConfig vastVideoConfig) {
+                                   @NonNull final VastVideoConfig vastVideoConfig) {
+        Preconditions.checkNotNull(activity);
+        Preconditions.checkNotNull(view);
+        Preconditions.checkNotNull(vastVideoConfig);
+
+        for (final ExternalViewabilitySession session : mViewabilitySessions) {
+            final Set<String> buyerResources = new HashSet<String>();
+            if (session instanceof AvidViewabilitySession) {
+                buyerResources.addAll(vastVideoConfig.getAvidJavascriptResources());
+            } else if (session instanceof MoatViewabilitySession) {
+                buyerResources.addAll(vastVideoConfig.getMoatImpressionPixels());
+            }
+
+            final Boolean successful = session.createVideoSession(activity, view, buyerResources,
+                    vastVideoConfig.getExternalViewabilityTrackers());
+            logEvent(session, "start video session", successful, true);
+        }
+    }
+
+    /**
+     * Registers and starts video viewability tracking for the given View.
+     *
+     * @param activity An Activity Context.
+     * @param view The player View.
+     * @param vastVideoConfig Configuration file used to store video viewability tracking tags.
+     */
+    public void createVideoSession(@NonNull final Activity activity, @NonNull final View view,
+                                   @NonNull final VastVideoConfigTwo vastVideoConfig) {
         Preconditions.checkNotNull(activity);
         Preconditions.checkNotNull(view);
         Preconditions.checkNotNull(vastVideoConfig);

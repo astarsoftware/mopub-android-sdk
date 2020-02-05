@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -6,11 +6,12 @@ package com.mopub.mobileads;
 
 import android.content.Context;
 import android.graphics.Color;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.WebSettings;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.mopub.common.AdReport;
 import com.mopub.common.Constants;
@@ -31,7 +32,6 @@ public class BaseHtmlWebView extends BaseWebView {
 
         mViewGestureDetector = new ViewGestureDetector(context, this, adReport);
 
-        enablePlugins(true);
         setBackgroundColor(Color.TRANSPARENT);
     }
 

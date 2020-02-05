@@ -1,21 +1,26 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.nativeads;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.content.res.Resources;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.mopub.common.UrlAction;
 import com.mopub.common.UrlHandler;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Drawables;
+import com.mopub.mobileads.native_static.R;
 
+import java.util.IllegalFormatException;
 import java.util.Map;
 
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
@@ -111,6 +116,34 @@ public class NativeRendererHelper {
                 rootView.performClick();
             }
         });
+    }
+
+    public static void addSponsoredView(@Nullable final String sponsoredString,
+            @Nullable final TextView sponsoredTextView) {
+        if (sponsoredTextView == null) {
+            return;
+        }
+
+        if (TextUtils.isEmpty(sponsoredString)) {
+            sponsoredTextView.setVisibility(View.INVISIBLE);
+            return;
+        }
+
+        String sponsoredByFormattedString = sponsoredString;
+        try {
+            sponsoredByFormattedString = sponsoredTextView.getContext()
+                    .getString(R.string.com_mopub_nativeads_sponsored_by, sponsoredString);
+        } catch (IllegalFormatException e) {
+            MoPubLog.log(CUSTOM, "Unable to format sponsored by String.");
+        } catch (Resources.NotFoundException e) {
+            MoPubLog.log(CUSTOM, "Unable to format sponsored by String.");
+        }
+        if (!sponsoredByFormattedString.contains(sponsoredString)) {
+            MoPubLog.log(CUSTOM, "The formatted sponsored String does not include the sponsor. " +
+                    "Please include %s in the com_mopub_nativeads_sponsored_by translation.");
+        }
+        addTextView(sponsoredTextView, sponsoredByFormattedString);
+        sponsoredTextView.setVisibility(View.VISIBLE);
     }
 
     public static void updateExtras(@Nullable final View mainView,

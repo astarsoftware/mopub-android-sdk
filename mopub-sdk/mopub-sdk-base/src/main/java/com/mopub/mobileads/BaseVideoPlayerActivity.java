@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -9,11 +9,14 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
+import android.os.Bundle;
+
 import androidx.annotation.Nullable;
 
 import com.mopub.common.Constants;
 import com.mopub.common.CreativeOrientation;
 import com.mopub.common.logging.MoPubLog;
+import com.mopub.common.util.Utils;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static com.mopub.common.DataKeys.BROADCAST_IDENTIFIER_KEY;
@@ -52,7 +55,24 @@ public class BaseVideoPlayerActivity extends Activity {
         try {
             context.startActivity(intentVideoPlayerActivity);
         } catch (ActivityNotFoundException e) {
-            MoPubLog.log(CUSTOM, "Activity MraidVideoPlayerActivity not found. Did you declare it in your AndroidManifest.xml?");
+            MoPubLog.log(CUSTOM, "Attempt to start with VastVideoConfig failed. " +
+                    "Activity MraidVideoPlayerActivity not found. " +
+                    "Did you declare it in your AndroidManifest.xml?");
+        }
+    }
+
+    static void startVast(final Context context,
+                          final VastVideoConfigTwo vastVideoConfig,
+                          final long broadcastIdentifier,
+                          @Nullable final CreativeOrientation orientation) {
+        final Intent intentVideoPlayerActivity = createIntentVast(context, vastVideoConfig,
+                broadcastIdentifier, orientation);
+        try {
+            context.startActivity(intentVideoPlayerActivity);
+        } catch (ActivityNotFoundException e) {
+            MoPubLog.log(CUSTOM, "Attempt to start with VastVideoConfigTwo failed. " +
+                    "Activity MraidVideoPlayerActivity not found. " +
+                    "Did you declare it in your AndroidManifest.xml?");
         }
     }
 
@@ -63,6 +83,19 @@ public class BaseVideoPlayerActivity extends Activity {
         final Intent intentVideoPlayerActivity = new Intent(context, MraidVideoPlayerActivity.class);
         intentVideoPlayerActivity.setFlags(FLAG_ACTIVITY_NEW_TASK);
         intentVideoPlayerActivity.putExtra(VIDEO_CLASS_EXTRAS_KEY, "vast");
+        intentVideoPlayerActivity.putExtra(VAST_VIDEO_CONFIG, vastVideoConfig);
+        intentVideoPlayerActivity.putExtra(BROADCAST_IDENTIFIER_KEY, broadcastIdentifier);
+        intentVideoPlayerActivity.putExtra(CREATIVE_ORIENTATION_KEY, orientation);
+        return intentVideoPlayerActivity;
+    }
+
+    static Intent createIntentVast(final Context context,
+           final VastVideoConfigTwo vastVideoConfig,
+           final long broadcastIdentifier,
+           @Nullable final CreativeOrientation orientation) {
+        final Intent intentVideoPlayerActivity = new Intent(context, MraidVideoPlayerActivity.class);
+        intentVideoPlayerActivity.setFlags(FLAG_ACTIVITY_NEW_TASK);
+        intentVideoPlayerActivity.putExtra(VIDEO_CLASS_EXTRAS_KEY, "vast_new");
         intentVideoPlayerActivity.putExtra(VAST_VIDEO_CONFIG, vastVideoConfig);
         intentVideoPlayerActivity.putExtra(BROADCAST_IDENTIFIER_KEY, broadcastIdentifier);
         intentVideoPlayerActivity.putExtra(CREATIVE_ORIENTATION_KEY, orientation);
@@ -85,6 +118,13 @@ public class BaseVideoPlayerActivity extends Activity {
         intentVideoPlayerActivity.putExtra(Constants.NATIVE_VIDEO_ID, nativeVideoId);
         intentVideoPlayerActivity.putExtra(Constants.NATIVE_VAST_VIDEO_CONFIG, vastVideoConfig);
         return intentVideoPlayerActivity;
+    }
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        Utils.hideNavigationBar(this);
     }
 
     @Override

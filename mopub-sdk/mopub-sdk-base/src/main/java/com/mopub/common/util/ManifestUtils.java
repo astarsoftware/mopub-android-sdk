@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -267,9 +267,12 @@ public class ManifestUtils {
         if (isDebuggable(context)) {
             final String message = "ERROR: YOUR MOPUB INTEGRATION IS INCOMPLETE.\n" +
                     "Check logcat and update your AndroidManifest.xml with the correct activities and configuration.";
-            final Toast toast = Toast.makeText(context, message, Toast.LENGTH_LONG);
-            toast.setGravity(Gravity.FILL_HORIZONTAL, 0, 0);
-            toast.show();
+            final Context applicationContext = context.getApplicationContext();
+            if (applicationContext != null) {
+                final Toast toast = Toast.makeText(applicationContext, message, Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.FILL_HORIZONTAL, 0, 0);
+                toast.show();
+            }
         }
     }
 

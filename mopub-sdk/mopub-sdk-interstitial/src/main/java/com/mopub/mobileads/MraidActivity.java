@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -8,13 +8,14 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.webkit.WebView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.mopub.common.AdReport;
 import com.mopub.common.Constants;
@@ -43,13 +44,13 @@ import static com.mopub.common.IntentActions.ACTION_INTERSTITIAL_CLICK;
 import static com.mopub.common.IntentActions.ACTION_INTERSTITIAL_DISMISS;
 import static com.mopub.common.IntentActions.ACTION_INTERSTITIAL_FAIL;
 import static com.mopub.common.IntentActions.ACTION_INTERSTITIAL_SHOW;
+import static com.mopub.common.logging.MoPubLog.AdLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdLogEvent.DID_APPEAR;
 import static com.mopub.common.logging.MoPubLog.AdLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdLogEvent.LOAD_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdLogEvent.SHOW_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdLogEvent.SHOW_FAILED;
-import static com.mopub.common.logging.MoPubLog.AdLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdLogEvent.SHOW_SUCCESS;
 import static com.mopub.common.logging.MoPubLog.AdLogEvent.WILL_DISAPPEAR;
 import static com.mopub.common.util.JavaScriptWebViewCallbacks.WEB_VIEW_DID_APPEAR;
@@ -91,7 +92,6 @@ public class MraidActivity extends BaseInterstitialActivity {
         Preconditions.checkNotNull(broadcastIdentifier);
         Preconditions.checkNotNull(mraidController);
 
-        mraidWebView.enablePlugins(false);
         mraidWebView.enableJavascriptCaching();
         final Context context = mraidWebView.getContext();
 

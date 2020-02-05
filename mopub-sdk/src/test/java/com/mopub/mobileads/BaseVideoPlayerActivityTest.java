@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -8,10 +8,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
+import android.view.View;
 
 import com.mopub.common.CreativeOrientation;
 import com.mopub.common.test.support.SdkTestRunner;
 import com.mopub.common.util.Utils;
+import com.mopub.common.util.UtilsTest;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -37,13 +39,23 @@ public class BaseVideoPlayerActivityTest {
 
     private long testBroadcastIdentifier;
     private VastVideoConfig mVastVideoConfig;
+    private VastVideoConfigTwo mVastVideoConfigTwo;
     private CreativeOrientation mOrientation;
 
     @Before
     public void setup() throws Exception {
         mVastVideoConfig = mock(VastVideoConfig.class, withSettings().serializable());
+        mVastVideoConfigTwo = mock(VastVideoConfigTwo.class, withSettings().serializable());
         testBroadcastIdentifier = 1234;
         mOrientation = CreativeOrientation.DEVICE;
+    }
+
+    @Test
+    public void create_callsHideNavigationBar(){
+        Activity subject = Robolectric.buildActivity(BaseVideoPlayerActivity.class).create().get();
+        View decorView = subject.getWindow().getDecorView();
+
+        assertThat(decorView.getSystemUiVisibility()).isEqualTo(UtilsTest.FLAGS);
     }
 
     @Test
@@ -53,10 +65,18 @@ public class BaseVideoPlayerActivityTest {
     }
 
     @Test
-    public void startVast_shouldStartMraidVideoPlayerActivity() throws Exception {
+    public void startVast_withVastVideoConfig_shouldStartMraidVideoPlayerActivity() throws Exception {
         startVast(Robolectric.buildActivity(Activity.class).create().get(), mVastVideoConfig,
                 testBroadcastIdentifier, mOrientation);
-        assertVastVideoPlayerActivityStarted(MraidVideoPlayerActivity.class, mVastVideoConfig,
+        assertVastVideoPlayerActivityStartedWithVastVideoConfig(MraidVideoPlayerActivity.class, mVastVideoConfig,
+                testBroadcastIdentifier);
+    }
+
+    @Test
+    public void startVast_withVastVideoConfigTwo_shouldStartMraidVideoPlayerActivity() throws Exception {
+        startVast(Robolectric.buildActivity(Activity.class).create().get(), mVastVideoConfig,
+                testBroadcastIdentifier, mOrientation);
+        assertVastVideoPlayerActivityStartedWithVastVideoConfig(MraidVideoPlayerActivity.class, mVastVideoConfig,
                 testBroadcastIdentifier);
     }
 
@@ -73,7 +93,7 @@ public class BaseVideoPlayerActivityTest {
         verifyNoMoreInteractions(mockAudioManager);
     }
 
-    static void assertVastVideoPlayerActivityStarted(final Class clazz,
+    static void assertVastVideoPlayerActivityStartedWithVastVideoConfig(final Class clazz,
             final VastVideoConfig vastVideoConfig,
             final long broadcastIdentifier) {
         final Intent intent = ShadowApplication.getInstance().getNextStartedActivity();
@@ -81,6 +101,17 @@ public class BaseVideoPlayerActivityTest {
 
         final VastVideoConfig expectedVastVideoConfig =
                 (VastVideoConfig) intent.getSerializableExtra(VastVideoViewController.VAST_VIDEO_CONFIG);
+        assertThat(expectedVastVideoConfig).isEqualsToByComparingFields(vastVideoConfig);
+    }
+
+    static void assertVastVideoPlayerActivityStartedWithVastVideoConfigTwo(final Class clazz,
+                                                     final VastVideoConfigTwo vastVideoConfig,
+                                                     final long broadcastIdentifier) {
+        final Intent intent = ShadowApplication.getInstance().getNextStartedActivity();
+        assertIntentAndBroadcastIdentifierAreCorrect(intent, clazz, broadcastIdentifier);
+
+        final VastVideoConfigTwo expectedVastVideoConfig =
+                (VastVideoConfigTwo) intent.getSerializableExtra(VastVideoViewController.VAST_VIDEO_CONFIG);
         assertThat(expectedVastVideoConfig).isEqualsToByComparingFields(vastVideoConfig);
     }
 

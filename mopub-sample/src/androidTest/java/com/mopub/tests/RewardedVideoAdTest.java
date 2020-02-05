@@ -1,7 +1,13 @@
+// Copyright 2018-2020 Twitter, Inc.
+// Licensed under the MoPub SDK License Agreement
+// http://www.mopub.com/legal/sdk-license-agreement/
+
 package com.mopub.tests;
 
+import android.content.Intent;
 import android.os.SystemClock;
 import androidx.test.espresso.ViewInteraction;
+import androidx.test.espresso.intent.Intents;
 import androidx.test.filters.LargeTest;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.mopub.framework.models.AdLabels;
@@ -9,14 +15,16 @@ import com.mopub.framework.pages.AdDetailPage;
 import com.mopub.simpleadsdemo.R;
 import com.mopub.tests.base.MoPubBaseTestCase;
 
+import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
+import static androidx.test.espresso.intent.matcher.IntentMatchers.hasData;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasToString;
 import static org.hamcrest.Matchers.startsWith;
@@ -74,8 +82,10 @@ public class RewardedVideoAdTest extends MoPubBaseTestCase {
 
         onView(withId(android.R.id.content)).perform(click());
 
-        final ViewInteraction browserLinkElement = onView(withText(WEB_PAGE_LINK));
+        Matcher<Intent> expectedIntent = allOf(
+            hasAction(Intent.ACTION_VIEW),
+            hasData(WEB_PAGE_LINK));
 
-        assertTrue(adDetailPage.waitForElement(browserLinkElement));
+        Intents.intended(expectedIntent);
     }
 }

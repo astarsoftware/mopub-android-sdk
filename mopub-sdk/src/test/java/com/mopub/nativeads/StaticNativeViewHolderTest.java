@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Twitter, Inc.
+// Copyright 2018-2020 Twitter, Inc.
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
@@ -7,13 +7,13 @@ package com.mopub.nativeads;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.mopub.common.test.support.SdkTestRunner;
-import com.mopub.common.util.Utils;
 import com.mopub.network.MaxWidthImageLoader;
 import com.mopub.network.MoPubRequestQueue;
 import com.mopub.network.Networking;
@@ -43,6 +43,7 @@ public class StaticNativeViewHolderTest {
     private ImageView extrasImageView;
     private ImageView extrasImageView2;
     private ImageView privacyInformationIconImageView;
+    private TextView sponsoredTextView;
 
     @Mock private MoPubRequestQueue mockRequestQueue;
     @Mock private MaxWidthImageLoader mockImageLoader;
@@ -59,29 +60,31 @@ public class StaticNativeViewHolderTest {
         Networking.setImageLoaderForTesting(mockImageLoader);
         context = Robolectric.buildActivity(Activity.class).create().get();
         relativeLayout = new RelativeLayout(context);
-        relativeLayout.setId((int) Utils.generateUniqueId());
+        relativeLayout.setId(View.generateViewId());
 
         // Fields in the web ui
         titleView = new TextView(context);
-        titleView.setId((int) Utils.generateUniqueId());
+        titleView.setId(View.generateViewId());
         textView = new TextView(context);
-        textView.setId((int) Utils.generateUniqueId());
+        textView.setId(View.generateViewId());
         callToActionView = new Button(context);
-        callToActionView.setId((int) Utils.generateUniqueId());
+        callToActionView.setId(View.generateViewId());
         mainImageView = new ImageView(context);
-        mainImageView.setId((int) Utils.generateUniqueId());
+        mainImageView.setId(View.generateViewId());
         iconImageView = new ImageView(context);
-        iconImageView.setId((int) Utils.generateUniqueId());
+        iconImageView.setId(View.generateViewId());
         privacyInformationIconImageView = new ImageView(context);
-        privacyInformationIconImageView.setId((int) Utils.generateUniqueId());
+        privacyInformationIconImageView.setId(View.generateViewId());
+        sponsoredTextView = new TextView(context);
+        sponsoredTextView.setId(View.generateViewId());
 
         // Extras
         extrasTextView = new TextView(context);
-        extrasTextView.setId((int) Utils.generateUniqueId());
+        extrasTextView.setId(View.generateViewId());
         extrasImageView = new ImageView(context);
-        extrasImageView.setId((int) Utils.generateUniqueId());
+        extrasImageView.setId(View.generateViewId());
         extrasImageView2 = new ImageView(context);
-        extrasImageView2.setId((int) Utils.generateUniqueId());
+        extrasImageView2.setId(View.generateViewId());
 
         relativeLayout.addView(titleView);
         relativeLayout.addView(textView);
@@ -92,6 +95,7 @@ public class StaticNativeViewHolderTest {
         relativeLayout.addView(extrasImageView);
         relativeLayout.addView(extrasImageView2);
         relativeLayout.addView(privacyInformationIconImageView);
+        relativeLayout.addView(sponsoredTextView);
     }
 
     @Test
@@ -103,6 +107,7 @@ public class StaticNativeViewHolderTest {
                 .mainImageId(mainImageView.getId())
                 .iconImageId(iconImageView.getId())
                 .privacyInformationIconImageId(privacyInformationIconImageView.getId())
+                .sponsoredTextId(sponsoredTextView.getId())
                 .build();
 
         StaticNativeViewHolder staticNativeViewHolder =
@@ -115,6 +120,7 @@ public class StaticNativeViewHolderTest {
         assertThat(staticNativeViewHolder.iconImageView).isEqualTo(iconImageView);
         assertThat(staticNativeViewHolder.privacyInformationIconImageView).isEqualTo(
                 privacyInformationIconImageView);
+        assertThat(staticNativeViewHolder.sponsoredTextView).isEqualTo(sponsoredTextView);
     }
 
     @Test
@@ -133,16 +139,19 @@ public class StaticNativeViewHolderTest {
         assertThat(staticNativeViewHolder.mainImageView).isNull();
         assertThat(staticNativeViewHolder.iconImageView).isEqualTo(iconImageView);
         assertThat(staticNativeViewHolder.privacyInformationIconImageView).isNull();
+        assertThat(staticNativeViewHolder.sponsoredTextView).isNull();
     }
 
     @Test
     public void fromViewBinder_withNonExistantIds_shouldLeaveFieldsNull() throws Exception {
         viewBinder = new ViewBinder.Builder(relativeLayout.getId())
-                .titleId((int) Utils.generateUniqueId())
-                .textId((int) Utils.generateUniqueId())
-                .callToActionId((int) Utils.generateUniqueId())
-                .mainImageId((int) Utils.generateUniqueId())
-                .iconImageId((int) Utils.generateUniqueId())
+                .titleId(View.generateViewId())
+                .textId(View.generateViewId())
+                .callToActionId(View.generateViewId())
+                .mainImageId(View.generateViewId())
+                .iconImageId(View.generateViewId())
+                .privacyInformationIconImageId(View.generateViewId())
+                .sponsoredTextId(View.generateViewId())
                 .build();
 
         StaticNativeViewHolder staticNativeViewHolder =
@@ -154,5 +163,6 @@ public class StaticNativeViewHolderTest {
         assertThat(staticNativeViewHolder.mainImageView).isNull();
         assertThat(staticNativeViewHolder.iconImageView).isNull();
         assertThat(staticNativeViewHolder.privacyInformationIconImageView).isNull();
+        assertThat(staticNativeViewHolder.sponsoredTextView).isNull();
     }
 }
