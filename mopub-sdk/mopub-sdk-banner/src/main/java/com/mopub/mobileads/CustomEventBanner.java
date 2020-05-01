@@ -7,6 +7,8 @@ package com.mopub.mobileads;
 import android.content.Context;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
 import java.util.Map;
 
 /*
@@ -70,7 +72,7 @@ public abstract class CustomEventBanner {
          * needs to display the provided View. Failure to do so will disrupt the mediation waterfall
          * and cause future ad requests to stall.
          */
-        void onBannerLoaded(View bannerView);
+        void onBannerLoaded(@NonNull View bannerView);
         
         /*
          * Your custom event subclass must call this method when it fails to load an ad.

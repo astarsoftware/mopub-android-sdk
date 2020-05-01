@@ -2,7 +2,7 @@
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
-package com.mopub.tests;
+package com.mopub.tests.BaseTesting;
 
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.filters.LargeTest;
@@ -23,23 +23,23 @@ import static androidx.test.espresso.matcher.ViewMatchers.hasChildCount;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
-public class MRectAdTests extends MoPubBaseTestCase {
+public class BannerAdTests extends MoPubBaseTestCase {
 
     // Test Variables
-    private static final AdUnitType AD_TYPE = AdUnitType.MEDIUM_RECTANGLE;
-    private static final String TITLE = AdLabels.MEDIUM_RECTANGLE;
+    private static final AdUnitType AD_TYPE = AdUnitType.BANNER;
+    private static final String TITLE = AdLabels.BANNER;
     private static final String WEB_PAGE_LINK = "https://www.mopub.com/click-test/";
 
     /*
-     * Verify that the MEDIUM_RECTANGLE Ad is successfully loaded and displayed on
+     * Verify that the Banner Ad is successfully loaded and displayed on
      * the app.
      */
     @Test
-    public void adsDetailsPage_withClickOnMoPubMediumRectangleSample_shouldLoadMoPubMediumRectangle() {
+    public void adsDetailsPage_withClickOnMoPubBannerSample_shouldLoadMoPubBanner() {
         final AdListPage adListPage = new AdListPage();
         final AdDetailPage adDetailPage = adListPage.clickCell(TITLE);
 
@@ -50,12 +50,12 @@ public class MRectAdTests extends MoPubBaseTestCase {
     }
 
     /*
-     * Verify that the MEDIUM_RECTANGLE Ad fails to load on the app.
+     * Verify that the Banner Ad fails to load on the app.
      */
     @Test
-    public void adsDetailsPage_withClickOnMoPubMediumRectangleSample_shouldNotLoadMoPubMediumRectangle() {
+    public void adsDetailsPage_withClickOnMoPubBannerSample_shouldNotLoadMoPubBanner() {
         final String fakeAdUnit = "abc";
-        final String adUnitTitle = "MEDIUM_RECTANGLE Automation Test";
+        final String adUnitTitle = "Banner Automation Test";
 
         final AdListPage adListPage = new AdListPage();
         adListPage.addAdUnit(AD_TYPE, fakeAdUnit, adUnitTitle);
@@ -73,10 +73,10 @@ public class MRectAdTests extends MoPubBaseTestCase {
 
     /*
      * Verify that the user is correctly navigated to
-     * MEDIUM_RECTANGLE Ad's url on click.
+     * Banner Ad's url on click.
      */
     @Test
-    public void adsDetailsPage_withClickOnMoPubMediumRectangleAd_shouldShowMoPubBrowser() {
+    public void adsDetailsPage_withClickOnMoPubBannerAd_shouldShowMoPubBrowser() {
         final AdListPage adListPage = new AdListPage();
         final AdDetailPage adDetailPage = adListPage.clickCell(TITLE);
 

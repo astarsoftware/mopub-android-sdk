@@ -1492,7 +1492,7 @@ public class
                 "      }\n" +
                 "    }\n" +
                 "  ],\n" +
-//                "  \"x-next-url\": \"http://ads-staging.mopub.com/m/ad?v=6&id=920b6145fb1546cf8b5cf2ac34638bb7&nv=6.1&dn=Google%2CAndroid%20SDK%20built%20for%20x86%2Csdk_gphone_x86&bundle=com.mopub.simpleadsdemo&z=%2B0000&o=p&w=1080&h=1920&sc_a=2.625&mcc=310&mnc=260&iso=us&cn=Android&ct=3&av=4.20.0&udid=ifa%3Abd9022e4-5ced-4af2-8cba-dd15ffa715ee&dnt=0&mr=1&android_perms_ext_storage=0&vv=3&exclude=b4148ea9ed7b4003b9d7c1e61036e0b1&request_id=5e3d79f17abb48468d95fde17e82f7f6&fail=1\"\n" +
+//                "  \"x-next-url\": \"http://ads-staging.mopub.com/m/ad?v=6&id=920b6145fb1546cf8b5cf2ac34638bb7&nv=6.1&dn=Google%2CAndroid%20SDK%20built%20for%20x86%2Csdk_gphone_x86&bundle=com.mopub.simpleadsdemo&z=%2B0000&o=p&w=1080&h=1920&sc_a=2.625&mcc=310&mnc=260&iso=us&cn=Android&ct=3&av=4.20.0&udid=ifa%3Abd9022e4-5ced-4af2-8cba-dd15ffa715ee&dnt=0&mr=1&vv=3&exclude=b4148ea9ed7b4003b9d7c1e61036e0b1&request_id=5e3d79f17abb48468d95fde17e82f7f6&fail=1\"\n" +
                 "  \"x-next-url\": \"\",\n" +
                 "  \"adunit-format\": \"full\"\n" +
                 "}";

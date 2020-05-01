@@ -21,6 +21,7 @@
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@+id/close_btn"
         app:layout_constraintTop_toTopOf="parent"
+        android:contentDescription="@string/list_of_impressions"
         tools:listitem="@android:layout/simple_selectable_list_item" />
 
     <Button

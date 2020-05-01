@@ -15,14 +15,14 @@ repositories {
 }
 
 project.group = 'com.mopub'
-project.version = '5.11.0'
+project.version = '5.12.0'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     lintOptions { abortOnError false }
 
     defaultConfig {
-		versionCode 76
+		versionCode 79
 		versionName version
 		minSdkVersion rootProject.ext.minSdkVersion
 		targetSdkVersion rootProject.ext.targetSdkVersion

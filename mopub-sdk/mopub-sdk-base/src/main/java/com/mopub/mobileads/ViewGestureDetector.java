@@ -6,83 +6,64 @@ package com.mopub.mobileads;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.view.View;
 
-import com.mopub.common.AdReport;
 import com.mopub.common.VisibleForTesting;
 
 public class ViewGestureDetector extends GestureDetector {
-    private final View mView;
     @NonNull
-    private AdAlertGestureListener mAdAlertGestureListener;
+    private GestureListener mGestureListener;
 
-    public ViewGestureDetector(@NonNull Context context, @NonNull View view, @Nullable AdReport adReport)  {
-        this(context, view, new AdAlertGestureListener(view, adReport));
+    public ViewGestureDetector(@NonNull Context context)  {
+        this(context, new GestureListener());
     }
 
-    private ViewGestureDetector(Context context, View view, @NonNull AdAlertGestureListener adAlertGestureListener) {
-        super(context, adAlertGestureListener);
+    private ViewGestureDetector(Context context, @NonNull GestureListener gestureListener) {
+        super(context, gestureListener);
 
-        mAdAlertGestureListener = adAlertGestureListener;
-        mView = view;
+        mGestureListener = gestureListener;
 
         setIsLongpressEnabled(false);
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent motionEvent) {
-        final boolean result = super.onTouchEvent(motionEvent);
-        switch (motionEvent.getAction()) {
-            case MotionEvent.ACTION_UP:
-                mAdAlertGestureListener.finishGestureDetection();
-                break;
-
-            case MotionEvent.ACTION_MOVE:
-                if (!isMotionEventInView(motionEvent, mView)) {
-                    resetAdFlaggingGesture();
-                }
-                break;
-
-            default:
-                break;
-        }
-        return result;
-    }
-
-    void resetAdFlaggingGesture() {
-        mAdAlertGestureListener.reset();
-    }
-
-    private boolean isMotionEventInView(MotionEvent motionEvent, View view) {
-        if (motionEvent == null || view == null) {
-            return false;
-        }
-
-        float x = motionEvent.getX();
-        float y = motionEvent.getY();
-
-        return (x >= 0 && x <= view.getWidth())
-                && (y >= 0 && y <= view.getHeight());
-    }
-
-    public void onResetUserClick() {
-        mAdAlertGestureListener.onResetUserClick();
+    void onResetUserClick() {
+        mGestureListener.onResetUserClick();
     }
 
     public boolean isClicked() {
-        return mAdAlertGestureListener.isClicked();
+        return mGestureListener.isClicked();
     }
 
     @Deprecated // for testing
-    void setAdAlertGestureListener(@NonNull AdAlertGestureListener adAlertGestureListener) {
-        mAdAlertGestureListener = adAlertGestureListener;
+    void setGestureListener(@NonNull GestureListener gestureListener) {
+        mGestureListener = gestureListener;
     }
 
     @VisibleForTesting
     public void setClicked(boolean clicked) {
-        mAdAlertGestureListener.mIsClicked = clicked;
+        mGestureListener.mIsClicked = clicked;
+    }
+
+    /**
+     * Track user interaction in a separate class
+     */
+    static class GestureListener extends GestureDetector.SimpleOnGestureListener {
+        boolean mIsClicked = false;
+
+        void onResetUserClick() {
+            mIsClicked = false;
+        }
+
+        boolean isClicked() {
+            return mIsClicked;
+        }
+
+        @Override
+        public boolean onSingleTapUp(MotionEvent e) {
+            mIsClicked = true;
+            return super.onSingleTapUp(e);
+        }
     }
 }

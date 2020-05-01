@@ -10,6 +10,8 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.SystemClock;
 
+import androidx.annotation.Nullable;
+
 import com.mopub.common.privacy.PersonalInfoManager;
 import com.mopub.common.test.support.SdkTestRunner;
 import com.mopub.common.util.Reflection;
@@ -89,8 +91,10 @@ public class LocationServiceTest {
     public void getLastKnownLocation_withFinePermission_shouldReturnMoreRecentLocation() {
         Shadows.shadowOf(activity).grantPermissions(ACCESS_FINE_LOCATION);
 
+        setLastLocation(null, 10, MoPub.LocationAwareness.NORMAL);
+
         final Location result =
-                LocationService.getLastKnownLocation(activity, 10, MoPub.LocationAwareness.NORMAL);
+                LocationService.getLastKnownLocation(activity);
 
         // gpsLocation has a more recent timestamp than networkLocation
         assertThat(result).isEqualTo(gpsLocation);
@@ -100,8 +104,10 @@ public class LocationServiceTest {
     public void getLastKnownLocation_withFinePermission_withLocationAwarenessTruncated_shouldTruncateLocationLatLon() throws  Exception{
         Shadows.shadowOf(activity).grantPermissions(ACCESS_FINE_LOCATION);
 
+        setLastLocation(null, 2, MoPub.LocationAwareness.TRUNCATED);
+
         final Location result =
-                LocationService.getLastKnownLocation(activity, 2, MoPub.LocationAwareness.TRUNCATED);
+                LocationService.getLastKnownLocation(activity);
 
         // expected more recent gpsLocation, truncated
         assertThat(result.getLatitude()).isEqualTo(-1.23);
@@ -114,8 +120,10 @@ public class LocationServiceTest {
     public void getLastKnownLocation_withOnlyCoarsePermission_shouldReturnNetworkLocation() throws Exception {
         Shadows.shadowOf(activity).grantPermissions(ACCESS_COARSE_LOCATION);
 
+        setLastLocation(null, 10, MoPub.LocationAwareness.NORMAL);
+
         final Location result =
-                LocationService.getLastKnownLocation(activity, 10, MoPub.LocationAwareness.NORMAL);
+                LocationService.getLastKnownLocation(activity);
 
         // only has coarse location access, expected networkLocation
         assertThat(result).isEqualTo(networkLocation);
@@ -125,8 +133,10 @@ public class LocationServiceTest {
     public void getLastKnownLocation_withOnlyCoarsePermission_withLocationAwarenessTruncated_shouldTruncateLocationLatLon() {
         Shadows.shadowOf(activity).grantPermissions(ACCESS_COARSE_LOCATION);
 
+        setLastLocation(null, 2, MoPub.LocationAwareness.TRUNCATED);
+
         final Location result =
-                LocationService.getLastKnownLocation(activity, 2, MoPub.LocationAwareness.TRUNCATED);
+                LocationService.getLastKnownLocation(activity);
 
         // expected networkLocation, truncated
         assertThat(result.getLatitude()).isEqualTo(3.14);
@@ -137,8 +147,10 @@ public class LocationServiceTest {
 
     @Test
     public void getLastKnownLocation_withNoLocationPermissions_shouldReturnNull() {
+        setLastLocation(null, 10, MoPub.LocationAwareness.NORMAL);
+
         final Location result =
-                LocationService.getLastKnownLocation(activity, 10, MoPub.LocationAwareness.NORMAL);
+                LocationService.getLastKnownLocation(activity);
 
         assertThat(result).isNull();
     }
@@ -147,25 +159,25 @@ public class LocationServiceTest {
     public void getLastKnownLocation_withLocationAwarenessDisabled_shouldReturnNull() throws Exception {
         Shadows.shadowOf(activity).grantPermissions(ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION);
 
-
+        setLastLocation(null, 10, MoPub.LocationAwareness.DISABLED);
 
         final Location result =
-                LocationService.getLastKnownLocation(activity, 10, MoPub.LocationAwareness.DISABLED);
+                LocationService.getLastKnownLocation(activity);
 
         assertThat(result).isNull();
     }
 
     @Test
     public void getLastKnownLocation_withFreshPreviousKnownLocation_shouldReturnPreviousKnownLocation() {
+        setLastLocation(cachedLocation, 10, MoPub.LocationAwareness.NORMAL);
+
         LocationService locationService = LocationService.getInstance();
-        locationService.mLastKnownLocation = cachedLocation;
         // Setting the location updated time to be more recent than minimum location refresh time,
         // in milliseconds.
         locationService.mLocationLastUpdatedMillis = SystemClock.elapsedRealtime() -
                 MoPub.getMinimumLocationRefreshTimeMillis() / 2;
 
-        final Location result = LocationService.getLastKnownLocation(activity, 10,
-                MoPub.LocationAwareness.NORMAL);
+        final Location result = LocationService.getLastKnownLocation(activity);
 
         assertThat(result).isEqualTo(cachedLocation);
     }
@@ -173,30 +185,30 @@ public class LocationServiceTest {
     @Test
     public void getLastKnownLocation_withStalePreviousKnownLocation_shouldReturnGpsLocation() {
         Shadows.shadowOf(activity).grantPermissions(ACCESS_FINE_LOCATION);
+        setLastLocation(cachedLocation, 10, MoPub.LocationAwareness.NORMAL);
+
         LocationService locationService = LocationService.getInstance();
-        locationService.mLastKnownLocation = cachedLocation;
         // Setting the location updated time to be older than minimum location refresh time,
         // in milliseconds.
         locationService.mLocationLastUpdatedMillis = SystemClock.elapsedRealtime() -
                 MoPub.getMinimumLocationRefreshTimeMillis() * 2;
 
-        final Location result = LocationService.getLastKnownLocation(activity, 10,
-                MoPub.LocationAwareness.NORMAL);
+        final Location result = LocationService.getLastKnownLocation(activity);
 
         assertThat(result).isEqualTo(gpsLocation);
     }
 
     @Test
     public void getLastKnownLocation_withStalePreviousKnownLocation_withNoPermissions_shouldReturnCachedLocation() {
+        setLastLocation(cachedLocation, 10, MoPub.LocationAwareness.NORMAL);
+
         LocationService locationService = LocationService.getInstance();
-        locationService.mLastKnownLocation = cachedLocation;
         // Setting the location updated time to be older than minimum location refresh time,
         // in milliseconds.
         locationService.mLocationLastUpdatedMillis = SystemClock.elapsedRealtime() -
                 MoPub.getMinimumLocationRefreshTimeMillis() * 2;
 
-        final Location result = LocationService.getLastKnownLocation(activity, 10,
-                MoPub.LocationAwareness.NORMAL);
+        final Location result = LocationService.getLastKnownLocation(activity);
 
         assertThat(result).isEqualTo(cachedLocation);
     }
@@ -323,6 +335,14 @@ public class LocationServiceTest {
     }
 
     @Test
+    public void getLastKnownLocation_withCollectPersonalInfoFolse_shouldReturnNull() {
+        when(mockPersonalInfoManager.canCollectPersonalInformation()).thenReturn(false);
+
+        final Location result = LocationService.getLastKnownLocation(activity);
+
+        assertThat(result).isNull();
+    }
+    @Test
     public void truncateLocationLatLon_withNullLocation_shouldNotChangeLocation() {
         LocationService.truncateLocationLatLon(null, 1);
 
@@ -338,5 +358,12 @@ public class LocationServiceTest {
         assertThat(gpsLocation.getLatitude()).isEqualTo(-1.23456789);
         assertThat(gpsLocation.getLongitude()).isEqualTo(98.7654321);
         assertThat(gpsLocation.getAccuracy()).isEqualTo(1000);
+    }
+
+    public static void setLastLocation(@Nullable Location location, int precision, MoPub.LocationAwareness awareness) {
+        LocationService locationService = LocationService.getInstance();
+        locationService.setLocationPrecision(precision);
+        locationService.setLocationAwareness(awareness);
+        locationService.setLastLocation(location);
     }
 }

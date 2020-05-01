@@ -32,6 +32,7 @@ import com.mopub.common.BaseAdapterConfiguration;
 import com.mopub.common.BaseUrlGenerator;
 import com.mopub.common.ClientMetadata;
 import com.mopub.common.LocationService;
+import com.mopub.common.LocationServiceTest;
 import com.mopub.common.MoPub;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.SdkConfiguration;
@@ -49,7 +50,6 @@ import com.mopub.common.util.Utils;
 import com.mopub.common.util.test.support.TestMethodBuilderFactory;
 import com.mopub.mobileads.test.support.MoPubShadowConnectivityManager;
 import com.mopub.mobileads.test.support.MoPubShadowTelephonyManager;
-import com.mopub.mraid.MraidNativeCommandHandler;
 import com.mopub.network.PlayServicesUrlRewriter;
 import com.mopub.network.RequestRateTrackerTest;
 
@@ -162,14 +162,15 @@ public class WebViewAdUrlGeneratorTest {
         mockPersonalInfoManager = mock(PersonalInfoManager.class);
         when(mockPersonalInfoManager.getPersonalInfoConsentStatus()).thenReturn(ConsentStatus.UNKNOWN);
         when(mockPersonalInfoManager.getConsentData()).thenReturn(mockConsentData);
+        when(mockPersonalInfoManager.canCollectPersonalInformation()).thenReturn(true);
+
         new Reflection.MethodBuilder(null, "setPersonalInfoManager")
                 .setStatic(MoPub.class)
                 .setAccessible()
                 .addParam(PersonalInfoManager.class, mockPersonalInfoManager)
                 .execute();
 
-        subject = new WebViewAdUrlGenerator(context,
-                new MraidNativeCommandHandler().isStorePictureSupported(context));
+        subject = new WebViewAdUrlGenerator(context);
         Settings.Secure.putString(RuntimeEnvironment.application.getContentResolver(), Settings.Secure.ANDROID_ID, TEST_UDID);
         expectedUdid = "sha%3A" + Utils.sha1(TEST_UDID);
         configuration = RuntimeEnvironment.application.getResources().getConfiguration();
@@ -251,7 +252,6 @@ public class WebViewAdUrlGeneratorTest {
                 .withMnc("456")
                 .withCountryIso("expected%20country")
                 .withCarrierName("expected%20carrier")
-                .withExternalStoragePermission(false)
                 .withAbt("{\"UrlGeneratorTest\":{\"token\":\"WebViewAdvancedBidderToken\"}}")
                 .withCurrentConsentStatus(ConsentStatus.UNKNOWN.getValue())
                 .withBackoffMs(99)
@@ -267,12 +267,13 @@ public class WebViewAdUrlGeneratorTest {
         location.setLongitude(30.0);
         location.setAccuracy(1.23f); // should get rounded to "1"
         location.setTime(System.currentTimeMillis() - 101325);
+        LocationServiceTest.setLastLocation(location, 10, MoPub.LocationAwareness.NORMAL);
+
 
         String adUrl = subject
                 .withAdUnitId("adUnitId")
                 .withKeywords("keywordsKey:keywordsValue")
                 .withUserDataKeywords("userDataKey:userDataValue")
-                .withLocation(location)
                 .generateUrlString("ads.mopub.com");
 
         // Only compare the seconds since millis can be off
@@ -303,7 +304,6 @@ public class WebViewAdUrlGeneratorTest {
 
         final String expectedAdUrl = new AdUrlBuilder(expectedUdid)
                 .withAdUnitId("adUnitId")
-                .withExternalStoragePermission(false)
                 .withKeywordsQuery("keywordsKey%3AkeywordsValue")
                 .withAbt("{\"UrlGeneratorTest\":{\"token\":\"WebViewAdvancedBidderToken\"}}")
                 .withCurrentConsentStatus(ConsentStatus.UNKNOWN.getValue())
@@ -319,10 +319,11 @@ public class WebViewAdUrlGeneratorTest {
         location.setAccuracy(1.23f); // should get rounded to "1"
         location.setTime(System.currentTimeMillis() - 101325);
 
+        LocationServiceTest.setLastLocation(location, 10, MoPub.LocationAwareness.NORMAL);
+
         String adUrl = subject
                 .withAdUnitId("adUnitId")
                 .withKeywords("keywordsKey:keywordsValue")
-                .withLocation(location)
                 .generateUrlString("ads.mopub.com");
 
         // Only compare the seconds since millis can be off
@@ -367,7 +368,6 @@ public class WebViewAdUrlGeneratorTest {
         final String expectedAdUrl = new AdUrlBuilder(expectedUdid)
                 .withAdUnitId("adUnitId")
                 .withKeywordsQuery("keywordsKey%3AkeywordsValue")
-                .withExternalStoragePermission(false)
                 .withAbt("{\"UrlGeneratorTest\":{\"token\":\"WebViewAdvancedBidderToken\"}}")
                 .withCurrentConsentStatus(ConsentStatus.UNKNOWN.getValue())
                 .build();
@@ -382,11 +382,12 @@ public class WebViewAdUrlGeneratorTest {
         location.setAccuracy(1.23f); // should get rounded to "1"
         location.setTime(System.currentTimeMillis() - 101325);
 
+        LocationServiceTest.setLastLocation(location, 10, MoPub.LocationAwareness.NORMAL);
+
         String adUrl = subject
                 .withAdUnitId("adUnitId")
                 .withUserDataKeywords("key:value")
                 .withKeywords("keywordsKey:keywordsValue")
-                .withLocation(location)
                 .generateUrlString("ads.mopub.com");
 
         // Only compare the seconds since millis can be off
@@ -692,278 +693,6 @@ public class WebViewAdUrlGeneratorTest {
     }
 
     @Test
-    public void generateAdUrl_whenLocationServiceGpsProviderHasMostRecentLocation_shouldUseLocationServiceValue() throws Exception {
-        when(mockPersonalInfoManager.canCollectPersonalInformation()).thenReturn(true);
-
-        Location locationFromDeveloper = new Location("");
-        locationFromDeveloper.setLatitude(42);
-        locationFromDeveloper.setLongitude(-42);
-        locationFromDeveloper.setAccuracy(3.5f);
-        locationFromDeveloper.setTime(1000);
-
-        // Mock out the LocationManager's last known location to be more recent than the
-        // developer-supplied location.
-        ShadowLocationManager shadowLocationManager = Shadows.shadowOf(
-                (LocationManager) RuntimeEnvironment.application.getSystemService(Context.LOCATION_SERVICE));
-        Location locationFromSdk = new Location("");
-        locationFromSdk.setLatitude(37);
-        locationFromSdk.setLongitude(-122);
-        locationFromSdk.setAccuracy(5.0f);
-        locationFromSdk.setTime(2000);
-        shadowLocationManager.setLastKnownLocation(LocationManager.GPS_PROVIDER, locationFromSdk);
-
-        String adUrl = subject.withLocation(locationFromDeveloper)
-                .generateUrlString("ads.mopub.com");
-        assertThat(getParameterFromRequestUrl(adUrl, "ll")).isEqualTo("37.0,-122.0");
-        assertThat(getParameterFromRequestUrl(adUrl, "lla")).isEqualTo("5");
-        assertThat(getParameterFromRequestUrl(adUrl, "llsdk")).isEqualTo("1");
-    }
-
-    @Test
-    public void generateAdUrl_whenLocationServiceGpsProviderHasMostRecentLocation_withFineLocationPermissionOnly_shouldUseLocationServiceValue() throws Exception {
-        when(mockPersonalInfoManager.canCollectPersonalInformation()).thenReturn(true);
-
-        Shadows.shadowOf(context).denyPermissions(ACCESS_COARSE_LOCATION);
-
-        Location locationFromDeveloper = new Location("");
-        locationFromDeveloper.setLatitude(42);
-        locationFromDeveloper.setLongitude(-42);
-        locationFromDeveloper.setAccuracy(3.5f);
-        locationFromDeveloper.setTime(1000);
-
-        // Mock out the LocationManager's last known location to be more recent than the
-        // developer-supplied location.
-        ShadowLocationManager shadowLocationManager = Shadows.shadowOf(
-                (LocationManager) RuntimeEnvironment.application.getSystemService(Context.LOCATION_SERVICE));
-        Location locationFromSdk = new Location("");
-        locationFromSdk.setLatitude(37);
-        locationFromSdk.setLongitude(-122);
-        locationFromSdk.setAccuracy(5.0f);
-        locationFromSdk.setTime(2000);
-        shadowLocationManager.setLastKnownLocation(LocationManager.GPS_PROVIDER, locationFromSdk);
-
-        String adUrl = subject.withLocation(locationFromDeveloper)
-                .generateUrlString("ads.mopub.com");
-        assertThat(getParameterFromRequestUrl(adUrl, "ll")).isEqualTo("37.0,-122.0");
-        assertThat(getParameterFromRequestUrl(adUrl, "lla")).isEqualTo("5");
-        assertThat(getParameterFromRequestUrl(adUrl, "llsdk")).isEqualTo("1");
-    }
-
-    @Test
-    public void generateAdUrl_whenLocationServiceGpsProviderHasMostRecentLocation_withCoarseLocationPermissionOnly_shouldUseDeveloperSuppliedLocation() throws Exception {
-        Shadows.shadowOf(context).denyPermissions(ACCESS_FINE_LOCATION);
-
-        when(mockPersonalInfoManager.canCollectPersonalInformation()).thenReturn(true);
-
-        Location locationFromDeveloper = new Location("");
-        locationFromDeveloper.setLatitude(42);
-        locationFromDeveloper.setLongitude(-42);
-        locationFromDeveloper.setAccuracy(3.5f);
-        locationFromDeveloper.setTime(1000);
-
-        // Mock out the LocationManager's last known location to be more recent than the
-        // developer-supplied location.
-        ShadowLocationManager shadowLocationManager = Shadows.shadowOf(
-                (LocationManager) RuntimeEnvironment.application.getSystemService(Context.LOCATION_SERVICE));
-        Location locationFromSdk = new Location("");
-        locationFromSdk.setLatitude(37);
-        locationFromSdk.setLongitude(-122);
-        locationFromSdk.setAccuracy(5.0f);
-        locationFromSdk.setTime(2000);
-        shadowLocationManager.setLastKnownLocation(LocationManager.GPS_PROVIDER, locationFromSdk);
-
-        String adUrl = subject.withLocation(locationFromDeveloper)
-                .generateUrlString("ads.mopub.com");
-        assertThat(getParameterFromRequestUrl(adUrl, "ll")).isEqualTo("42.0,-42.0");
-        assertThat(getParameterFromRequestUrl(adUrl, "lla")).isEqualTo("3");
-        assertThat(getParameterFromRequestUrl(adUrl, "llsdk")).isEmpty();
-    }
-
-    @Test
-    public void generateAdUrl_whenLocationServiceGpsProviderHasMostRecentLocation_withNoLocationPermission_shouldUseDeveloperSuppliedLocation() throws Exception {
-        Shadows.shadowOf(context).denyPermissions(ACCESS_FINE_LOCATION);
-        Shadows.shadowOf(context).denyPermissions(ACCESS_COARSE_LOCATION);
-
-        when(mockPersonalInfoManager.canCollectPersonalInformation()).thenReturn(true);
-
-        Location locationFromDeveloper = new Location("");
-        locationFromDeveloper.setLatitude(42);
-        locationFromDeveloper.setLongitude(-42);
-        locationFromDeveloper.setAccuracy(3.5f);
-        locationFromDeveloper.setTime(1000);
-
-        // Mock out the LocationManager's last known location to be more recent than the
-        // developer-supplied location.
-        ShadowLocationManager shadowLocationManager = Shadows.shadowOf(
-                (LocationManager) RuntimeEnvironment.application.getSystemService(Context.LOCATION_SERVICE));
-        Location locationFromSdk = new Location("");
-        locationFromSdk.setLatitude(37);
-        locationFromSdk.setLongitude(-122);
-        locationFromSdk.setAccuracy(5.0f);
-        locationFromSdk.setTime(2000);
-        shadowLocationManager.setLastKnownLocation(LocationManager.GPS_PROVIDER, locationFromSdk);
-
-        String adUrl = subject.withLocation(locationFromDeveloper)
-                .generateUrlString("ads.mopub.com");
-        assertThat(getParameterFromRequestUrl(adUrl, "ll")).isEqualTo("42.0,-42.0");
-        assertThat(getParameterFromRequestUrl(adUrl, "lla")).isEqualTo("3");
-        assertThat(getParameterFromRequestUrl(adUrl, "llsdk")).isEmpty();
-    }
-
-    @Test
-    public void generateAdUrl_whenDeveloperSuppliesLocation_shouldUseSdkSuppliedLocation() throws Exception {
-        when(mockPersonalInfoManager.canCollectPersonalInformation()).thenReturn(true);
-
-        Location locationFromDeveloper = new Location("");
-        locationFromDeveloper.setLatitude(42);
-        locationFromDeveloper.setLongitude(-42);
-        locationFromDeveloper.setAccuracy(3.5f);
-        locationFromDeveloper.setTime(1000);
-
-        ShadowLocationManager shadowLocationManager = Shadows.shadowOf(
-                (LocationManager) RuntimeEnvironment.application.getSystemService(Context.LOCATION_SERVICE));
-
-        // Mock out the LocationManager's last known location to be older than the
-        // developer-supplied location. This location should still be used.
-        Location olderLocation = new Location("");
-        olderLocation.setLatitude(40);
-        olderLocation.setLongitude(-105);
-        olderLocation.setAccuracy(8.0f);
-        olderLocation.setTime(500);
-        shadowLocationManager.setLastKnownLocation(LocationManager.GPS_PROVIDER, olderLocation);
-
-        String adUrl = subject.withLocation(locationFromDeveloper)
-                .generateUrlString("ads.mopub.com");
-        assertThat(getParameterFromRequestUrl(adUrl, "ll")).isEqualTo("40.0,-105.0");
-        assertThat(getParameterFromRequestUrl(adUrl, "lla")).isEqualTo("8");
-        assertThat(getParameterFromRequestUrl(adUrl, "llsdk")).isEqualTo("1");
-    }
-
-    @Test
-    public void generateAdUrl_whenLocationServiceNetworkProviderHasLocation_shouldUseLocationServiceValue() throws Exception {
-
-        when(mockPersonalInfoManager.canCollectPersonalInformation()).thenReturn(true);
-
-        Location locationFromDeveloper = new Location("");
-        locationFromDeveloper.setLatitude(42);
-        locationFromDeveloper.setLongitude(-42);
-        locationFromDeveloper.setAccuracy(3.5f);
-        locationFromDeveloper.setTime(1000);
-
-        // Mock out the LocationManager's last known location to be more recent than the
-        // developer-supplied location.
-        ShadowLocationManager shadowLocationManager = Shadows.shadowOf(
-                (LocationManager) RuntimeEnvironment.application.getSystemService(Context.LOCATION_SERVICE));
-        Location locationFromSdk = new Location("");
-        locationFromSdk.setLatitude(38);
-        locationFromSdk.setLongitude(-123);
-        locationFromSdk.setAccuracy(5.0f);
-        locationFromSdk.setTime(2000);
-        shadowLocationManager.setLastKnownLocation(LocationManager.NETWORK_PROVIDER,
-                locationFromSdk);
-
-        String adUrl = subject.withLocation(locationFromDeveloper)
-                .generateUrlString("ads.mopub.com");
-        assertThat(getParameterFromRequestUrl(adUrl, "ll")).isEqualTo("38.0,-123.0");
-        assertThat(getParameterFromRequestUrl(adUrl, "lla")).isEqualTo("5");
-        assertThat(getParameterFromRequestUrl(adUrl, "llsdk")).isEqualTo("1");
-    }
-
-    @Test
-    public void generateAdUrl_whenLocationServiceNetworkProviderHasMostRecentLocation_withFineLocationPermissionOnly_shouldUseLocationServiceValue() throws Exception {
-        when(mockPersonalInfoManager.canCollectPersonalInformation()).thenReturn(true);
-
-        Shadows.shadowOf(context).denyPermissions(ACCESS_COARSE_LOCATION);
-
-        Location locationFromDeveloper = new Location("");
-        locationFromDeveloper.setLatitude(42);
-        locationFromDeveloper.setLongitude(-42);
-        locationFromDeveloper.setAccuracy(3.5f);
-        locationFromDeveloper.setTime(1000);
-
-        // Mock out the LocationManager's last known location to be more recent than the
-        // developer-supplied location.
-        ShadowLocationManager shadowLocationManager = Shadows.shadowOf(
-                (LocationManager) RuntimeEnvironment.application.getSystemService(Context.LOCATION_SERVICE));
-        Location locationFromSdk = new Location("");
-        locationFromSdk.setLatitude(38);
-        locationFromSdk.setLongitude(-123);
-        locationFromSdk.setAccuracy(5.0f);
-        locationFromSdk.setTime(2000);
-        shadowLocationManager.setLastKnownLocation(LocationManager.NETWORK_PROVIDER,
-                locationFromSdk);
-
-        String adUrl = subject.withLocation(locationFromDeveloper)
-                .generateUrlString("ads.mopub.com");
-        assertThat(getParameterFromRequestUrl(adUrl, "ll")).isEqualTo("38.0,-123.0");
-        assertThat(getParameterFromRequestUrl(adUrl, "lla")).isEqualTo("5");
-        assertThat(getParameterFromRequestUrl(adUrl, "llsdk")).isEqualTo("1");
-    }
-
-    @Test
-    public void generateAdUrl_whenLocationServiceNetworkProviderHasLocation_withCoarseLocationPermissionOnly_shouldUseLocationServiceValue() throws Exception {
-        Shadows.shadowOf(context).denyPermissions(ACCESS_FINE_LOCATION);
-
-        when(mockPersonalInfoManager.canCollectPersonalInformation()).thenReturn(true);
-
-        Location locationFromDeveloper = new Location("");
-        locationFromDeveloper.setLatitude(42);
-        locationFromDeveloper.setLongitude(-42);
-        locationFromDeveloper.setAccuracy(3.5f);
-        locationFromDeveloper.setTime(1000);
-
-        // Mock out the LocationManager's last known location to be more recent than the
-        // developer-supplied location.
-        ShadowLocationManager shadowLocationManager = Shadows.shadowOf(
-                (LocationManager) RuntimeEnvironment.application.getSystemService(Context.LOCATION_SERVICE));
-        Location locationFromSdk = new Location("");
-        locationFromSdk.setLatitude(38);
-        locationFromSdk.setLongitude(-123);
-        locationFromSdk.setAccuracy(5.0f);
-        locationFromSdk.setTime(2000);
-        shadowLocationManager.setLastKnownLocation(LocationManager.NETWORK_PROVIDER,
-                locationFromSdk);
-
-        String adUrl = subject.withLocation(locationFromDeveloper)
-                .generateUrlString("ads.mopub.com");
-        assertThat(getParameterFromRequestUrl(adUrl, "ll")).isEqualTo("38.0,-123.0");
-        assertThat(getParameterFromRequestUrl(adUrl, "lla")).isEqualTo("5");
-        assertThat(getParameterFromRequestUrl(adUrl, "llsdk")).isEqualTo("1");
-    }
-
-    @Test
-    public void generateAdUrl_whenLocationServiceNetworkProviderHasLocation_withNoLocationPermission_shouldUseDeveloperSuppliedLocation() throws Exception {
-        Shadows.shadowOf(context).denyPermissions(ACCESS_FINE_LOCATION);
-        Shadows.shadowOf(context).denyPermissions(ACCESS_COARSE_LOCATION);
-
-        when(mockPersonalInfoManager.canCollectPersonalInformation()).thenReturn(true);
-
-        Location locationFromDeveloper = new Location("");
-        locationFromDeveloper.setLatitude(42);
-        locationFromDeveloper.setLongitude(-42);
-        locationFromDeveloper.setAccuracy(3.5f);
-        locationFromDeveloper.setTime(1000);
-
-        // Mock out the LocationManager's last known location to be more recent than the
-        // developer-supplied location.
-        ShadowLocationManager shadowLocationManager = Shadows.shadowOf(
-                (LocationManager) RuntimeEnvironment.application.getSystemService(Context.LOCATION_SERVICE));
-        Location locationFromSdk = new Location("");
-        locationFromSdk.setLatitude(38);
-        locationFromSdk.setLongitude(-123);
-        locationFromSdk.setAccuracy(5.0f);
-        locationFromSdk.setTime(2000);
-        shadowLocationManager.setLastKnownLocation(LocationManager.NETWORK_PROVIDER,
-                locationFromSdk);
-
-        String adUrl = subject.withLocation(locationFromDeveloper)
-                .generateUrlString("ads.mopub.com");
-        assertThat(getParameterFromRequestUrl(adUrl, "ll")).isEqualTo("42.0,-42.0");
-        assertThat(getParameterFromRequestUrl(adUrl, "lla")).isEqualTo("3");
-        assertThat(getParameterFromRequestUrl(adUrl, "llsdk")).isEmpty();
-    }
-
-    @Test
     public void generateAdUrl_withNullPackageName_withEmptyPackageName_shouldNotIncludeBundleKey() {
         when(spyApplicationContext.getPackageName()).thenReturn(null).thenReturn("");
 
@@ -1071,7 +800,6 @@ public class WebViewAdUrlGeneratorTest {
         private String carrierName = "";
         private String dnt = "";
         private MoPubNetworkType networkType = MoPubNetworkType.MOBILE;
-        private int externalStoragePermission;
         private String abt = "";
         private String currentConsentStatus = "";
         private String gdprApplies = "0";
@@ -1097,7 +825,7 @@ public class WebViewAdUrlGeneratorTest {
                     paramIfNotEmpty("q", keywordsQuery) +
                     paramIfNotEmpty("user_data_q", userDataQuery) +
                     (TextUtils.isEmpty(latLon) ? "" :
-                            "&ll=" + latLon + "&lla=" + locationAccuracy + "&llf=" + latLonLastUpdated) +
+                            "&ll=" + latLon + "&lla=" + locationAccuracy + "&llf=" + latLonLastUpdated + "&llsdk=1") +
                     "&z=-0700" +
                     "&o=p" +
                     "&cw=" + TEST_SCREEN_SAFE_WIDTH +
@@ -1123,7 +851,6 @@ public class WebViewAdUrlGeneratorTest {
                     paramIfNotEmpty("backoff_ms", backoffMs) +
                     paramIfNotEmpty("backoff_reason", backoffReason) +
                     "&mr=1" +
-                    "&android_perms_ext_storage=" + externalStoragePermission +
                     "&vv=3";
         }
 
@@ -1171,11 +898,6 @@ public class WebViewAdUrlGeneratorTest {
 
         public AdUrlBuilder withNetworkType(MoPubNetworkType networkType) {
             this.networkType = networkType;
-            return this;
-        }
-
-        public AdUrlBuilder withExternalStoragePermission(boolean enabled) {
-            this.externalStoragePermission = enabled ? 1 : 0;
             return this;
         }
 

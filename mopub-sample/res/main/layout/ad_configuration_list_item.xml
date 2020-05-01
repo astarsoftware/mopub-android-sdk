@@ -24,8 +24,6 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:paddingEnd="8dp"
-            android:paddingLeft="8dp"
-            android:paddingRight="8dp"
             android:paddingStart="8dp"
             android:paddingTop="8dp"
             android:singleLine="true"
@@ -39,8 +37,6 @@
             android:layout_below="@id/banner_description"
             android:layout_marginTop="4dp"
             android:paddingEnd="8dp"
-            android:paddingLeft="8dp"
-            android:paddingRight="8dp"
             android:paddingStart="8dp"
             android:singleLine="true"
             android:textColor="?android:attr/textColorSecondary"
@@ -51,7 +47,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
+            android:contentDescription="@string/delete_label"
             android:scaleType="centerCrop"
             android:src="@android:drawable/ic_menu_delete" />
 

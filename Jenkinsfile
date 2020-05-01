@@ -15,12 +15,20 @@ pipeline {
                 script {
                     PARSED_JOB_NAME = URLDecoder.decode(env.JOB_NAME, 'UTF-8')
                     if (projectName == androidAutomationProjectName) {
-                        stage('Android automation tests') {
-                            echo "Android Automation Tests are running - ${PARSED_JOB_NAME}"
+                        stage('Internal Android automation tests') {
+                            echo "Internal Automation Tests are running - ${PARSED_JOB_NAME}"
                             sh '''
                                 #!/bin/bash
                                 chmod +x android.sh
                                 ./android.sh
+                            '''
+                        }
+                        stage('External Android automation tests') {
+                            echo "External Automation Tests are running - ${PARSED_JOB_NAME}"
+                            sh '''
+                                #!/bin/bash
+                                chmod +x androidRT.sh
+                                ./androidRT.sh
                             '''
                         }
                     } else {

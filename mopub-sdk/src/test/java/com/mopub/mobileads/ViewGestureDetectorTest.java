@@ -8,13 +8,11 @@ import android.app.Activity;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.mopub.common.AdReport;
 import com.mopub.common.test.support.SdkTestRunner;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
 import org.robolectric.shadows.ShadowGestureDetector;
@@ -30,32 +28,27 @@ import static org.mockito.Mockito.verify;
 public class ViewGestureDetectorTest {
     private Activity context;
     private ViewGestureDetector subject;
-    private AdAlertGestureListener adAlertGestureListener;
-    private View view;
-    @Mock AdReport mockAdReport;
+    private ViewGestureDetector.GestureListener gestureListener;
 
     @Before
     public void setUp() throws Exception {
         context = Robolectric.buildActivity(Activity.class).create().get();
-        view = mock(View.class);
-        when(view.getWidth()).thenReturn(320);
-        when(view.getHeight()).thenReturn(50);
 
-        adAlertGestureListener = mock(AdAlertGestureListener.class);
+        gestureListener = mock(ViewGestureDetector.GestureListener.class);
 
-        subject = new ViewGestureDetector(context, view, mockAdReport);
-        subject.setAdAlertGestureListener(adAlertGestureListener);
+        subject = new ViewGestureDetector(context);
+        subject.setGestureListener(gestureListener);
     }
 
     @Test
     public void constructor_shouldDisableLongPressAndSetGestureListener() throws Exception {
-        subject = new ViewGestureDetector(context, view, mockAdReport);
+        subject = new ViewGestureDetector(context);
 
         ShadowGestureDetector shadowGestureDetector = Shadows.shadowOf(subject);
 
         assertThat(subject.isLongpressEnabled()).isFalse();
         assertThat(shadowGestureDetector.getListener()).isNotNull();
-        assertThat(shadowGestureDetector.getListener()).isInstanceOf(AdAlertGestureListener.class);
+        assertThat(shadowGestureDetector.getListener()).isInstanceOf(ViewGestureDetector.GestureListener.class);
     }
 
     @Test
@@ -80,14 +73,7 @@ public class ViewGestureDetectorTest {
         MotionEvent actualMotionEvent = Shadows.shadowOf(subject).getOnTouchEventMotionEvent();
 
         assertThat(actualMotionEvent).isEqualTo(expectedMotionEvent);
-        verify(adAlertGestureListener, never()).reset();
-    }
-
-    @Test
-    public void resetAdFlaggingGesture_shouldNotifyAdAlertGestureListenerOfReset() throws Exception {
-        subject.resetAdFlaggingGesture();
-
-        verify(adAlertGestureListener).reset();
+        verify(gestureListener, never()).onResetUserClick();
     }
 
     private MotionEvent createActionMove(float x) {

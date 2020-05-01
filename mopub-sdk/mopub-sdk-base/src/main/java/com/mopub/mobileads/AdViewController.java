@@ -22,6 +22,7 @@ import android.widget.FrameLayout;
 import com.mopub.common.AdReport;
 import com.mopub.common.ClientMetadata;
 import com.mopub.common.Constants;
+import com.mopub.common.LocationService;
 import com.mopub.common.MoPub;
 import com.mopub.common.Preconditions;
 import com.mopub.common.VisibleForTesting;
@@ -97,7 +98,6 @@ public class AdViewController {
 
     private String mKeywords;
     private String mUserDataKeywords;
-    private Location mLocation;
     private Point mRequestedAdSize;
     private WindowInsets mWindowInsets;
     private boolean mIsTesting;
@@ -121,8 +121,7 @@ public class AdViewController {
         // Timeout value of less than 0 means use the ad format's default timeout
         mBroadcastIdentifier = Utils.generateUniqueId();
 
-        mUrlGenerator = new WebViewAdUrlGenerator(mContext.getApplicationContext(),
-                MraidNativeCommandHandler.isStorePictureSupported(mContext));
+        mUrlGenerator = new WebViewAdUrlGenerator(mContext.getApplicationContext());
 
         mAdListener = new AdLoader.Listener() {
             @Override
@@ -355,18 +354,10 @@ public class AdViewController {
     }
 
     public Location getLocation() {
-        if (!MoPub.canCollectPersonalInformation()) {
-            return null;
-        }
-        return mLocation;
+        return LocationService.getLastKnownLocation(mContext );
     }
 
     public void setLocation(Location location) {
-        if (!MoPub.canCollectPersonalInformation()) {
-            mLocation = null;
-            return;
-        }
-        mLocation = location;
     }
 
     void setRequestedAdSize(final Point requestedAdSize) {
@@ -575,7 +566,6 @@ public class AdViewController {
                 .withAdUnitId(mAdUnitId)
                 .withKeywords(mKeywords)
                 .withUserDataKeywords(canCollectPersonalInformation ? mUserDataKeywords : null)
-                .withLocation(canCollectPersonalInformation ? mLocation : null)
                 .withRequestedAdSize(mRequestedAdSize)
                 .withWindowInsets(mWindowInsets);
 

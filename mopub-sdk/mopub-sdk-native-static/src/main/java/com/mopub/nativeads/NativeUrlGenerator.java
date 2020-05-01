@@ -35,7 +35,6 @@ class NativeUrlGenerator extends AdUrlGenerator {
             final boolean canCollectPersonalInformation = MoPub.canCollectPersonalInformation();
 
             mUserDataKeywords = canCollectPersonalInformation ? requestParameters.getUserDataKeywords() : null;
-            mLocation = canCollectPersonalInformation ? requestParameters.getLocation() : null;
 
             mKeywords = requestParameters.getKeywords();
             mDesiredAssets = requestParameters.getDesiredAssets();

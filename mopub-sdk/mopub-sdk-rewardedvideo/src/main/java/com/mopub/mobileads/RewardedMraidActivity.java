@@ -180,7 +180,7 @@ public class RewardedMraidActivity extends MraidActivity {
                                 mExternalViewabilitySessionManager = new ExternalViewabilitySessionManager(
                                         RewardedMraidActivity.this);
                                 mExternalViewabilitySessionManager.createDisplaySession(
-                                        RewardedMraidActivity.this, webView, true);
+                                        RewardedMraidActivity.this, webView);
                             }
                         }
                     });

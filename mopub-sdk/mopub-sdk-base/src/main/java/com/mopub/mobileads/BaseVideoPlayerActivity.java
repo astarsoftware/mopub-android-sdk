@@ -121,9 +121,8 @@ public class BaseVideoPlayerActivity extends Activity {
     }
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    protected void onStart() {
+        super.onStart();
         Utils.hideNavigationBar(this);
     }
 

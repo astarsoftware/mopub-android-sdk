@@ -128,7 +128,7 @@ public class MraidActivity extends BaseInterstitialActivity {
 
         final ExternalViewabilitySessionManager externalViewabilitySessionManager =
                 new ExternalViewabilitySessionManager(context);
-        externalViewabilitySessionManager.createDisplaySession(context, mraidWebView, true);
+        externalViewabilitySessionManager.createDisplaySession(context, mraidWebView);
 
         mraidWebView.loadDataWithBaseURL(Networking.getBaseUrlScheme() + "://" + Constants.HOST + "/",
                 htmlData, "text/html", "UTF-8", null);
@@ -263,7 +263,7 @@ public class MraidActivity extends BaseInterstitialActivity {
                                 mExternalViewabilitySessionManager = viewabilityManager;
                             } else {
                                 mExternalViewabilitySessionManager = new ExternalViewabilitySessionManager(MraidActivity.this);
-                                mExternalViewabilitySessionManager.createDisplaySession(MraidActivity.this, webView, true);
+                                mExternalViewabilitySessionManager.createDisplaySession(MraidActivity.this, webView);
                             }
                         }
                     });

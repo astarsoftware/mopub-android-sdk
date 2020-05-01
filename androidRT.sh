@@ -4,7 +4,7 @@
 # http://www.mopub.com/legal/sdk-license-agreement/
 
 
-# Run with: [mopub-android]$ chmod +x android.sh && ./android.sh
+# Run with: [mopub-android]$ chmod +x androidRT.sh && ./androidRT.sh
 sdk_manager_dir="$HOME/Library/Android/sdk/tools/bin"
 avd_manager_dir="$HOME/Library/Android/sdk/tools/bin"
 device_emulator_dir="$HOME/Library/Android/sdk/emulator"
@@ -40,31 +40,38 @@ while [ "`$adb_dir/adb shell getprop sys.boot_completed | tr -d '\r' `" != "1" ]
 echo "list of all Running emulators/Devices"
 $adb_dir/adb devices
 
-# ************ Set up Environment, Install APKs, Run tests, Uninstall APKs, Kill emulator ***************
+# # ************ Set up Environment, Install APKs, Run tests, Uninstall APKs, Kill emulator ***************
 
 # Give Gradle execution permission:
 cd $mopub_sample_dir
 chmod +x gradlew
 
+echo "clean gradle"
+./gradlew clean
+
+echo "assemble Debug"
 # Create APK for mopub-sample app:
 ./gradlew assembleDebug --stacktrace
 
+echo "assemble android test"
 # Create test APK for mopub-sample app:
 ./gradlew assembleAndroidTest --stacktrace
 
+echo "push internal apk app"
 # Install mopub-sample app APK: [Grant Permissions]
 cd $adb_dir
-./adb install -r -t -g $mopub_sample_dir/build/outputs/apk/external/debug/mopub-sample-external-debug.apk 
+./adb install -r -t -g $mopub_sample_dir/build/outputs/apk/internal/debug/mopub-sample-internal-debug.apk 
 
+echo "push internal android test"
 # Install test APK: [Grant Permissions]
-./adb install -r -t -g $mopub_sample_dir/build/outputs/apk/androidTest/external/debug/mopub-sample-external-debug-androidTest.apk
+./adb install -r -t -g $mopub_sample_dir/build/outputs/apk/androidTest/internal/debug/mopub-sample-internal-debug-androidTest.apk 
 
 # Enable fullscreen mode:
 ./adb shell settings put global policy_control immersive.full=com.mopub.simpleadsdemo
 
 # Run All Tests
 echo "Test run starts"
-test_report=$(./adb shell am instrument -w -r -e package com.mopub.tests.BaseTesting -e debug false com.mopub.simpleadsdemo.test/androidx.test.runner.AndroidJUnitRunner)
+test_report=$(./adb shell am instrument -w -r -e package com.mopub.tests.ReleaseTesting -e debug false com.mopub.simpleadsdemo.test/androidx.test.runner.AndroidJUnitRunner)
 
 # Show test report
 echo "$test_report"
@@ -78,8 +85,12 @@ cd $adb_dir
 ./adb emu kill
 ./adb devices | grep "emulator-" | while read -r emulator device; do ./adb -s $emulator emu kill; done
 
-echo "list of all Running emulators/Devices"	
-$adb_dir/adb devices
+# Kill server after the emulators
+./adb kill-server
+
+# Executing ./adb devices makes the daemon start again.
+echo "list Process/devices on port 5037"
+lsof -i tcp:5037
 
 # Terminate shell with appropriate exit code
 exitcmd=$(if echo "$test_report" | grep -q 'FAILURES!!!'; then echo "exit 1"; else echo "exit 0"; fi)

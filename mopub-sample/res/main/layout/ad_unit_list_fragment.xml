@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -19,21 +20,17 @@
         android:inputType="text"
         android:maxLines="1"
         android:paddingStart="5dp"
-        android:paddingLeft="5dp"
-        android:paddingEnd="38dp"
-        android:paddingRight="38dp" />
+        android:paddingEnd="38dp" />
 
-    <Button
+    <ImageView
         android:id="@+id/search_bar_clear_button"
-        android:layout_width="26dp"
-        android:layout_height="26dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_alignEnd="@id/search_bar_et"
-        android:layout_alignRight="@id/search_bar_et"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="7dp"
-        android:layout_marginRight="7dp"
-        android:background="@drawable/baseline_cancel_black_36" />
-
+        android:contentDescription="@string/clear_search_button"
+        android:padding="8dp"
+        app:srcCompat="@drawable/ic_close_144" />
 
     <ListView
         android:id="@android:id/list"
@@ -45,7 +42,7 @@
 
     <EditText
         android:id="@+id/status_change_notification"
-        style="@android:style/TextAppearance.DeviceDefault.Small.Inverse"
+        style="@android:style/TextAppearance.DeviceDefault.Medium.Inverse"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@id/add_ad_unit_button"

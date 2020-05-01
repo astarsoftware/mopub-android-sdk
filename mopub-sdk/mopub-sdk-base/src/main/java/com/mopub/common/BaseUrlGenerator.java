@@ -162,10 +162,6 @@ public abstract class BaseUrlGenerator {
         addParam("av", appVersion);
     }
 
-    protected void setExternalStoragePermission(boolean isExternalStoragePermissionGranted) {
-        addParam("android_perms_ext_storage", isExternalStoragePermissionGranted ? "1" : "0");
-    }
-
     protected void setDeviceInfo(String... info) {
         StringBuilder result = new StringBuilder();
         if (info == null || info.length < 1) {

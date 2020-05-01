@@ -51,8 +51,8 @@ public class BaseVideoPlayerActivityTest {
     }
 
     @Test
-    public void create_callsHideNavigationBar(){
-        Activity subject = Robolectric.buildActivity(BaseVideoPlayerActivity.class).create().get();
+    public void start_callsHideNavigationBar(){
+        Activity subject = Robolectric.buildActivity(BaseVideoPlayerActivity.class).create().start().get();
         View decorView = subject.getWindow().getDecorView();
 
         assertThat(decorView.getSystemUiVisibility()).isEqualTo(UtilsTest.FLAGS);

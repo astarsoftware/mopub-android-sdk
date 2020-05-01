@@ -83,7 +83,7 @@ public class MraidActivityTest {
 
     @Test
     public void create_callsHideNavigationBar(){
-        Activity subject = Robolectric.buildActivity(MraidActivity.class).create().get();
+        Activity subject = Robolectric.buildActivity(MraidActivity.class).create().start().get();
         View decorView = subject.getWindow().getDecorView();
 
         assertThat(decorView.getSystemUiVisibility()).isEqualTo(UtilsTest.FLAGS);

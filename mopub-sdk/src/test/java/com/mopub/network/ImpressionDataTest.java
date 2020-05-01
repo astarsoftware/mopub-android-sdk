@@ -46,6 +46,7 @@ public class ImpressionDataTest {
 
         assertNotNull(subject);
         assertNull(subject.getImpressionId());
+        assertNull(subject.getAppVersion());
         assertNull(subject.getAdUnitId());
         assertNull(subject.getAdUnitName());
         assertNull(subject.getAdUnitFormat());
@@ -81,6 +82,7 @@ public class ImpressionDataTest {
 
     private final String SAMPLE_JSON = "{\n" +
             "                \"id\": \"test_ID\",\n" +
+            "                \"app_version\": \"test_app_version\",\n" +
             "                \"adunit_id\": \"test_adunit_id\",\n" +
             "                \"adunit_name\": \"test_adunit_name\",\n" +
             "                \"adunit_format\": \"test_adunit_format\",\n" +
@@ -98,6 +100,7 @@ public class ImpressionDataTest {
 
     private static boolean equalsToSampleData(ImpressionData data) {
         assertEquals("test_ID", data.getImpressionId());
+        assertEquals("test_app_version", data.getAppVersion());
         assertEquals("test_adunit_id", data.getAdUnitId());
         assertEquals("test_adunit_name", data.getAdUnitName());
         assertEquals("test_adunit_format", data.getAdUnitFormat());
@@ -115,6 +118,7 @@ public class ImpressionDataTest {
         JSONObject json = data.getJsonRepresentation();
 
         assertEquals("test_ID", json.optString("id"));
+        assertEquals("test_app_version", json.optString("app_version"));
         assertEquals("test_adunit_id", json.optString("adunit_id"));
         assertEquals("test_adunit_name", json.optString("adunit_name"));
         assertEquals("test_adunit_format", json.optString("adunit_format"));

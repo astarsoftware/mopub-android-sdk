@@ -285,12 +285,11 @@ public class MoPubRewardedVideoManager {
             sInstance.mRewardedAdData.setCustomerId(customerId);
         }
 
-        final AdUrlGenerator urlGenerator = new WebViewAdUrlGenerator(sInstance.mContext, false);
+        final AdUrlGenerator urlGenerator = new WebViewAdUrlGenerator(sInstance.mContext);
         urlGenerator.withAdUnitId(adUnitId)
                 .withKeywords(requestParameters == null ? null : requestParameters.mKeywords)
                 .withUserDataKeywords((requestParameters == null ||
-                        !MoPub.canCollectPersonalInformation()) ? null : requestParameters.mUserDataKeywords)
-                .withLocation(requestParameters == null ? null : requestParameters.mLocation);
+                        !MoPub.canCollectPersonalInformation()) ? null : requestParameters.mUserDataKeywords);
 
         setSafeAreaValues(urlGenerator);
 

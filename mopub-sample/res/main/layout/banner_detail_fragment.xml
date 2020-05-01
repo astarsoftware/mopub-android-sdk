@@ -11,8 +11,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingEnd="8dp"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
         android:paddingStart="8dp"
         android:paddingTop="8dp"
         android:singleLine="true"
@@ -25,8 +23,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingEnd="8dp"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
         android:paddingStart="8dp"
         android:singleLine="true"
         android:textColor="?android:attr/textColorSecondary"
@@ -76,10 +72,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:paddingStart="8dp"
-            android:paddingLeft="8dp"
             android:paddingTop="8dp"
             android:paddingEnd="8dp"
-            android:paddingRight="8dp"
             android:text="@string/ad_size_detail_empty_text" />
 
         <Button

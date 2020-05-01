@@ -811,8 +811,6 @@ public class MraidController {
                     + "within the resized ad.");
         }
 
-        // Resized ads always rely on the creative's close button (as if useCustomClose were true)
-        mCloseableAdContainer.setCloseVisible(false);
         mCloseableAdContainer.setClosePosition(closePosition);
 
         // Put the ad in the closeable container and resize it

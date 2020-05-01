@@ -25,7 +25,6 @@ import java.util.Map;
 
 import static com.mopub.common.DataKeys.CLICKTHROUGH_URL_KEY;
 import static com.mopub.common.DataKeys.HTML_RESPONSE_BODY_KEY;
-import static com.mopub.mobileads.MoPubErrorCode.INTERNAL_ERROR;
 import static com.mopub.mobileads.MoPubErrorCode.NETWORK_INVALID_STATE;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyString;
@@ -86,28 +85,6 @@ public class HtmlBannerTest {
         assertThat(TestHtmlBannerWebViewFactory.getLatestListener()).isSameAs(customEventBannerListener);
         assertThat(TestHtmlBannerWebViewFactory.getLatestClickthroughUrl()).isEqualTo("clickthroughUrl");
         verify(htmlBannerWebView).loadHtmlResponse(responseBody);
-    }
-
-    @Test
-    public void loadBanner_withTrueFlag_shouldSetBannerImpressionPixelCountEnabledTrue() {
-        assertThat(subject.isBannerImpressionPixelCountEnabled()).isFalse();
-
-        localExtras.put(DataKeys.BANNER_IMPRESSION_PIXEL_COUNT_ENABLED, true);
-
-        subject.loadBanner(context, customEventBannerListener, localExtras, serverExtras);
-
-        assertThat(subject.isBannerImpressionPixelCountEnabled()).isTrue();
-    }
-
-    @Test
-    public void loadBanner_withFalseFlag_shouldSetBannerImpressionPixelCountEnabledFalse() {
-        assertThat(subject.isBannerImpressionPixelCountEnabled()).isFalse();
-
-        localExtras.put(DataKeys.BANNER_IMPRESSION_PIXEL_COUNT_ENABLED, false);
-
-        subject.loadBanner(context, customEventBannerListener, localExtras, serverExtras);
-
-        assertThat(subject.isBannerImpressionPixelCountEnabled()).isFalse();
     }
 
     @Test

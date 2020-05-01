@@ -37,9 +37,6 @@ abstract class BaseInterstitialActivity extends Activity {
         mBroadcastIdentifier = getBroadcastIdentifierFromIntent(intent);
         mAdReport = getAdReportFromIntent(intent);
 
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
         View adView = getAdView();
 
         mCloseableLayout = new CloseableLayout(this);
@@ -54,7 +51,11 @@ abstract class BaseInterstitialActivity extends Activity {
         mCloseableLayout.addView(adView,
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         setContentView(mCloseableLayout);
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
         Utils.hideNavigationBar(this);
     }
 

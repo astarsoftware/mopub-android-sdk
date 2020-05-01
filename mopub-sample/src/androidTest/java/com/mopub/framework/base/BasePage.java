@@ -24,7 +24,7 @@ import static org.junit.Assert.fail;
 public class BasePage {
     private static final int DEFAULT_TIMEOUT_SECS = 10;
     private static final int DEFAULT_RETRY_COUNT = 3;
-    private static final int SAMPLE_TIME_MS = 200;
+    private static final int SAMPLE_TIME_MS = 300;
     private static final int SAMPLES_PER_SEC = 5;
 
     protected final String ADD_AD_UNIT_LABEL = "New ad unit";

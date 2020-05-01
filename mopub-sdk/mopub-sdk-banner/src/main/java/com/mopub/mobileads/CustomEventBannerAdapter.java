@@ -26,7 +26,6 @@ import java.util.TreeMap;
 import static com.mopub.common.DataKeys.AD_HEIGHT;
 import static com.mopub.common.DataKeys.AD_REPORT_KEY;
 import static com.mopub.common.DataKeys.AD_WIDTH;
-import static com.mopub.common.DataKeys.BANNER_IMPRESSION_PIXEL_COUNT_ENABLED;
 import static com.mopub.common.DataKeys.BROADCAST_IDENTIFIER_KEY;
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM_WITH_THROWABLE;
@@ -49,7 +48,6 @@ public class CustomEventBannerAdapter implements InternalCustomEventBannerListen
 
     private int mImpressionMinVisibleDips = Integer.MIN_VALUE;
     private int mImpressionMinVisibleMs = Integer.MIN_VALUE;
-    private boolean mIsVisibilityImpressionTrackingEnabled = false;
     @Nullable private BannerVisibilityTracker mVisibilityTracker;
 
     public CustomEventBannerAdapter(@NonNull MoPubView moPubView,
@@ -95,7 +93,6 @@ public class CustomEventBannerAdapter implements InternalCustomEventBannerListen
         mLocalExtras.put(AD_REPORT_KEY, adReport);
         mLocalExtras.put(AD_WIDTH, mMoPubView.getAdWidth());
         mLocalExtras.put(AD_HEIGHT, mMoPubView.getAdHeight());
-        mLocalExtras.put(BANNER_IMPRESSION_PIXEL_COUNT_ENABLED, mIsVisibilityImpressionTrackingEnabled);
     }
 
     @ReflectionTarget
@@ -160,12 +157,6 @@ public class CustomEventBannerAdapter implements InternalCustomEventBannerListen
         return mImpressionMinVisibleMs;
     }
 
-    @Deprecated
-    @VisibleForTesting
-    boolean isVisibilityImpressionTrackingEnabled() {
-        return mIsVisibilityImpressionTrackingEnabled;
-    }
-
     @Nullable
     @Deprecated
     @VisibleForTesting
@@ -206,10 +197,6 @@ public class CustomEventBannerAdapter implements InternalCustomEventBannerListen
                 MoPubLog.log(CUSTOM,  "Cannot parse integer from header "
                         + DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_MS);
             }
-
-            if (mImpressionMinVisibleDips > 0 && mImpressionMinVisibleMs >= 0) {
-                    mIsVisibilityImpressionTrackingEnabled = true;
-            }
         }
     }
 
@@ -217,10 +204,12 @@ public class CustomEventBannerAdapter implements InternalCustomEventBannerListen
      * CustomEventBanner.Listener implementation
      */
     @Override
-    public void onBannerLoaded(View bannerView) {
+    public void onBannerLoaded(@NonNull View bannerView) {
         if (isInvalidated()) {
             return;
         }
+
+        Preconditions.checkNotNull(bannerView);
 
         MoPubLog.log(CUSTOM, "onBannerLoaded() success. Attempting to show.");
 
@@ -235,8 +224,7 @@ public class CustomEventBannerAdapter implements InternalCustomEventBannerListen
             //
             // Else, retain old behavior of firing AdServer impression tracking URL if and only if
             // banner is not HTML.
-            if (mIsVisibilityImpressionTrackingEnabled &&
-                    mCustomEventBanner != null &&
+            if (mCustomEventBanner != null &&
                     mCustomEventBanner.isAutomaticImpressionAndClickTrackingEnabled()) {
                 // Disable autoRefresh temporarily until an impression happens.
                 mMoPubView.pauseAutoRefresh();
@@ -257,15 +245,6 @@ public class CustomEventBannerAdapter implements InternalCustomEventBannerListen
             }
 
             mMoPubView.setAdContentView(bannerView);
-
-            // Old behavior
-            if (!mIsVisibilityImpressionTrackingEnabled &&
-                    mCustomEventBanner != null &&
-                    mCustomEventBanner.isAutomaticImpressionAndClickTrackingEnabled()) {
-                if (!(bannerView instanceof HtmlBannerWebView)) {
-                    mMoPubView.trackNativeImpression();
-                }
-            }
 
             MoPubLog.log(CUSTOM, "onBannerLoaded() - Show successful.");
         } else {
@@ -332,9 +311,7 @@ public class CustomEventBannerAdapter implements InternalCustomEventBannerListen
                 mCustomEventBanner != null &&
                 !mCustomEventBanner.isAutomaticImpressionAndClickTrackingEnabled()) {
             mMoPubView.trackNativeImpression();
-            if (mIsVisibilityImpressionTrackingEnabled) {
-                mCustomEventBanner.trackMpxAndThirdPartyImpressions();
-            }
+            mCustomEventBanner.trackMpxAndThirdPartyImpressions();
         }
     }
 

@@ -37,7 +37,7 @@ The MoPub SDK is available via:
     }
 
     dependencies {
-        implementation('com.mopub:mopub-sdk:5.11.0@aar') {
+        implementation('com.mopub:mopub-sdk:5.12.0@aar') {
             transitive = true
         }
     }
@@ -59,27 +59,27 @@ The MoPub SDK is available via:
         // ... other project dependencies
 
         // For banners
-        implementation('com.mopub:mopub-sdk-banner:5.11.0@aar') {
+        implementation('com.mopub:mopub-sdk-banner:5.12.0@aar') {
             transitive = true
         }
         
         // For interstitials
-        implementation('com.mopub:mopub-sdk-interstitial:5.11.0@aar') {
+        implementation('com.mopub:mopub-sdk-interstitial:5.12.0@aar') {
             transitive = true
         }
 
         // For rewarded videos. This will automatically also include interstitials
-        implementation('com.mopub:mopub-sdk-rewardedvideo:5.11.0@aar') {
+        implementation('com.mopub:mopub-sdk-rewardedvideo:5.12.0@aar') {
             transitive = true
         }
 
         // For native static (images).
-        implementation('com.mopub:mopub-sdk-native-static:5.11.0@aar') {
+        implementation('com.mopub:mopub-sdk-native-static:5.12.0@aar') {
             transitive = true
         }
 
         // For native video. This will automatically also include native static
-        implementation('com.mopub:mopub-sdk-native-video:5.11.0@aar') {
+        implementation('com.mopub:mopub-sdk-native-video:5.12.0@aar') {
             transitive = true
         }
     }
@@ -108,19 +108,14 @@ The MoPub SDK is available via:
 Please view the [changelog](https://github.com/mopub/mopub-android-sdk/blob/master/CHANGELOG.md) for a complete list of additions, fixes, and enhancements in the latest release.
 
 - **Features**
-  - Raise the minimum Android SDK to Android 4.4 (API level 19).
-  - Update GDPR logic to allow MoPub to reacquire consent for new vendors.
-  - Update our support for OpenRTB Native Ads to version 1.2 and add an optional `sponsored` text field for native ads.
-  - Upgrade ExoPlayer to 2.11.0.
-  - Add switch to use AndroidX MediaPlayer instead of the default Android MediaPlayer for VAST Video. This adds the dependencies `androidx.media2:media2-session`, `androidx.media2:media2-widget`, and `androidx.media2:media2-player`, all on version 1.0.1.
-  - Add dependency on `androidx.core:core-ktx` version 1.1.0.
-  - Add dependency on `com.google.code.gson:gson` version 2.8.6.
-  - Add the ability to test manual native ads in the sample app.
+  - Add Mintegral as a supported network.
+  - Geographical location is set automatically by the SDK. Public methods to set location are marked deprecated.
+  - Add a new method `getAppVersion()` to the `ImpressionData` class.
+  - MRAID ads always show native close button.
 
 - **Bug Fixes**
-  - Fix an issue with rate limiting for rewarded ads.
-  - Fix a compliance issue with Facebook Audience Network native for the sample app.
-  - Increase consistency for immersive mode across VAST, MRAID, and HTML ads.
+  - Fix multiple UI layout warnings in the sample application.
+  - Remove parameter android_perms_ext_storage from an ad request.
 
 ## Requirements
 
@@ -165,7 +160,7 @@ Normally, to add the MoPub SDK to your app via JCenter, your `build.gradle` woul
 
 ```	
 dependencies {
-    implementation('com.mopub:mopub-sdk:5.11.0@aar') {
+    implementation('com.mopub:mopub-sdk:5.12.0@aar') {
         transitive = true
     }
 }
@@ -174,7 +169,7 @@ Update to the following to exclude one or both viewability vendors:
 
 ```
 dependencies {
-    implementation('com.mopub:mopub-sdk:5.11.0@aar') {
+    implementation('com.mopub:mopub-sdk:5.12.0@aar') {
         transitive = true
         exclude module: 'libAvid-mopub' // To exclude AVID
         exclude module: 'moat-mobile-app-kit' // To exclude Moat

@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.view.View;
 
-import com.mopub.common.DataKeys;
 import com.mopub.common.test.support.SdkTestRunner;
 import com.mopub.mobileads.CustomEventBanner;
 import com.mopub.mobileads.InternalCustomEventBannerListener;
@@ -28,7 +27,6 @@ import java.util.Map;
 import static com.mopub.common.DataKeys.HTML_RESPONSE_BODY_KEY;
 import static com.mopub.mobileads.MoPubErrorCode.MRAID_LOAD_ERROR;
 import static com.mopub.mobileads.MoPubErrorCode.RENDER_PROCESS_GONE_WITH_CRASH;
-import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -67,28 +65,6 @@ public class MraidBannerTest {
         subject.loadBanner(context, mockBannerListener, localExtras, serverExtras);
 
         verify(mockBannerListener).onBannerFailed(eq(MRAID_LOAD_ERROR));
-    }
-
-    @Test
-    public void loadBanner_withTrueFlag_shouldSetBannerImpressionPixelCountEnabledTrue() {
-        assertThat(subject.isBannerImpressionPixelCountEnabled()).isFalse();
-
-        localExtras.put(DataKeys.BANNER_IMPRESSION_PIXEL_COUNT_ENABLED, true);
-
-        subject.loadBanner(context, mockBannerListener, localExtras, serverExtras);
-
-        assertThat(subject.isBannerImpressionPixelCountEnabled()).isTrue();
-    }
-
-    @Test
-    public void loadBanner_withFalseFlag_shouldSetBannerImpressionPixelCountEnabledFalse() {
-        assertThat(subject.isBannerImpressionPixelCountEnabled()).isFalse();
-
-        localExtras.put(DataKeys.BANNER_IMPRESSION_PIXEL_COUNT_ENABLED, false);
-
-        subject.loadBanner(context, mockBannerListener, localExtras, serverExtras);
-
-        assertThat(subject.isBannerImpressionPixelCountEnabled()).isFalse();
     }
 
     @Test

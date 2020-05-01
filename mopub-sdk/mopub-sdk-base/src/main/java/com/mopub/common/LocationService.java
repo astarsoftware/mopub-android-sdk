@@ -157,22 +157,21 @@ public class LocationService {
      * </ul>
      */
     @Nullable
-    public static Location getLastKnownLocation(@NonNull final Context context,
-            final int locationPrecision,
-            final @NonNull MoPub.LocationAwareness locationAwareness) {
-
+    public static Location getLastKnownLocation(@NonNull final Context context) {
         if (!MoPub.canCollectPersonalInformation()) {
             return null;
         }
 
         Preconditions.checkNotNull(context);
-        Preconditions.checkNotNull(locationAwareness);
+
+        final LocationService locationService = getInstance();
+
+        final MoPub.LocationAwareness locationAwareness = locationService.mLocationAwareness;
+        final int locationPrecision = locationService.mLocationPrecision;
 
         if (locationAwareness == MoPub.LocationAwareness.DISABLED) {
             return null;
         }
-
-        final LocationService locationService = getInstance();
 
         if (isLocationFreshEnough()) {
             return locationService.mLastKnownLocation;
@@ -189,8 +188,7 @@ public class LocationService {
         }
 
         if (location != null) {
-            locationService.mLastKnownLocation = location;
-            locationService.mLocationLastUpdatedMillis = SystemClock.elapsedRealtime();
+            locationService.setLastLocation(location);
         }
 
         return locationService.mLastKnownLocation;
@@ -266,17 +264,27 @@ public class LocationService {
     }
 
     private static boolean isLocationFreshEnough() {
-        final LocationService locationService = LocationService.getInstance();
+        final LocationService locationService = getInstance();
         if (locationService.mLastKnownLocation == null) {
             return false;
         }
         return SystemClock.elapsedRealtime() - locationService.mLocationLastUpdatedMillis <=
-                MoPub.getMinimumLocationRefreshTimeMillis();
+                locationService.getMinimumLocationRefreshTimeMillis();
     }
 
     @Deprecated
     @VisibleForTesting
     public static void clearLastKnownLocation() {
         getInstance().mLastKnownLocation = null;
+    }
+
+    void setLastLocation(@Nullable Location location) {
+        if (location == null) {
+            return;
+        }
+        final LocationService locationService = getInstance();
+        locationService.mLastKnownLocation = location;
+        locationService.mLocationLastUpdatedMillis = SystemClock.elapsedRealtime();
+
     }
 }

@@ -154,8 +154,7 @@ public class MraidBridge {
             }
         });
 
-        mGestureDetector = new ViewGestureDetector(
-                mMraidWebView.getContext(), mMraidWebView, mAdReport);
+        mGestureDetector = new ViewGestureDetector(mMraidWebView.getContext());
 
         mMraidWebView.setOnTouchListener(new OnTouchListener() {
             @Override
@@ -454,15 +453,16 @@ public class MraidBridge {
                 boolean allowOffscreen = parseBoolean(params.get("allowOffscreen"), true);
                 mMraidBridgeListener.onResize(
                         width, height, offsetX, offsetY, closePosition, allowOffscreen);
+                boolean shouldUseCustomClose = mAdReport != null && mAdReport.shouldAllowCustomClose();
+                mMraidBridgeListener.onUseCustomClose(shouldUseCustomClose);
                 break;
             case EXPAND:
                 URI uri = parseURI(params.get("url"), null);
-                boolean shouldUseCustomClose = parseBoolean(params.get("shouldUseCustomClose"),
-                        false);
+                shouldUseCustomClose = parseAllowCustomClose(params, mAdReport);
                 mMraidBridgeListener.onExpand(uri, shouldUseCustomClose);
                 break;
             case USE_CUSTOM_CLOSE:
-                shouldUseCustomClose = parseBoolean(params.get("shouldUseCustomClose"), false);
+                shouldUseCustomClose = parseAllowCustomClose(params, mAdReport);
                 mMraidBridgeListener.onUseCustomClose(shouldUseCustomClose);
                 break;
             case OPEN:
@@ -537,6 +537,13 @@ public class MraidBridge {
         }
     }
 
+    private static boolean parseAllowCustomClose(@NonNull final Map<String, String> params,
+                                                 @Nullable final AdReport adReport) throws MraidCommandException {
+        boolean useCustomClose = parseBoolean(params.get("shouldUseCustomClose"), false);
+        useCustomClose &= adReport != null && adReport.shouldAllowCustomClose();
+        return useCustomClose;
+    }
+
     private int checkRange(int value, int min, int max) throws MraidCommandException {
         if (value < min || value > max) {
             throw new MraidCommandException("Integer parameter out of range: " + value);
@@ -544,7 +551,7 @@ public class MraidBridge {
         return value;
     }
 
-    private boolean parseBoolean(
+    private static boolean parseBoolean(
             @Nullable String text, boolean defaultValue) throws MraidCommandException {
         if (text == null) {
             return defaultValue;
@@ -552,7 +559,7 @@ public class MraidBridge {
         return parseBoolean(text);
     }
 
-    private boolean parseBoolean(final String text) throws MraidCommandException {
+    private static boolean parseBoolean(final String text) throws MraidCommandException {
         if ("true".equals(text)) {
             return true;
         } else if ("false".equals(text)) {

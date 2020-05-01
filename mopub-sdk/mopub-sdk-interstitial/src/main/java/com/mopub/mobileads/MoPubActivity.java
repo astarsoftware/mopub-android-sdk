@@ -104,7 +104,7 @@ public class MoPubActivity extends BaseInterstitialActivity {
 
         final ExternalViewabilitySessionManager externalViewabilitySessionManager =
                 new ExternalViewabilitySessionManager(context);
-        externalViewabilitySessionManager.createDisplaySession(context, htmlInterstitialWebView, true);
+        externalViewabilitySessionManager.createDisplaySession(context, htmlInterstitialWebView);
 
         htmlInterstitialWebView.loadHtmlResponse(getResponseString(adReport));
         WebViewCacheService.storeWebViewConfig(broadcastIdentifier, baseInterstitial,
@@ -141,7 +141,7 @@ public class MoPubActivity extends BaseInterstitialActivity {
                 mAdReport, new BroadcastingInterstitialListener(), clickthroughUrl);
         
         mExternalViewabilitySessionManager = new ExternalViewabilitySessionManager(this);
-        mExternalViewabilitySessionManager.createDisplaySession(this, mHtmlInterstitialWebView, true);
+        mExternalViewabilitySessionManager.createDisplaySession(this, mHtmlInterstitialWebView);
         mHtmlInterstitialWebView.loadHtmlResponse(htmlData);
         return mHtmlInterstitialWebView;
     }

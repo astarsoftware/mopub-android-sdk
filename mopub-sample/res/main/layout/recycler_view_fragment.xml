@@ -10,8 +10,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingEnd="8dp"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
         android:paddingStart="8dp"
         android:paddingTop="8dp"
         android:singleLine="true"
@@ -24,8 +22,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingEnd="8dp"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
         android:paddingStart="8dp"
         android:singleLine="true"
         android:textColor="?android:attr/textColorSecondary"
@@ -62,14 +58,14 @@
             android:id="@+id/load_button"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/button_height"
-            android:layout_marginRight="2dp"
+            android:layout_marginEnd="2dp"
             android:text="@string/load_ad" />
 
         <Button
             android:id="@+id/switch_button"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/button_height"
-            android:layout_marginRight="2dp"
+            android:layout_marginEnd="2dp"
             android:text="@string/switch_layout" />
     </LinearLayout>
 

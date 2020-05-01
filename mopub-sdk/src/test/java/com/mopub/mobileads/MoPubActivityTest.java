@@ -91,7 +91,8 @@ public class MoPubActivityTest {
     }
 
     @Test
-    public void create_callsHideNavigationBar(){
+    public void onStart_callsHideNavigationBar(){
+        subject.onStart();
         View decorView = subject.getWindow().getDecorView();
 
         assertThat(decorView.getSystemUiVisibility()).isEqualTo(UtilsTest.FLAGS);

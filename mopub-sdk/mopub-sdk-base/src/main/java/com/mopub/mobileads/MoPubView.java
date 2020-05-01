@@ -53,7 +53,7 @@ import static java.lang.Math.ceil;
 
 public class MoPubView extends FrameLayout {
     public interface BannerAdListener {
-        public void onBannerLoaded(MoPubView banner);
+        public void onBannerLoaded(@NonNull MoPubView banner);
         public void onBannerFailed(MoPubView banner, MoPubErrorCode errorCode);
         public void onBannerClicked(MoPubView banner);
         public void onBannerExpanded(MoPubView banner);
@@ -451,14 +451,21 @@ public class MoPubView extends FrameLayout {
         return (mAdViewController != null && MoPub.canCollectPersonalInformation()) ? mAdViewController.getUserDataKeywords() : null;
     }
 
+    /**
+     * @deprecated As of 5.12.0. The location is set automatically based on GPS or Network provider value
+     * @param location is ignored
+     */
+    @Deprecated
     public void setLocation(Location location) {
-        if (mAdViewController != null && MoPub.canCollectPersonalInformation()) {
-            mAdViewController.setLocation(location);
-        }
     }
 
+    /**
+     * @deprecated As of 5.12.0, will be removed in the future.
+     * @return current SDK location value
+     */
+    @Deprecated
     public Location getLocation() {
-        return (mAdViewController != null && MoPub.canCollectPersonalInformation()) ? mAdViewController.getLocation() : null;
+        return mAdViewController != null ? mAdViewController.getLocation() : null;
     }
 
     public int getAdWidth() {

@@ -75,7 +75,6 @@ public class CustomEventBannerAdapterTest {
         expectedLocalExtras.put("broadcastIdentifier", BROADCAST_IDENTIFIER);
         expectedLocalExtras.put(DataKeys.AD_WIDTH, 320);
         expectedLocalExtras.put(DataKeys.AD_HEIGHT, 50);
-        expectedLocalExtras.put(DataKeys.BANNER_IMPRESSION_PIXEL_COUNT_ENABLED, false);
 
         expectedServerExtras = new HashMap<String, String>();
 
@@ -163,7 +162,6 @@ public class CustomEventBannerAdapterTest {
 
         subject.loadAd();
 
-        expectedLocalExtras.put(DataKeys.BANNER_IMPRESSION_PIXEL_COUNT_ENABLED, true);
         expectedServerExtras.put(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_DIPS, "1");
         expectedServerExtras.put(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_MS, "0");
         verify(banner).loadBanner(
@@ -183,7 +181,7 @@ public class CustomEventBannerAdapterTest {
         subject.loadAd();
         assertThat(Robolectric.getForegroundThreadScheduler().size()).isEqualTo(1);
 
-        subject.onBannerLoaded(null);
+        subject.onBannerLoaded(mock(View.class));
         assertThat(Robolectric.getForegroundThreadScheduler().size()).isEqualTo(0);
 
         subject.loadAd();
@@ -261,8 +259,7 @@ public class CustomEventBannerAdapterTest {
         // Since there are no visibility imp tracking headers, imp tracking should not be enabled.
         assertThat(subject.getImpressionMinVisibleDips()).isEqualTo(Integer.MIN_VALUE);
         assertThat(subject.getImpressionMinVisibleMs()).isEqualTo(Integer.MIN_VALUE);
-        assertThat(subject.isVisibilityImpressionTrackingEnabled()).isFalse();
-        assertThat(subject.getVisibilityTracker()).isNull();
+        assertThat(subject.getVisibilityTracker()).isNotNull();
     }
 
     @Test
@@ -272,17 +269,16 @@ public class CustomEventBannerAdapterTest {
 
         verify(moPubView).creativeDownloaded();
         verify(moPubView).setAdContentView(eq(view));
-        verify(moPubView).trackNativeImpression();
+        verify(moPubView, never()).trackNativeImpression();
 
         // Since there are no visibility imp tracking headers, imp tracking should not be enabled.
         assertThat(subject.getImpressionMinVisibleDips()).isEqualTo(Integer.MIN_VALUE);
         assertThat(subject.getImpressionMinVisibleMs()).isEqualTo(Integer.MIN_VALUE);
-        assertThat(subject.isVisibilityImpressionTrackingEnabled()).isFalse();
-        assertThat(subject.getVisibilityTracker()).isNull();
+        assertThat(subject.getVisibilityTracker()).isNotNull();
     }
 
     @Test
-    public void onBannerLoaded_whenViewIsHtmlBannerWebView_withVisibilityImpressionTrackingEnabled_shouldSetUpVisibilityTrackerWithListener_shouldNotTrackNativeImpressionImmediately() {
+    public void onBannerLoaded_whenViewIsHtmlBannerWebView_shouldSetUpVisibilityTrackerWithListener_shouldNotTrackNativeImpressionImmediately() {
         View mockHtmlBannerWebView = mock(HtmlBannerWebView.class);
         serverExtras.put(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_DIPS, "1");
         serverExtras.put(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_MS, "0");
@@ -292,7 +288,6 @@ public class CustomEventBannerAdapterTest {
 
         assertThat(subject.getImpressionMinVisibleDips()).isEqualTo(1);
         assertThat(subject.getImpressionMinVisibleMs()).isEqualTo(0);
-        assertThat(subject.isVisibilityImpressionTrackingEnabled()).isTrue();
         assertThat(subject.getVisibilityTracker()).isNotNull();
         assertThat(subject.getVisibilityTracker().getBannerVisibilityTrackerListener()).isNotNull();
         verify(moPubView).creativeDownloaded();
@@ -302,7 +297,7 @@ public class CustomEventBannerAdapterTest {
     }
 
     @Test
-    public void onBannerLoaded_whenViewIsNotHtmlBannerWebView_withVisibilityImpressionTrackingEnabled_shouldSetUpVisibilityTrackerWithListener_shouldNotTrackNativeImpressionImmediately() {
+    public void onBannerLoaded_whenViewIsNotHtmlBannerWebView_shouldSetUpVisibilityTrackerWithListener_shouldNotTrackNativeImpressionImmediately() {
         View view = new View(Robolectric.buildActivity(Activity.class).create().get());
         serverExtras.put(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_DIPS, "1");
         serverExtras.put(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_MS, "0");
@@ -314,7 +309,6 @@ public class CustomEventBannerAdapterTest {
         // HtmlBannerWebView or not, the behavior should be the same.
         assertThat(subject.getImpressionMinVisibleDips()).isEqualTo(1);
         assertThat(subject.getImpressionMinVisibleMs()).isEqualTo(0);
-        assertThat(subject.isVisibilityImpressionTrackingEnabled()).isTrue();
         assertThat(subject.getVisibilityTracker()).isNotNull();
         assertThat(subject.getVisibilityTracker().getBannerVisibilityTrackerListener()).isNotNull();
         verify(moPubView).creativeDownloaded();
@@ -444,15 +438,14 @@ public class CustomEventBannerAdapterTest {
     }
 
     @Test
-    public void parseBannerImpressionTrackingHeaders_whenMissingInServerExtras_shouldUseDefaultValues_shouldNotEnableVisibilityImpressionTracking() {
+    public void parseBannerImpressionTrackingHeaders_whenMissingInServerExtras_shouldUseDefaultValues() {
         // If headers are missing, use default values
         assertThat(subject.getImpressionMinVisibleDips()).isEqualTo(Integer.MIN_VALUE);
         assertThat(subject.getImpressionMinVisibleMs()).isEqualTo(Integer.MIN_VALUE);
-        assertThat(subject.isVisibilityImpressionTrackingEnabled()).isFalse();
     }
 
     @Test
-    public void parseBannerImpressionTrackingHeaders_withBothValuesNonInteger_shouldUseDefaultValues_shouldNotEnableVisibilityImpressionTracking() {
+    public void parseBannerImpressionTrackingHeaders_withBothValuesNonInteger_shouldUseDefaultValues() {
         serverExtras.put(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_DIPS, "");
         serverExtras.put(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_MS, null);
 
@@ -461,11 +454,10 @@ public class CustomEventBannerAdapterTest {
         // Both header values must be Integers in order to be parsed
         assertThat(subject.getImpressionMinVisibleDips()).isEqualTo(Integer.MIN_VALUE);
         assertThat(subject.getImpressionMinVisibleMs()).isEqualTo(Integer.MIN_VALUE);
-        assertThat(subject.isVisibilityImpressionTrackingEnabled()).isFalse();
     }
 
     @Test
-    public void parseBannerImpressionTrackingHeaders_withNonIntegerMinVisibleDipsValue_shouldUseDefaultValues_shouldNotEnableVisibilityImpressionTracking() {
+    public void parseBannerImpressionTrackingHeaders_withNonIntegerMinVisibleDipsValue_shouldUseDefaultValues() {
         serverExtras.put(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_DIPS, null);
         serverExtras.put(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_MS, "0");
 
@@ -474,11 +466,10 @@ public class CustomEventBannerAdapterTest {
         // Both header values must be Integers in order to be parsed
         assertThat(subject.getImpressionMinVisibleDips()).isEqualTo(Integer.MIN_VALUE);
         assertThat(subject.getImpressionMinVisibleMs()).isEqualTo(Integer.MIN_VALUE);
-        assertThat(subject.isVisibilityImpressionTrackingEnabled()).isFalse();
     }
 
     @Test
-    public void parseBannerImpressionTrackingHeaders_withNonIntegerMinVisibleMsValue_shouldUseDefaultValues_shouldNotEnableVisibilityImpressionTracking() {
+    public void parseBannerImpressionTrackingHeaders_withNonIntegerMinVisibleMsValue_shouldUseDefaultValues() {
         serverExtras.put(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_DIPS, "1");
         serverExtras.put(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_MS, "");
 
@@ -487,11 +478,10 @@ public class CustomEventBannerAdapterTest {
         // Both header values must be Integers in order to be parsed
         assertThat(subject.getImpressionMinVisibleDips()).isEqualTo(Integer.MIN_VALUE);
         assertThat(subject.getImpressionMinVisibleMs()).isEqualTo(Integer.MIN_VALUE);
-        assertThat(subject.isVisibilityImpressionTrackingEnabled()).isFalse();
     }
 
     @Test
-    public void parseBannerImpressionTrackingHeaders_withBothValuesValid_shouldParseValues_shouldEnableVisibilityImpressionTracking() {
+    public void parseBannerImpressionTrackingHeaders_withBothValuesValid_shouldParseValues() {
         serverExtras.put(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_DIPS, "1");
         serverExtras.put(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_MS, "0");
 
@@ -499,11 +489,10 @@ public class CustomEventBannerAdapterTest {
 
         assertThat(subject.getImpressionMinVisibleDips()).isEqualTo(1);
         assertThat(subject.getImpressionMinVisibleMs()).isEqualTo(0);
-        assertThat(subject.isVisibilityImpressionTrackingEnabled()).isTrue();
     }
 
     @Test
-    public void parseBannerImpressionTrackingHeaders_withBothValuesInvalid_shouldParseValues_shouldNotEnableVisibilityImpressionTracking() {
+    public void parseBannerImpressionTrackingHeaders_withBothValuesInvalid_shouldParseValues() {
         serverExtras.put(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_DIPS, "0");
         serverExtras.put(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_MS, "-1");
 
@@ -511,14 +500,10 @@ public class CustomEventBannerAdapterTest {
 
         assertThat(subject.getImpressionMinVisibleDips()).isEqualTo(0);
         assertThat(subject.getImpressionMinVisibleMs()).isEqualTo(-1);
-
-        // ImpressionMinVisibleDips must be > 0 AND ImpressionMinVisibleMs must be >= 0 in order to
-        // enable viewable impression tracking
-        assertThat(subject.isVisibilityImpressionTrackingEnabled()).isFalse();
     }
 
     @Test
-    public void parseBannerImpressionTrackingHeaders_withInvalidMinVisibleDipsValue_shouldParseValues_shouldNotEnableVisibilityImpressionTracking() {
+    public void parseBannerImpressionTrackingHeaders_withInvalidMinVisibleDipsValue_shouldParseValues() {
         serverExtras.put(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_DIPS, "0");
         serverExtras.put(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_MS, "0");
 
@@ -526,13 +511,10 @@ public class CustomEventBannerAdapterTest {
 
         assertThat(subject.getImpressionMinVisibleDips()).isEqualTo(0);
         assertThat(subject.getImpressionMinVisibleMs()).isEqualTo(0);
-
-        // ImpressionMinVisibleDips must be > 0 in order to enable viewable impression tracking
-        assertThat(subject.isVisibilityImpressionTrackingEnabled()).isFalse();
     }
 
     @Test
-    public void parseBannerImpressionTrackingHeaders_withInvalidMinVisibleMsValue_shouldParseValues_shouldNotEnableVisibilityImpressionTracking() {
+    public void parseBannerImpressionTrackingHeaders_withInvalidMinVisibleMsValue_shouldParseValues() {
         serverExtras.put(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_DIPS, "1");
         serverExtras.put(DataKeys.BANNER_IMPRESSION_MIN_VISIBLE_MS, "-1");
 
@@ -540,8 +522,5 @@ public class CustomEventBannerAdapterTest {
 
         assertThat(subject.getImpressionMinVisibleDips()).isEqualTo(1);
         assertThat(subject.getImpressionMinVisibleMs()).isEqualTo(-1);
-
-        // ImpressionMinVisibleMs must be >= 0 in order to enable viewable impression tracking
-        assertThat(subject.isVisibilityImpressionTrackingEnabled()).isFalse();
     }
 }

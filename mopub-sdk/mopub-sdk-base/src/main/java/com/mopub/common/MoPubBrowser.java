@@ -90,7 +90,11 @@ public class MoPubBrowser extends Activity {
         initializeWebView();
         initializeButtons();
         enableCookies();
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
         Utils.hideNavigationBar(this);
     }
 

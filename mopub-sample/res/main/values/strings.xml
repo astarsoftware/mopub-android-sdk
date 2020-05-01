@@ -70,5 +70,8 @@
     <string name="empty_list">Empty list</string>
     <string name="share_impression">Share Impression</string>
     <string name="checkmark">checkmark</string>
+    <string name="clear_search_button">Clear search button</string>
+    <string name="list_of_impressions">List of impressions</string>
+    <string name="delete_label">Delete ad unit</string>
 
 </resources>

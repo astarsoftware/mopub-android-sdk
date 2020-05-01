@@ -2,7 +2,7 @@
 // Licensed under the MoPub SDK License Agreement
 // http://www.mopub.com/legal/sdk-license-agreement/
 
-package com.mopub.tests;
+package com.mopub.tests.BaseTesting;
 
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.filters.LargeTest;
@@ -11,6 +11,7 @@ import com.mopub.framework.models.AdLabels;
 import com.mopub.framework.pages.AdDetailPage;
 import com.mopub.simpleadsdemo.R;
 import com.mopub.tests.base.MoPubBaseTestCase;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -26,29 +27,24 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
-public class InterstitialAdTests extends MoPubBaseTestCase {
+public class AdPlacerTest extends MoPubBaseTestCase {
 
     // Test Variables
-    private static final String TITLE = AdLabels.INTERSTITIAL;
+    private static final String TITLE = AdLabels.AD_PLACER;
     private static final String WEB_PAGE_LINK = "https://www.mopub.com/click-test/";
 
     /*
-     * Verify that the Interstitial Ad loads & shows on the app.
+     * Verify that the Rewarded Video Ad loads & shows on the app.
      */
     @Test
-    public void adsDetailsPage_withClickOnLoadAdButtonAndThenShowAdButton_shouldLoadMoPubInterstitial() {
+    public void adsListPage_withClickOnMoPubAdPlacerSample_shouldLoadMoPubAdPlacerAd() {
         onData(hasToString(startsWith(TITLE)))
                 .inAdapterView(withId(android.R.id.list))
                 .perform(click());
 
         final AdDetailPage adDetailPage = new AdDetailPage();
 
-        onView(withId(R.id.load_button)).perform(click());
-
-        ViewInteraction showButtonElement = onView(allOf(withId(R.id.show_button))); //show ad on click
-        adDetailPage.clickElement(showButtonElement);
-
-        final ViewInteraction element = onView(allOf(withId(android.R.id.content)));
+        final ViewInteraction element = onView(allOf(withId(R.id.native_main_image)));
 
         assertTrue(adDetailPage.waitForElement(element));
     }
@@ -57,19 +53,15 @@ public class InterstitialAdTests extends MoPubBaseTestCase {
      * Verify that the user is correctly navigated to MoPub browser.
      */
     @Test
-    public void adsDetailsPage_withClickOnAd_shouldLoadMoPubBrowser() {
+    public void adsDetailsPage_withClickOnAd_shouldShowMoPubBrowser() {
         onData(hasToString(startsWith(TITLE)))
                 .inAdapterView(withId(android.R.id.list))
                 .perform(click());
 
         final AdDetailPage adDetailPage = new AdDetailPage();
 
-        onView(withId(R.id.load_button)).perform(click());
-
-        ViewInteraction showButtonElement = onView(allOf(withId(R.id.show_button))); //show ad on click
-        adDetailPage.clickElement(showButtonElement);
-
-        onView(withId(android.R.id.content)).perform(click());
+        ViewInteraction nativeMainImageElement = onView(allOf(withId(R.id.native_main_image))); //show MoPub browser on Ad click
+        adDetailPage.clickElement(nativeMainImageElement);
 
         final ViewInteraction browserLinkElement = onView(withText(WEB_PAGE_LINK));
 

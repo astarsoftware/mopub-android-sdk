@@ -127,25 +127,16 @@ public class ExternalViewabilitySessionManager {
      * Registers and starts viewability tracking for the given WebView.
      * @param context Preferably an Activity Context.
      * @param webView The WebView to be tracked.
-     * @param isDeferred True for cached ads (i.e. interstitials)
      */
     public void createDisplaySession(@NonNull final Context context,
-            @NonNull final WebView webView, boolean isDeferred) {
+            @NonNull final WebView webView) {
         Preconditions.checkNotNull(context);
         Preconditions.checkNotNull(webView);
 
         for (final ExternalViewabilitySession session : mViewabilitySessions) {
-            final Boolean successful = session.createDisplaySession(context, webView, isDeferred);
+            final Boolean successful = session.createDisplaySession(context, webView, true);
             logEvent(session, "start display session", successful, true);
         }
-    }
-
-    public void createDisplaySession(@NonNull final Context context,
-            @NonNull final WebView webview) {
-        Preconditions.checkNotNull(context);
-        Preconditions.checkNotNull(webview);
-
-        createDisplaySession(context, webview, false);
     }
 
     /**

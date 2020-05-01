@@ -11,7 +11,6 @@ import androidx.annotation.Nullable;
 import com.mopub.common.AdReport;
 import com.mopub.common.DataKeys;
 import com.mopub.common.ExternalViewabilitySessionManager;
-import com.mopub.common.VisibleForTesting;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.factories.HtmlBannerWebViewFactory;
 
@@ -19,7 +18,6 @@ import java.lang.ref.WeakReference;
 import java.util.Map;
 
 import static com.mopub.common.DataKeys.AD_REPORT_KEY;
-import static com.mopub.common.DataKeys.BANNER_IMPRESSION_PIXEL_COUNT_ENABLED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.CUSTOM;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdapterLogEvent.LOAD_FAILED;
@@ -33,7 +31,6 @@ public class HtmlBanner extends CustomEventBanner {
     public static final String ADAPTER_NAME = HtmlBanner.class.getSimpleName();
     @Nullable private HtmlBannerWebView mHtmlBannerWebView;
     @Nullable private ExternalViewabilitySessionManager mExternalViewabilitySessionManager;
-    private boolean mBannerImpressionPixelCountEnabled = false;
     @Nullable private WeakReference<Activity> mWeakActivity;
 
     @Override
@@ -43,11 +40,6 @@ public class HtmlBanner extends CustomEventBanner {
             Map<String, Object> localExtras,
             Map<String, String> serverExtras) {
         MoPubLog.log(LOAD_ATTEMPTED, ADAPTER_NAME);
-        final Object bannerImpressionPixelCountEnabledObject = localExtras.get(
-                BANNER_IMPRESSION_PIXEL_COUNT_ENABLED);
-        if (bannerImpressionPixelCountEnabledObject instanceof Boolean) {
-            mBannerImpressionPixelCountEnabled = (boolean) bannerImpressionPixelCountEnabledObject;
-        }
 
         String htmlData;
         String clickthroughUrl;
@@ -85,8 +77,7 @@ public class HtmlBanner extends CustomEventBanner {
             final Activity activity = (Activity) context;
             mWeakActivity = new WeakReference<>(activity);
             mExternalViewabilitySessionManager = new ExternalViewabilitySessionManager(activity);
-            mExternalViewabilitySessionManager.createDisplaySession(activity, mHtmlBannerWebView,
-                    mBannerImpressionPixelCountEnabled);
+            mExternalViewabilitySessionManager.createDisplaySession(activity, mHtmlBannerWebView);
         } else {
             MoPubLog.log(CUSTOM, ADAPTER_NAME, "Unable to start viewability session for HTML banner: Context provided was not an Activity.");
         }
@@ -120,7 +111,7 @@ public class HtmlBanner extends CustomEventBanner {
         // to loadBanner() was not an Activity Context. We don't need to start the deferred
         // viewability tracker since it wasn't created, and if it was, and the activity reference
         // was lost, something bad has happened, so we should drop the request.
-        if (mBannerImpressionPixelCountEnabled && mExternalViewabilitySessionManager != null &&
+        if ( mExternalViewabilitySessionManager != null &&
                 mWeakActivity != null) {
             final Activity activity = mWeakActivity.get();
             if (activity != null) {
@@ -133,10 +124,5 @@ public class HtmlBanner extends CustomEventBanner {
 
     private boolean extrasAreValid(Map<String, String> serverExtras) {
         return serverExtras.containsKey(DataKeys.HTML_RESPONSE_BODY_KEY);
-    }
-
-    @VisibleForTesting
-    boolean isBannerImpressionPixelCountEnabled() {
-        return mBannerImpressionPixelCountEnabled;
     }
 }

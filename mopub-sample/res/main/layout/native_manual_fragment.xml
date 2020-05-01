@@ -10,10 +10,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingStart="8dp"
-        android:paddingLeft="8dp"
         android:paddingTop="8dp"
         android:paddingEnd="8dp"
-        android:paddingRight="8dp"
         android:singleLine="true"
         android:textColor="?android:attr/textColorPrimary"
         android:textSize="@dimen/small_text_size"
@@ -24,9 +22,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingStart="8dp"
-        android:paddingLeft="8dp"
         android:paddingEnd="8dp"
-        android:paddingRight="8dp"
         android:singleLine="true"
         android:textColor="?android:attr/textColorSecondary"
         android:textSize="@dimen/small_text_size"
@@ -62,7 +58,7 @@
             android:id="@+id/load_button"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/button_height"
-            android:layout_marginRight="2dp"
+            android:layout_marginEnd="2dp"
             android:text="@string/load_ad" />
     </LinearLayout>
 

@@ -13,7 +13,7 @@ package com.mopub.network;
             "content": "content_body",
              "metadata": {
                     "content-type": "text/html; charset=UTF-8",
-                    "x-adgroupid": "365cd2475e074026b93da14103a36b97",
+                    "x-adgroupid": "some_ad_group_id",
                     "x-adtype": "html",
                     "x-backgroundcolor": "",
                     "x-banner-impression-min-ms": "",
@@ -99,6 +99,7 @@ public class MultiAdResponseTest {
     private static final String CONTENT_TYPE = "text/html; charset=UTF-8";
     private static final String FAIL_URL = "fail_url";
     private static final String CLICKTTRACKING_URL = "clickthrough_url";
+    private static final String AD_GROUP_ID = "some_ad_group_id";
     private static final String IMPTRACKER_URL = "imptracker_url";
     private static final JSONArray IMPTRACKER_URLS = new JSONArray().put("imptracker_url1").put(
             "imptracker_url2");
@@ -143,6 +144,7 @@ public class MultiAdResponseTest {
         JSONObject metadata = new JSONObject();
         metadata.put(ResponseHeader.CONTENT_TYPE.getKey(), CONTENT_TYPE);
         metadata.put(ResponseHeader.AD_TYPE.getKey(), "html");
+        metadata.put(ResponseHeader.AD_GROUP_ID.getKey(), AD_GROUP_ID);
         metadata.put(ResponseHeader.CLICK_TRACKING_URL.getKey(), CLICKTTRACKING_URL);
         metadata.put(ResponseHeader.IMPRESSION_URLS.getKey(), IMPTRACKER_URLS);
         metadata.put(ResponseHeader.BEFORE_LOAD_URL.getKey(), BEFORE_LOAD_URL);
@@ -406,6 +408,7 @@ public class MultiAdResponseTest {
     public void constructor_withTwoAdResponses_withNonEmptyFailUrl_fullTest() throws MoPubNetworkError, JSONException {
         JSONObject secondResponse = new JSONObject(singleAdResponse.toString());
         JSONObject metadata = secondResponse.getJSONObject(ResponseHeader.METADATA.getKey());
+        metadata.put(ResponseHeader.AD_GROUP_ID.getKey(), AD_GROUP_ID+"_2");
         metadata.put(ResponseHeader.CLICK_TRACKING_URL.getKey(), CLICKTTRACKING_URL+"_2");
         metadata.put(ResponseHeader.IMPRESSION_URLS.getKey(), new JSONArray().put("imptracker_url3"));
         metadata.put(ResponseHeader.BEFORE_LOAD_URL.getKey(), BEFORE_LOAD_URL+"_2");
@@ -425,6 +428,7 @@ public class MultiAdResponseTest {
         AdResponse first = subject.next();
         assertNotNull(first);
         assertThat(first.getAdType()).isEqualTo("html");
+        assertThat(first.getAdGroupId()).isEqualTo(AD_GROUP_ID);
         assertThat(first.getClickTrackingUrl()).isEqualTo(CLICKTTRACKING_URL);
         assertThat(first.getBeforeLoadUrl()).isEqualTo(BEFORE_LOAD_URL);
         assertThat(first.getAfterLoadUrls()).isEqualTo(AFTER_LOAD_URLS_LIST);
@@ -434,6 +438,7 @@ public class MultiAdResponseTest {
         assertTrue(subject.hasNext());
         AdResponse second = subject.next();
         assertThat(second.getAdType()).isEqualTo("html");
+        assertThat(second.getAdGroupId()).isEqualTo(AD_GROUP_ID + "_2");
         assertThat(second.getClickTrackingUrl()).isEqualTo(CLICKTTRACKING_URL+"_2");
         assertThat(second.getBeforeLoadUrl()).isEqualTo(BEFORE_LOAD_URL+"_2");
         assertThat(second.getAfterLoadUrls()).isEqualTo(Collections.singletonList(AFTER_LOAD_URL+"_2"));
@@ -449,6 +454,7 @@ public class MultiAdResponseTest {
     public void constructor_withTwoAdResponses_withEmptyFailUrl_fullTest() throws MoPubNetworkError, JSONException {
         JSONObject secondResponse = new JSONObject(singleAdResponse.toString());
         JSONObject metadata = secondResponse.getJSONObject(ResponseHeader.METADATA.getKey());
+        metadata.put(ResponseHeader.AD_GROUP_ID.getKey(), AD_GROUP_ID+"_2");
         metadata.put(ResponseHeader.CLICK_TRACKING_URL.getKey(), CLICKTTRACKING_URL+"_2");
         metadata.put(ResponseHeader.IMPRESSION_URLS.getKey(), new JSONArray().put("imptracker_url3"));
         metadata.put(ResponseHeader.BEFORE_LOAD_URL.getKey(), BEFORE_LOAD_URL+"_2");
@@ -468,6 +474,7 @@ public class MultiAdResponseTest {
         AdResponse first = subject.next();
         assertNotNull(first);
         assertThat(first.getAdType()).isEqualTo("html");
+        assertThat(first.getAdGroupId()).isEqualTo(AD_GROUP_ID);
         assertThat(first.getClickTrackingUrl()).isEqualTo(CLICKTTRACKING_URL);
         assertThat(first.getBeforeLoadUrl()).isEqualTo(BEFORE_LOAD_URL);
         assertThat(first.getAfterLoadUrls()).isEqualTo(AFTER_LOAD_URLS_LIST);
@@ -477,6 +484,7 @@ public class MultiAdResponseTest {
         assertTrue(subject.hasNext());
         AdResponse second = subject.next();
         assertThat(second.getAdType()).isEqualTo("html");
+        assertThat(second.getAdGroupId()).isEqualTo(AD_GROUP_ID + "_2");
         assertThat(second.getClickTrackingUrl()).isEqualTo(CLICKTTRACKING_URL+"_2");
         assertThat(second.getBeforeLoadUrl()).isEqualTo(BEFORE_LOAD_URL+"_2");
         assertThat(second.getAfterLoadUrls()).isEqualTo(Collections.singletonList(AFTER_LOAD_URL+"_2"));
@@ -550,6 +558,7 @@ public class MultiAdResponseTest {
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.HTML);
+        assertThat(subject.getAdGroupId()).isEqualTo(AD_GROUP_ID);
         assertThat(subject.getAdUnitId()).isEqualTo(adUnitId);
         assertThat(subject.getClickTrackingUrl()).isEqualTo(CLICKTTRACKING_URL);
         assertThat(subject.getImpressionTrackingUrls()).isEqualTo(IMPTRACKER_URLS_LIST);
@@ -588,6 +597,7 @@ public class MultiAdResponseTest {
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.HTML);
+        assertThat(subject.getAdGroupId()).isEqualTo(AD_GROUP_ID);
         assertThat(subject.getAdUnitId()).isEqualTo(adUnitId);
         assertThat(subject.getClickTrackingUrl()).isEqualTo(CLICKTTRACKING_URL);
         assertThat(subject.getImpressionTrackingUrls()).isEqualTo(IMPTRACKER_URLS_LIST);
@@ -628,10 +638,12 @@ public class MultiAdResponseTest {
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.HTML);
+        assertThat(subject.getAdGroupId()).isEqualTo(AD_GROUP_ID);
         assertThat(subject.getAdUnitId()).isEqualTo(adUnitId);
         ImpressionData impressionData = subject.getImpressionData();
         assert (impressionData != null);
         assertThat(impressionData.getImpressionId()).isEqualTo(impJson.getString("id"));
+        assertThat(impressionData.getAppVersion()).isEqualTo(impJson.getString("app_version"));
         assertThat(impressionData.getAdUnitId()).isEqualTo(impJson.getString("adunit_id"));
         assertThat(impressionData.getAdUnitName()).isEqualTo(impJson.getString("adunit_name"));
         assertThat(impressionData.getAdUnitFormat()).isEqualTo(impJson.getString("adunit_format"));
@@ -662,6 +674,7 @@ public class MultiAdResponseTest {
                 FAIL_URL);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.HTML);
+        assertThat(subject.getAdGroupId()).isEqualTo(AD_GROUP_ID);
         assertThat(subject.getAdUnitId()).isEqualTo(adUnitId);
         assertThat(subject.getClickTrackingUrl()).isEqualTo(CLICKTTRACKING_URL);
         assertThat(subject.getImpressionTrackingUrls()).isEqualTo(IMPTRACKER_URLS_LIST);
@@ -716,6 +729,7 @@ public class MultiAdResponseTest {
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.STATIC_NATIVE);
+        assertThat(subject.getAdGroupId()).isEqualTo(AD_GROUP_ID);
         assertThat(subject.getAdUnitId()).isEqualTo(adUnitId);
         assertThat(subject.getClickTrackingUrl()).isEqualTo(CLICKTTRACKING_URL);
         assertThat(subject.getImpressionTrackingUrls()).isEqualTo(IMPTRACKER_URLS_LIST);
@@ -751,6 +765,7 @@ public class MultiAdResponseTest {
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.STATIC_NATIVE);
+        assertThat(subject.getAdGroupId()).isEqualTo(AD_GROUP_ID);
         assertThat(subject.getAdUnitId()).isEqualTo(adUnitId);
         assertThat(subject.getClickTrackingUrl()).isEqualTo(CLICKTTRACKING_URL);
         assertThat(subject.getImpressionTrackingUrls()).isEqualTo(IMPTRACKER_URLS_LIST);
@@ -786,6 +801,7 @@ public class MultiAdResponseTest {
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.VIDEO_NATIVE);
+        assertThat(subject.getAdGroupId()).isEqualTo(AD_GROUP_ID);
         assertThat(subject.getAdUnitId()).isEqualTo(adUnitId);
         assertThat(subject.getClickTrackingUrl()).isEqualTo(CLICKTTRACKING_URL);
         assertThat(subject.getImpressionTrackingUrls()).isEqualTo(IMPTRACKER_URLS_LIST);
@@ -821,6 +837,7 @@ public class MultiAdResponseTest {
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.VIDEO_NATIVE);
+        assertThat(subject.getAdGroupId()).isEqualTo(AD_GROUP_ID);
         assertThat(subject.getAdUnitId()).isEqualTo(adUnitId);
         assertThat(subject.getClickTrackingUrl()).isEqualTo(CLICKTTRACKING_URL);
         assertThat(subject.getImpressionTrackingUrls()).isEqualTo(IMPTRACKER_URLS_LIST);
@@ -867,6 +884,7 @@ public class MultiAdResponseTest {
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.REWARDED_VIDEO);
+        assertThat(subject.getAdGroupId()).isEqualTo(AD_GROUP_ID);
         assertThat(subject.getAdUnitId()).isEqualTo(adUnitId);
         assertThat(subject.getClickTrackingUrl()).isEqualTo(CLICKTTRACKING_URL);
         assertThat(subject.getImpressionTrackingUrls()).isEqualTo(IMPTRACKER_URLS_LIST);
@@ -1001,6 +1019,7 @@ public class MultiAdResponseTest {
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.STATIC_NATIVE);
+        assertThat(subject.getAdGroupId()).isEqualTo(AD_GROUP_ID);
         assertThat(subject.getAdUnitId()).isEqualTo(adUnitId);
         assertThat(subject.getClickTrackingUrl()).isEqualTo(CLICKTTRACKING_URL);
         assertThat(subject.getImpressionTrackingUrls()).isEqualTo(Collections.singletonList(IMPTRACKER_URL));
@@ -1036,6 +1055,7 @@ public class MultiAdResponseTest {
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.STATIC_NATIVE);
+        assertThat(subject.getAdGroupId()).isEqualTo(AD_GROUP_ID);
         assertThat(subject.getAdUnitId()).isEqualTo(adUnitId);
         assertThat(subject.getClickTrackingUrl()).isEqualTo(CLICKTTRACKING_URL);
         assertThat(subject.getImpressionTrackingUrls()).isEqualTo(IMPTRACKER_URLS_LIST);
@@ -1071,6 +1091,7 @@ public class MultiAdResponseTest {
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.STATIC_NATIVE);
+        assertThat(subject.getAdGroupId()).isEqualTo(AD_GROUP_ID);
         assertThat(subject.getAdUnitId()).isEqualTo(adUnitId);
         assertThat(subject.getClickTrackingUrl()).isEqualTo(CLICKTTRACKING_URL);
         assertThat(subject.getImpressionTrackingUrls()).isEqualTo(IMPTRACKER_URLS_LIST);
@@ -1106,6 +1127,7 @@ public class MultiAdResponseTest {
                 REQUEST_ID_VALUE);
 
         assertThat(subject.getAdType()).isEqualTo(AdType.STATIC_NATIVE);
+        assertThat(subject.getAdGroupId()).isEqualTo(AD_GROUP_ID);
         assertThat(subject.getAdUnitId()).isEqualTo(adUnitId);
         assertThat(subject.getClickTrackingUrl()).isEqualTo(CLICKTTRACKING_URL);
         assertThat(subject.getImpressionTrackingUrls()).isEqualTo(IMPTRACKER_URLS_LIST);
@@ -1121,6 +1143,56 @@ public class MultiAdResponseTest {
         assertThat(serverExtras).isNotEmpty();
         assertThat(serverExtras.get(DataKeys.CLICKTHROUGH_URL_KEY)).isEqualTo(CLICKTTRACKING_URL);
         assertThat(serverExtras.get(DataKeys.ADM_KEY)).isEqualTo(ADM_VALUE);
+    }
+
+    @Test
+    public void parseNetworkResponse_withAllowCustomCloseTrue_shouldSucceed() throws MoPubNetworkError, JSONException {
+        JSONObject metadata = (JSONObject) singleAdResponse.get(ResponseHeader.METADATA.getKey());
+        metadata.put(ResponseHeader.ALLOW_CUSTOM_CLOSE.getKey(), "1");
+        NetworkResponse networkResponse = new NetworkResponse(singleAdResponse.toString().getBytes());
+
+        AdResponse subject = MultiAdResponse.parseSingleAdResponse(activity.getApplicationContext(),
+                networkResponse,
+                singleAdResponse,
+                adUnitId,
+                AdFormat.BANNER,
+                ADUNIT_FORMAT,
+                REQUEST_ID_VALUE);
+
+        assertThat(subject.allowCustomClose()).isEqualTo(true);
+    }
+
+    @Test
+    public void parseNetworkResponse_withAllowCustomCloseFalse_shouldSucceed() throws MoPubNetworkError, JSONException {
+        JSONObject metadata = (JSONObject) singleAdResponse.get(ResponseHeader.METADATA.getKey());
+        metadata.put(ResponseHeader.ALLOW_CUSTOM_CLOSE.getKey(), "0");
+        NetworkResponse networkResponse = new NetworkResponse(singleAdResponse.toString().getBytes());
+
+        AdResponse subject = MultiAdResponse.parseSingleAdResponse(activity.getApplicationContext(),
+                networkResponse,
+                singleAdResponse,
+                adUnitId,
+                AdFormat.BANNER,
+                ADUNIT_FORMAT,
+                REQUEST_ID_VALUE);
+
+        assertThat(subject.allowCustomClose()).isEqualTo(false);
+    }
+
+    @Test
+    public void parseNetworkResponse_withMissingAllowCustomClose_shouldSucceed() throws MoPubNetworkError, JSONException {
+        JSONObject metadata = (JSONObject) singleAdResponse.get(ResponseHeader.METADATA.getKey());
+        NetworkResponse networkResponse = new NetworkResponse(singleAdResponse.toString().getBytes());
+
+        AdResponse subject = MultiAdResponse.parseSingleAdResponse(activity.getApplicationContext(),
+                networkResponse,
+                singleAdResponse,
+                adUnitId,
+                AdFormat.BANNER,
+                ADUNIT_FORMAT,
+                REQUEST_ID_VALUE);
+
+        assertThat(subject.allowCustomClose()).isEqualTo(false);
     }
 
 
@@ -1187,6 +1259,7 @@ public class MultiAdResponseTest {
     private static JSONObject createImpressionData() throws JSONException {
         String jsonString = "{\n" +
                         "          \"id\": \"impid\",\n" +
+                        "          \"app_version\": \"mAppVersion\",\n" +
                         "          \"adunit_id\": \"adunitid\",\n" +
                         "          \"adunit_name\": \"adunitname\",\n" +
                         "          \"adunit_format\": \"adunitformat\",\n" +

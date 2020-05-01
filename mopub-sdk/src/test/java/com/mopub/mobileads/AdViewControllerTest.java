@@ -181,7 +181,7 @@ public class AdViewControllerTest {
         subject.setKeywords("keywords");
         subject.setUserDataKeywords("user_data_keywords");
         subject.setLocation(new Location(""));
-        WebViewAdUrlGenerator mUrlGenerator = new WebViewAdUrlGenerator(mockMoPubView.getContext(), false);
+        WebViewAdUrlGenerator mUrlGenerator = new WebViewAdUrlGenerator(mockMoPubView.getContext());
 
         final String adUrl = subject.generateAdUrl();
         assertThat(getParameterFromRequestUrl(adUrl, "q")).isEqualTo("keywords");
@@ -198,7 +198,7 @@ public class AdViewControllerTest {
         subject.setKeywords("keywords");
         subject.setUserDataKeywords("user_data_keywords");
         subject.setLocation(new Location(""));
-        WebViewAdUrlGenerator mUrlGenerator = new WebViewAdUrlGenerator(mockMoPubView.getContext(), false);
+        WebViewAdUrlGenerator mUrlGenerator = new WebViewAdUrlGenerator(mockMoPubView.getContext());
 
         final String adUrl = subject.generateAdUrl();
         assertThat(getParameterFromRequestUrl(adUrl, "q")).isEqualTo("keywords");
@@ -211,7 +211,7 @@ public class AdViewControllerTest {
         subject.setKeywords("keywords");
         subject.setUserDataKeywords("user_data_keywords");
         subject.setLocation(new Location(""));
-        WebViewAdUrlGenerator mUrlGenerator = new WebViewAdUrlGenerator(mockMoPubView.getContext(), false);
+        WebViewAdUrlGenerator mUrlGenerator = new WebViewAdUrlGenerator(mockMoPubView.getContext());
 
         final String adUrl = subject.generateAdUrl();
         assertThat(getParameterFromRequestUrl(adUrl, "cw")).isEqualTo("0");
@@ -225,7 +225,7 @@ public class AdViewControllerTest {
         subject.setUserDataKeywords("user_data_keywords");
         subject.setLocation(new Location(""));
         subject.setRequestedAdSize(new Point(120, 240));
-        WebViewAdUrlGenerator mUrlGenerator = new WebViewAdUrlGenerator(mockMoPubView.getContext(), false);
+        WebViewAdUrlGenerator mUrlGenerator = new WebViewAdUrlGenerator(mockMoPubView.getContext());
 
         final String adUrl = subject.generateAdUrl();
         assertThat(getParameterFromRequestUrl(adUrl, "cw")).isEqualTo("120");

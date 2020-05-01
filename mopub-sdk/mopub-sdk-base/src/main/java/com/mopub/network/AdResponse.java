@@ -26,6 +26,9 @@ public class AdResponse implements Serializable {
     private final String mAdType;
 
     @Nullable
+    private final String mAdGroupId;
+
+    @Nullable
     private final String mAdUnitId;
 
     @Nullable
@@ -89,9 +92,12 @@ public class AdResponse implements Serializable {
 
     private final long mTimestamp;
 
+    private final boolean mAllowCustomClose;
+
     private AdResponse(@NonNull Builder builder) {
 
         mAdType = builder.adType;
+        mAdGroupId = builder.adGroupId;
         mAdUnitId = builder.adUnitId;
         mFullAdType = builder.fullAdType;
         mNetworkType = builder.networkType;
@@ -123,6 +129,7 @@ public class AdResponse implements Serializable {
         mBrowserAgent = builder.browserAgent;
         mServerExtras = builder.serverExtras;
         mTimestamp = DateAndTime.now().getTime();
+        mAllowCustomClose = builder.allowCustomClose;
     }
 
     public boolean hasJson() {
@@ -142,6 +149,11 @@ public class AdResponse implements Serializable {
     @Nullable
     public String getAdType() {
         return mAdType;
+    }
+
+    @Nullable
+    public String getAdGroupId() {
+        return mAdGroupId;
     }
 
     @Nullable
@@ -280,9 +292,14 @@ public class AdResponse implements Serializable {
         return mTimestamp;
     }
 
+    public boolean allowCustomClose() {
+        return mAllowCustomClose;
+    }
+
     public Builder toBuilder() {
         return new Builder()
                 .setAdType(mAdType)
+                .setAdGroupId(mAdGroupId)
                 .setNetworkType(mNetworkType)
                 .setRewardedVideoCurrencyName(mRewardedVideoCurrencyName)
                 .setRewardedVideoCurrencyAmount(mRewardedVideoCurrencyAmount)
@@ -306,11 +323,13 @@ public class AdResponse implements Serializable {
                 .setJsonBody(mJsonBody)
                 .setCustomEventClassName(mCustomEventClassName)
                 .setBrowserAgent(mBrowserAgent)
+                .setAllowCustomClose(mAllowCustomClose)
                 .setServerExtras(mServerExtras);
     }
 
     public static class Builder {
         private String adType;
+        private String adGroupId;
         private String adUnitId;
         private String fullAdType;
         private String networkType;
@@ -346,8 +365,15 @@ public class AdResponse implements Serializable {
 
         private Map<String, String> serverExtras = new TreeMap<>();
 
+        private boolean allowCustomClose = false;
+
         public Builder setAdType(@Nullable final String adType) {
             this.adType = adType;
+            return this;
+        }
+
+        public Builder setAdGroupId(@Nullable final String adGroupId) {
+            this.adGroupId = adGroupId;
             return this;
         }
 
@@ -497,6 +523,11 @@ public class AdResponse implements Serializable {
             } else {
                 this.serverExtras = new TreeMap<>(serverExtras);
             }
+            return this;
+        }
+
+        Builder setAllowCustomClose(final boolean allow) {
+            allowCustomClose = allow;
             return this;
         }
 

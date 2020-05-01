@@ -10,6 +10,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebViewClient;
 
 import com.mopub.common.AdReport;
+import com.mopub.common.CloseableLayout;
 import com.mopub.common.Constants;
 import com.mopub.common.test.support.SdkTestRunner;
 import com.mopub.mobileads.MoPubErrorCode;
@@ -33,6 +34,7 @@ import java.util.Map;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.startsWith;
@@ -315,8 +317,87 @@ public class MraidBridgeTest {
     }
 
     @Test
-    public void runCommand_expand_shouldCallListener()
+    public void runCommand_useCustomClose_withShouldUseCustomCloseTrue_shouldPassTrue()
             throws MraidCommandException {
+        when(mockAdReport.shouldAllowCustomClose()).thenReturn(true);
+        attachWebViews();
+        subjectBanner.setClicked(true);
+        Map<String, String> params = new HashMap<>();
+        params.put("shouldUseCustomClose", "true");
+
+        subjectBanner.runCommand(MraidJavascriptCommand.USE_CUSTOM_CLOSE, params);
+
+        verify(mockBridgeListener).onUseCustomClose( true);
+    }
+
+    @Test
+    public void runCommand_useCustomClose_withShouldUseCustomCloseFalse_shouldPassFalse()
+            throws MraidCommandException {
+        when(mockAdReport.shouldAllowCustomClose()).thenReturn(true);
+        attachWebViews();
+        subjectBanner.setClicked(true);
+        Map<String, String> params = new HashMap<>();
+        params.put("shouldUseCustomClose", "false");
+
+        subjectBanner.runCommand(MraidJavascriptCommand.USE_CUSTOM_CLOSE, params);
+
+        verify(mockBridgeListener).onUseCustomClose( false);
+    }
+
+    @Test
+    public void runCommand_useCustomClose_withShouldUseCustomCloseTrue_withAllowCustomCloseFalse_shouldPassFalse()
+            throws MraidCommandException {
+        when(mockAdReport.shouldAllowCustomClose()).thenReturn(false);
+        attachWebViews();
+        subjectBanner.setClicked(true);
+        Map<String, String> params = new HashMap<>();
+        params.put("shouldUseCustomClose", "true");
+
+        subjectBanner.runCommand(MraidJavascriptCommand.USE_CUSTOM_CLOSE, params);
+
+        verify(mockBridgeListener).onUseCustomClose( false);
+    }
+
+    @Test
+    public void runCommand_resize_withAllowCustomClose_shouldCallListener()
+            throws MraidCommandException {
+        when(mockAdReport.shouldAllowCustomClose()).thenReturn(true);
+        attachWebViews();
+        subjectBanner.setClicked(true);
+        Map<String, String> params = new HashMap<>();
+        params.put("width", "50");
+        params.put("height", "60");
+        params.put("offsetX", "70");
+        params.put("offsetY", "80");
+
+        subjectBanner.runCommand(MraidJavascriptCommand.RESIZE, params);
+
+        verify(mockBridgeListener).onResize(anyInt(), anyInt(), anyInt(), anyInt(), any(CloseableLayout.ClosePosition.class), anyBoolean());
+        verify(mockBridgeListener).onUseCustomClose(true);
+    }
+
+    @Test
+    public void runCommand_resize_withoutAllowCustomClose_shouldCallListener()
+            throws MraidCommandException {
+        when(mockAdReport.shouldAllowCustomClose()).thenReturn(false);
+        attachWebViews();
+        subjectBanner.setClicked(true);
+        Map<String, String> params = new HashMap<>();
+        params.put("width", "50");
+        params.put("height", "60");
+        params.put("offsetX", "70");
+        params.put("offsetY", "80");
+
+        subjectBanner.runCommand(MraidJavascriptCommand.RESIZE, params);
+
+        verify(mockBridgeListener).onResize(anyInt(), anyInt(), anyInt(), anyInt(), any(CloseableLayout.ClosePosition.class), anyBoolean());
+        verify(mockBridgeListener).onUseCustomClose(false);
+    }
+
+    @Test
+    public void runCommand_expand_withAllowCustomClose_shouldCallListener()
+            throws MraidCommandException {
+        when(mockAdReport.shouldAllowCustomClose()).thenReturn(true);
         attachWebViews();
         subjectBanner.setClicked(true);
         Map<String, String> params = new HashMap<>();
@@ -328,8 +409,23 @@ public class MraidBridgeTest {
     }
 
     @Test
-    public void runCommand_expand_withUrl_shouldCallListener()
+    public void runCommand_expand_withoutAllowCustomClose_shouldCallListener()
             throws MraidCommandException {
+        when(mockAdReport.shouldAllowCustomClose()).thenReturn(false);
+        attachWebViews();
+        subjectBanner.setClicked(true);
+        Map<String, String> params = new HashMap<>();
+        params.put("shouldUseCustomClose", "true");
+
+        subjectBanner.runCommand(MraidJavascriptCommand.EXPAND, params);
+
+        verify(mockBridgeListener).onExpand(null, false);
+    }
+
+    @Test
+    public void runCommand_expand_withUrl_withAllowCustomClose_shouldCallListener()
+            throws MraidCommandException {
+        when(mockAdReport.shouldAllowCustomClose()).thenReturn(true);
         attachWebViews();
         subjectBanner.setClicked(true);
         Map<String, String> params = new HashMap<>();
@@ -341,6 +437,24 @@ public class MraidBridgeTest {
         ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
         verify(mockBridgeListener).onExpand(
                 uriCaptor.capture(), eq(true));
+        assertThat(uriCaptor.getValue().toString()).isEqualTo("https://valid-url");
+    }
+
+    @Test
+    public void runCommand_expand_withUrl_withoutAllowCustomClose_shouldCallListener()
+            throws MraidCommandException {
+        when(mockAdReport.shouldAllowCustomClose()).thenReturn(false);
+        attachWebViews();
+        subjectBanner.setClicked(true);
+        Map<String, String> params = new HashMap<>();
+        params.put("url", "https://valid-url");
+        params.put("shouldUseCustomClose", "true");
+
+        subjectBanner.runCommand(MraidJavascriptCommand.EXPAND, params);
+
+        ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+        verify(mockBridgeListener).onExpand(
+                uriCaptor.capture(), eq(false));
         assertThat(uriCaptor.getValue().toString()).isEqualTo("https://valid-url");
     }
 

@@ -30,7 +30,7 @@ public class BaseHtmlWebView extends BaseWebView {
         disableScrollingAndZoom();
         getSettings().setJavaScriptEnabled(true);
 
-        mViewGestureDetector = new ViewGestureDetector(context, this, adReport);
+        mViewGestureDetector = new ViewGestureDetector(context);
 
         setBackgroundColor(Color.TRANSPARENT);
     }

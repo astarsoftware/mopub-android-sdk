@@ -9,6 +9,7 @@ public enum ResponseHeader {
     BACKOFF_MS("backoff_ms"),
     AD_TIMEOUT("x-ad-timeout-ms"),
     AD_TYPE("x-adtype"),
+    AD_GROUP_ID("x-adgroupid"),
     ADUNIT_FORMAT("adunit-format"),
     IMPRESSION_DATA("impdata"),
     CLICK_TRACKING_URL("x-clickthrough"),
@@ -89,7 +90,10 @@ public enum ResponseHeader {
 
     // Experiment keys
     VAST_CLICK_ENABLED("vast-click-enabled"),
-    VAST_VIDEO_PLAYER_VERSION("vast-player-version");
+    VAST_VIDEO_PLAYER_VERSION("vast-player-version"),
+
+    // Mraid Custom Close
+    ALLOW_CUSTOM_CLOSE("allow-custom-close");
 
     private final String key;
     ResponseHeader(String key) {

@@ -297,8 +297,10 @@ public class MultiAdResponse implements Iterator<AdResponse> {
         builder.setResponseBody(content);
 
         String adTypeString = extractHeader(jsonHeaders, ResponseHeader.AD_TYPE);
+        String adGroupIdString = extractHeader(jsonHeaders, ResponseHeader.AD_GROUP_ID);
         String fullAdTypeString = extractHeader(jsonHeaders, ResponseHeader.FULL_AD_TYPE);
         builder.setAdType(adTypeString);
+        builder.setAdGroupId(adGroupIdString);
         builder.setFullAdType(fullAdTypeString);
 
         // In the case of a CLEAR response, the REFRESH_TIME header must still be respected. Ensure
@@ -433,6 +435,10 @@ public class MultiAdResponse implements Iterator<AdResponse> {
             serverExtras.put(DataKeys.HTML_RESPONSE_BODY_KEY, content);
             serverExtras.put(DataKeys.CREATIVE_ORIENTATION_KEY, extractHeader(jsonHeaders, ResponseHeader.ORIENTATION));
         }
+
+        final boolean allowCustomClose = extractBooleanHeader(jsonHeaders, ResponseHeader.ALLOW_CUSTOM_CLOSE, false);
+        builder.setAllowCustomClose(allowCustomClose);
+
         if (AdType.STATIC_NATIVE.equals(adTypeString) || AdType.VIDEO_NATIVE.equals(adTypeString)) {
             final String impressionMinVisiblePercent = extractPercentHeaderString(jsonHeaders,
                     ResponseHeader.IMPRESSION_MIN_VISIBLE_PERCENT);
