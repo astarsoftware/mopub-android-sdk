@@ -6,8 +6,9 @@ package com.mopub.framework.util;
 
 import android.app.Activity;
 import android.app.Instrumentation;
-import androidx.test.InstrumentationRegistry;
+
 import androidx.test.espresso.core.internal.deps.guava.collect.Iterables;
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import androidx.test.runner.lifecycle.Stage;
 
@@ -16,9 +17,11 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 public class Utils {
 
-    private static int BUFFER_SIZE = 4*1024;
+    private static int BUFFER_SIZE = 4 * 1024;
+
     /**
      * When running an instrumentation test, this method will return the currently resumed activity.
      *
@@ -58,5 +61,13 @@ public class Utils {
         }
 
         return log;
+    }
+
+    public static void waitFor(final int waitInMills) {
+        try {
+            Thread.sleep(waitInMills);
+        } catch (InterruptedException e1) {
+            e1.printStackTrace();
+        }
     }
 }

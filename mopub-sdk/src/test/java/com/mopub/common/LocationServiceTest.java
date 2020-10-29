@@ -183,6 +183,20 @@ public class LocationServiceTest {
     }
 
     @Test
+    public void getLastKnownLocation_withFreshPreviousKnownLocation_withNullContext_shouldReturnPreviousKnownLocation() {
+        setLastLocation(cachedLocation, 10, MoPub.LocationAwareness.NORMAL);
+        LocationService locationService = LocationService.getInstance();
+        // Setting the location updated time to be more recent than minimum location refresh time,
+        // in milliseconds.
+        locationService.mLocationLastUpdatedMillis = SystemClock.elapsedRealtime() -
+                MoPub.getMinimumLocationRefreshTimeMillis() / 2;
+
+        final Location result = LocationService.getLastKnownLocation(null);
+
+        assertThat(result).isEqualTo(cachedLocation);
+    }
+
+    @Test
     public void getLastKnownLocation_withStalePreviousKnownLocation_shouldReturnGpsLocation() {
         Shadows.shadowOf(activity).grantPermissions(ACCESS_FINE_LOCATION);
         setLastLocation(cachedLocation, 10, MoPub.LocationAwareness.NORMAL);
@@ -211,6 +225,21 @@ public class LocationServiceTest {
         final Location result = LocationService.getLastKnownLocation(activity);
 
         assertThat(result).isEqualTo(cachedLocation);
+    }
+
+    @Test
+    public void getLastKnownLocation_withStalePreviousKnownLocation_withNullContext_shouldReturnNull() {
+        setLastLocation(cachedLocation, 10, MoPub.LocationAwareness.NORMAL);
+
+        LocationService locationService = LocationService.getInstance();
+        // Setting the location updated time to be older than minimum location refresh time,
+        // in milliseconds.
+        locationService.mLocationLastUpdatedMillis = SystemClock.elapsedRealtime() -
+                MoPub.getMinimumLocationRefreshTimeMillis() * 2;
+
+        final Location result = LocationService.getLastKnownLocation(null);
+
+        assertThat(result).isNull();
     }
 
     @Test

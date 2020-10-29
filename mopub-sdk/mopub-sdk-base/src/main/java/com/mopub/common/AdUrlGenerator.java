@@ -10,7 +10,6 @@ import android.location.Location;
 import android.text.TextUtils;
 import android.view.WindowInsets;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.mopub.common.privacy.ConsentData;
@@ -106,12 +105,15 @@ public abstract class AdUrlGenerator extends BaseUrlGenerator {
 
     /**
      * Whether or not this ad is using third-party viewability tracking.
-     * 0: Moat disabled, Avid disabled
-     * 1: Moat disabled, Avid enabled
-     * 2: Moat enabled, Avid disabled
-     * 3: Moat enabled, Avid enabled
+     * 0b000: viewability disabled
+     * 0b100: OM SDK enabled
      */
     private static final String VIEWABILITY_KEY = "vv";
+
+    /**
+     * Version of the OM SDK
+     */
+    private static final String OMSDK_VERSION_KEY = "vver";
 
     /**
      * The advanced bidding token for each MoPubAdvancedBidder in JSON format.
@@ -258,10 +260,11 @@ public abstract class AdUrlGenerator extends BaseUrlGenerator {
         }
     }
 
-    protected void enableViewability(@NonNull final String vendorKey) {
-        Preconditions.checkNotNull(vendorKey);
+    protected void setViewability() {
+        final int omsdk = ViewabilityManager.isViewabilityEnabled() ?  0b100 : 0;
+        addParam(VIEWABILITY_KEY, String.valueOf(omsdk));
 
-        addParam(VIEWABILITY_KEY, vendorKey);
+        addParam(OMSDK_VERSION_KEY, ViewabilityManager.getOmidVersion());
     }
 
     protected void setAdvancedBiddingTokens() {
@@ -351,6 +354,8 @@ public abstract class AdUrlGenerator extends BaseUrlGenerator {
         setConsentedVendorListVersion();
 
         addRequestRateParameters();
+
+        setViewability();
     }
 
     private void addParam(String key, MoPubNetworkType value) {

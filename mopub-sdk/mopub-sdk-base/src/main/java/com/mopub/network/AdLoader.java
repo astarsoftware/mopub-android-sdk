@@ -167,7 +167,7 @@ public class AdLoader {
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            deliverError(new MoPubNetworkError(MoPubNetworkError.Reason.NO_FILL));
+                            deliverError(new MoPubNetworkError(MoPubNetworkError.Reason.TOO_MANY_REQUESTS));
                         }
                     });
                     return null;

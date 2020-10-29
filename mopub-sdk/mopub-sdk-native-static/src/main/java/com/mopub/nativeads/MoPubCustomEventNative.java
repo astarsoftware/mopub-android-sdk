@@ -12,6 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.mopub.common.DataKeys;
+import com.mopub.common.ExternalViewabilitySessionManager;
+import com.mopub.common.ViewabilityVendor;
 import com.mopub.common.VisibleForTesting;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.nativeads.NativeImageHelper.ImageListener;
@@ -99,6 +101,15 @@ public class MoPubCustomEventNative extends CustomEventNative {
         }
 
         try {
+            final Object vendorSet = localExtras.get(DataKeys.VIEWABILITY_VENDORS_KEY);
+            if (vendorSet instanceof Set) {
+                moPubStaticNativeAd.setViewabilityVendors((Set<ViewabilityVendor>)vendorSet);
+            }
+        } catch (Exception ex) {
+            MoPubLog.log(CUSTOM, "Ignore empty viewability vendors list.");
+        }
+
+        try {
             moPubStaticNativeAd.loadAd();
             MoPubLog.log(LOAD_SUCCESS, ADAPTER_NAME);
         } catch (IllegalArgumentException e) {
@@ -183,6 +194,10 @@ public class MoPubCustomEventNative extends CustomEventNative {
         private final ImpressionTracker mImpressionTracker;
         @NonNull
         private final NativeClickHandler mNativeClickHandler;
+        @Nullable
+        private ExternalViewabilitySessionManager viewabilitySessionManager;
+        @NonNull
+        private final Set<ViewabilityVendor> viewabilityVendorsSet;
 
 
         MoPubStaticNativeAd(@NonNull final Context context,
@@ -195,6 +210,7 @@ public class MoPubCustomEventNative extends CustomEventNative {
             mImpressionTracker = impressionTracker;
             mNativeClickHandler = nativeClickHandler;
             mCustomEventNativeListener = customEventNativeListener;
+            viewabilityVendorsSet = new HashSet<>();
         }
 
         void loadAd() throws IllegalArgumentException {
@@ -302,6 +318,10 @@ public class MoPubCustomEventNative extends CustomEventNative {
             }
         }
 
+        private void setViewabilityVendors(@NonNull final Set<ViewabilityVendor> viewabilityVendors) {
+            viewabilityVendorsSet.addAll(viewabilityVendors);
+        }
+
         private void parseClickTrackers(@NonNull final Object clickTrackers) {
             if (clickTrackers instanceof JSONArray) {
                 addClickTrackers(clickTrackers);
@@ -347,6 +367,13 @@ public class MoPubCustomEventNative extends CustomEventNative {
         public void prepare(@NonNull final View view) {
             mImpressionTracker.addView(view, this);
             mNativeClickHandler.setOnClickListener(view, this);
+            if (viewabilitySessionManager == null) {
+                viewabilitySessionManager = ExternalViewabilitySessionManager.create();
+                viewabilitySessionManager.createNativeSession(view, viewabilityVendorsSet);
+                viewabilitySessionManager.startSession();
+            } else {
+                viewabilitySessionManager.registerTrackedView(view);
+            }
         }
 
         @Override
@@ -358,6 +385,11 @@ public class MoPubCustomEventNative extends CustomEventNative {
         @Override
         public void destroy() {
             mImpressionTracker.destroy();
+            if (viewabilitySessionManager != null) {
+                viewabilitySessionManager.registerTrackedView(new View(mContext));
+                viewabilitySessionManager.endSession();
+                viewabilitySessionManager = null;
+            }
             super.destroy();
         }
 
@@ -365,6 +397,9 @@ public class MoPubCustomEventNative extends CustomEventNative {
         @Override
         public void recordImpression(@NonNull final View view) {
             notifyAdImpressed();
+            if (viewabilitySessionManager != null) {
+                viewabilitySessionManager.trackImpression();
+            }
         }
 
         @Override

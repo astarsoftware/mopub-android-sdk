@@ -40,7 +40,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
 public class SyncUrlGeneratorTest {
     private static final String APP_VERSION = "appVersion";
     private static final String AD_UNIT = "adUnit";
-    private static final String UDID = "udid";
+    private static final String CONSENT_IFA = "consentIfa";
     private static final String LAST_CHANGED_MS = "lastChangedMs";
     private static final String CONSENT_CHANGE_REASON = "consentChangeReason";
     private static final String CONSENTED_VENDOR_LIST_VERSION = "consentedVendorListVersion";
@@ -77,7 +77,7 @@ public class SyncUrlGeneratorTest {
         MoPub.setEngineInformation(new AppEngineInfo("ename", "eversion"));
         MoPub.setWrapperVersion("SyncUrlGeneratorTestVersion");
         subject.withAdUnitId(AD_UNIT);
-        subject.withUdid(UDID);
+        subject.withConsentedIfa(CONSENT_IFA);
         subject.withGdprApplies(true);
         subject.withForceGdprApplies(true);
         subject.withForceGdprAppliesChanged(true);
@@ -97,8 +97,8 @@ public class SyncUrlGeneratorTest {
                 "id")).isEqualTo(AD_UNIT);
         assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "nv")).isEqualTo(
                 MoPub.SDK_VERSION);
-        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "udid")).isEqualTo(
-                UDID);
+        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "consent_ifa")).isEqualTo(
+                CONSENT_IFA);
         assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url,
                 "current_consent_status")).isEqualTo(ConsentStatus.UNKNOWN.getValue());
         assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url,

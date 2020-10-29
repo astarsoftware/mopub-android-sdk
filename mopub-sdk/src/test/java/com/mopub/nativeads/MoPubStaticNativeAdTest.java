@@ -8,6 +8,9 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
+import com.mopub.common.ExternalViewabilitySessionManager;
 import com.mopub.common.test.support.SdkTestRunner;
 import com.mopub.nativeads.BaseNativeAd.NativeEventListener;
 import com.mopub.nativeads.CustomEventNative.CustomEventNativeListener;
@@ -22,6 +25,7 @@ import com.mopub.volley.toolbox.ImageLoader;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,6 +51,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -67,6 +72,7 @@ public class MoPubStaticNativeAdTest {
     @Mock private MoPubRequestQueue mockRequestQueue;
     @Mock private MaxWidthImageLoader mockImageLoader;
     @Mock private ImageLoader.ImageContainer mockImageContainer;
+    @Mock private ExternalViewabilitySessionManager mockViewabilityManager;
 
     @Before
     public void setUp() throws Exception {
@@ -81,6 +87,13 @@ public class MoPubStaticNativeAdTest {
         Networking.setRequestQueueForTesting(mockRequestQueue);
         Networking.setImageLoaderForTesting(mockImageLoader);
         when(mockImageContainer.getBitmap()).thenReturn(mock(Bitmap.class));
+
+        ExternalViewabilitySessionManager.setCreator(() -> mockViewabilityManager);
+    }
+
+    @After
+    public void tearDown() {
+        ExternalViewabilitySessionManager.setCreator(null);
     }
 
     @Test
@@ -407,6 +420,24 @@ public class MoPubStaticNativeAdTest {
     }
 
     @Test
+    public void prepare_shoulCreateNativeViewabilitySession_shouldStartViewabilitySession() {
+        subject.prepare(mockView);
+
+        verify(mockViewabilityManager).createNativeSession(eq(mockView), any());
+        verify(mockViewabilityManager).startSession();
+    }
+
+    @Test
+    public void prepare_secondTime_shouldRegisterView() {
+        subject.prepare(mockView);
+        reset(mockViewabilityManager);
+
+        subject.prepare(mockView);
+
+        verify(mockViewabilityManager).registerTrackedView(mockView);
+    }
+
+    @Test
     public void clear_shouldRemoveViewFromImpressionTracker_shouldClearOnClickListener() {
         subject.clear(mockView);
 
@@ -422,11 +453,32 @@ public class MoPubStaticNativeAdTest {
     }
 
     @Test
+    public void destroy_shouldEndViewabilitySession() {
+        subject.prepare(mockView);
+        reset(mockViewabilityManager);
+
+        subject.destroy();
+
+        verify(mockViewabilityManager).registerTrackedView(any(View.class));
+        verify(mockViewabilityManager).endSession();
+    }
+
+    @Test
     public void recordImpression_shouldNotifyAdImpressed_shouldTrackImpression() throws Exception {
         subject.addImpressionTrackers(new JSONArray("[\"impressionUrl\"]"));
         subject.recordImpression(mockView);
 
         verify(mockNativeEventListener).onAdImpressed();
+    }
+
+    @Test
+    public void recordImpression_shouldTrackViewabilityImpression() throws Exception {
+        subject.prepare(mockView);
+        reset(mockViewabilityManager);
+
+        subject.recordImpression(mockView);
+
+        verify(mockViewabilityManager).trackImpression();
     }
 
     @Test

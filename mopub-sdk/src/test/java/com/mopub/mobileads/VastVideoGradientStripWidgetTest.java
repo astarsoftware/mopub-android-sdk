@@ -33,15 +33,23 @@ public class VastVideoGradientStripWidgetTest {
     @Test
     public void constructor_whenForcePortrait_shouldBeInvisible() throws Exception {
         subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
-                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0);
+                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0, false);
 
         assertThat(subject.getVisibility()).isEqualTo(View.INVISIBLE);
     }
 
     @Test
+    public void constructor_whenForcePortrait_withAlwaysVisibleDuringVideo_shouldBeVisible() throws Exception {
+        subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
+                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0, true);
+
+        assertThat(subject.getVisibility()).isEqualTo(View.VISIBLE);
+    }
+
+    @Test
     public void constructor_whenForceLandscape_shouldBeInvisible() throws Exception {
         subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
-                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0);
+                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0, false);
 
         // If not forcing orientation, visibility depends on device orientation,
         // which is initially ORIENTATION_UNDEFINED in tests
@@ -51,7 +59,7 @@ public class VastVideoGradientStripWidgetTest {
     @Test
     public void constructor_whenUseDeviceOrientation_shouldBeInvisible() throws Exception {
         subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
-                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0);
+                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0, false);
 
         // If not forcing orientation, visibility depends on device orientation,
         // which is initially ORIENTATION_UNDEFINED in tests
@@ -61,7 +69,7 @@ public class VastVideoGradientStripWidgetTest {
     @Test
     public void constructor_whenForceOrientationUndefined_shouldBeInvisible() throws Exception {
         subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
-                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0);
+                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0, false);
 
         // If force orientation undefined, visibility depends on device orientation,
         // which is initially ORIENTATION_UNDEFINED in tests
@@ -73,7 +81,7 @@ public class VastVideoGradientStripWidgetTest {
     @Test
     public void onConfigurationChanged_whenForcePortraitAndDeviceInPortrait_shouldBeInvisible() throws Exception {
         subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
-                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0);
+                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0, false);
         context.getResources().getConfiguration().orientation = Configuration.ORIENTATION_PORTRAIT;
 
         subject.onConfigurationChanged(context.getResources().getConfiguration());
@@ -82,9 +90,20 @@ public class VastVideoGradientStripWidgetTest {
     }
 
     @Test
+    public void onConfigurationChanged_whenForcePortraitAndDeviceInPortrait_withAlwaysVisibleDuringVideo_shouldBeVisible() throws Exception {
+        subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
+                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0, true);
+        context.getResources().getConfiguration().orientation = Configuration.ORIENTATION_PORTRAIT;
+
+        subject.onConfigurationChanged(context.getResources().getConfiguration());
+
+        assertThat(subject.getVisibility()).isEqualTo(View.VISIBLE);
+    }
+
+    @Test
     public void onConfigurationChanged_whenForcePortraitAndDeviceInLandscape_shouldBeVisible() throws Exception {
         subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
-                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0);
+                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0, false);
         context.getResources().getConfiguration().orientation = Configuration.ORIENTATION_LANDSCAPE;
 
         subject.onConfigurationChanged(context.getResources().getConfiguration());
@@ -95,7 +114,7 @@ public class VastVideoGradientStripWidgetTest {
     @Test
     public void onConfigurationChanged_whenForcePortraitAndDeviceOrientationUndefined_shouldBeInvisible() throws Exception {
         subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
-                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0);
+                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0, false);
         context.getResources().getConfiguration().orientation = Configuration.ORIENTATION_UNDEFINED;
 
         subject.onConfigurationChanged(context.getResources().getConfiguration());
@@ -108,7 +127,7 @@ public class VastVideoGradientStripWidgetTest {
     @Test
     public void onConfigurationChanged_whenForceLandscapeAndDeviceInPortrait_shouldBeInvisible() throws Exception {
         subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
-                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0);
+                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0, false);
         context.getResources().getConfiguration().orientation = Configuration.ORIENTATION_PORTRAIT;
 
         subject.onConfigurationChanged(context.getResources().getConfiguration());
@@ -119,7 +138,7 @@ public class VastVideoGradientStripWidgetTest {
     @Test
     public void onConfigurationChanged_whenForceLandscapeAndDeviceInLandscape_shouldBeVisible() throws Exception {
         subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
-                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0);
+                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0, false);
         context.getResources().getConfiguration().orientation = Configuration.ORIENTATION_LANDSCAPE;
 
         subject.onConfigurationChanged(context.getResources().getConfiguration());
@@ -130,7 +149,7 @@ public class VastVideoGradientStripWidgetTest {
     @Test
     public void onConfigurationChanged_whenForceLandscapeAndDeviceOrientationUndefined_shouldBeInvisible() throws Exception {
         subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
-                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0);
+                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0, false);
         context.getResources().getConfiguration().orientation = Configuration.ORIENTATION_UNDEFINED;
 
         subject.onConfigurationChanged(context.getResources().getConfiguration());
@@ -143,7 +162,7 @@ public class VastVideoGradientStripWidgetTest {
     @Test
     public void onConfigurationChanged_whenUseDeviceOrientationAndDeviceInPortrait_shouldBeInvisible() throws Exception {
         subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
-                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0);
+                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0, false);
         context.getResources().getConfiguration().orientation = Configuration.ORIENTATION_PORTRAIT;
 
         subject.onConfigurationChanged(context.getResources().getConfiguration());
@@ -152,9 +171,20 @@ public class VastVideoGradientStripWidgetTest {
     }
 
     @Test
+    public void onConfigurationChanged_whenUseDeviceOrientationAndDeviceInPortrait_withAlwaysVisibleDuringVideo_shouldBeVisible() throws Exception {
+        subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
+                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0, true);
+        context.getResources().getConfiguration().orientation = Configuration.ORIENTATION_PORTRAIT;
+
+        subject.onConfigurationChanged(context.getResources().getConfiguration());
+
+        assertThat(subject.getVisibility()).isEqualTo(View.VISIBLE);
+    }
+
+    @Test
     public void onConfigurationChanged_whenUseDeviceOrientationAndDeviceInLandscape_shouldBeVisible() throws Exception {
         subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
-                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0);
+                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0, false);
         context.getResources().getConfiguration().orientation = Configuration.ORIENTATION_LANDSCAPE;
 
         subject.onConfigurationChanged(context.getResources().getConfiguration());
@@ -165,7 +195,7 @@ public class VastVideoGradientStripWidgetTest {
     @Test
     public void onConfigurationChanged_whenUseDeviceOrientationAndDeviceOrientationUndefined_shouldBeInvisible() throws Exception {
         subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
-                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0);
+                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0, false);
         context.getResources().getConfiguration().orientation = Configuration.ORIENTATION_UNDEFINED;
 
         subject.onConfigurationChanged(context.getResources().getConfiguration());
@@ -178,7 +208,7 @@ public class VastVideoGradientStripWidgetTest {
     @Test
     public void onConfigurationChanged_whenForceOrientationUndefinedAndDeviceInPortrait_shouldBeInvisible() throws Exception {
         subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
-                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0);
+                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0, false);
         context.getResources().getConfiguration().orientation = Configuration.ORIENTATION_PORTRAIT;
 
         subject.onConfigurationChanged(context.getResources().getConfiguration());
@@ -187,9 +217,20 @@ public class VastVideoGradientStripWidgetTest {
     }
 
     @Test
+    public void onConfigurationChanged_whenForceOrientationUndefinedAndDeviceInPortrait_withAlwaysVisibleDuringVideo_shouldBeVisible() throws Exception {
+        subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
+                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0, true);
+        context.getResources().getConfiguration().orientation = Configuration.ORIENTATION_PORTRAIT;
+
+        subject.onConfigurationChanged(context.getResources().getConfiguration());
+
+        assertThat(subject.getVisibility()).isEqualTo(View.VISIBLE);
+    }
+
+    @Test
     public void onConfigurationChanged_whenForceOrientationUndefinedAndDeviceInLandscape_shouldBeVisible() throws Exception {
         subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
-                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0);
+                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0, false);
         context.getResources().getConfiguration().orientation = Configuration.ORIENTATION_LANDSCAPE;
 
         subject.onConfigurationChanged(context.getResources().getConfiguration());
@@ -200,12 +241,23 @@ public class VastVideoGradientStripWidgetTest {
     @Test
     public void onConfigurationChanged_whenForceOrientationUndefinedAndDeviceOrientationUndefined_shouldBeInvisible() throws Exception {
         subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
-                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0);
+                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0, false);
         context.getResources().getConfiguration().orientation = Configuration.ORIENTATION_UNDEFINED;
 
         subject.onConfigurationChanged(context.getResources().getConfiguration());
 
         assertThat(subject.getVisibility()).isEqualTo(View.INVISIBLE);
+    }
+
+    @Test
+    public void onConfigurationChanged_whenForceOrientationUndefinedAndDeviceOrientationUndefined_withAlwaysVisibleDuringVideo_shouldBeVisible() throws Exception {
+        subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
+                true, View.VISIBLE, RelativeLayout.ALIGN_TOP, 0, true);
+        context.getResources().getConfiguration().orientation = Configuration.ORIENTATION_UNDEFINED;
+
+        subject.onConfigurationChanged(context.getResources().getConfiguration());
+
+        assertThat(subject.getVisibility()).isEqualTo(View.VISIBLE);
     }
 
     // Video is complete
@@ -214,7 +266,7 @@ public class VastVideoGradientStripWidgetTest {
     public void notifyVideoComplete_withCompanionAd_shouldSetVisibilityForCompanionAd() throws Exception {
         final int visibilityForCompanionAd = View.VISIBLE;
         subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
-                true, visibilityForCompanionAd, RelativeLayout.ALIGN_TOP, 0);
+                true, visibilityForCompanionAd, RelativeLayout.ALIGN_TOP, 0, false);
 
         subject.notifyVideoComplete();
 
@@ -225,7 +277,18 @@ public class VastVideoGradientStripWidgetTest {
     public void notifyVideoComplete_withoutCompanionAd_shouldBeGone() throws Exception {
         final int visibilityForCompanionAd = View.VISIBLE;
         subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
-                false, visibilityForCompanionAd, RelativeLayout.ALIGN_TOP, 0);
+                false, visibilityForCompanionAd, RelativeLayout.ALIGN_TOP, 0, false);
+
+        subject.notifyVideoComplete();
+
+        assertThat(subject.getVisibility()).isEqualTo(View.GONE);
+    }
+
+    @Test
+    public void notifyVideoComplete_withoutCompanionAd_withAlwaysVisibleDuringVideo_shouldBeGone() throws Exception {
+        final int visibilityForCompanionAd = View.VISIBLE;
+        subject = new VastVideoGradientStripWidget(context, GradientDrawable.Orientation.TOP_BOTTOM,
+                false, visibilityForCompanionAd, RelativeLayout.ALIGN_TOP, 0, true);
 
         subject.notifyVideoComplete();
 

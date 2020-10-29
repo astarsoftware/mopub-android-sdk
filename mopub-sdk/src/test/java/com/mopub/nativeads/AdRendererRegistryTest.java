@@ -37,7 +37,8 @@ public class AdRendererRegistryTest {
     public void setUp() {
         context = Robolectric.buildActivity(Activity.class).create().get();
         subject = new AdRendererRegistry();
-        mNativeAd = new NativeAd(context, Collections.singletonList("impression"), "click",
+        mNativeAd = new NativeAd(context, Collections.singletonList("impression"),
+                Collections.singletonList("clicktrackingurl"),
                 "adunit", mock(BaseNativeAd.class), mockRenderer);
         when(mockRenderer.supports(mockNativeAd)).thenReturn(true);
     }

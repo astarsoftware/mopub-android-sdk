@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.Robolectric;
 
+import java.util.Collections;
 import java.util.HashMap;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -58,7 +59,7 @@ public class MoPubCustomEventVideoNativeTest {
         jsonObject.put("privacyclkurl", "privacyiconclickthroughurl");
         jsonObject.put("sponsored", "sponsored text");
         localExtras.put(DataKeys.JSON_BODY_KEY, jsonObject);
-        localExtras.put(DataKeys.CLICK_TRACKING_URL_KEY, "clicktrackingurl");
+        localExtras.put(DataKeys.CLICK_TRACKING_URL_KEY, Collections.singletonList("clicktrackingurl"));
 
         serverExtras = new HashMap<String, String>();
         serverExtras.put("play-visible-percent", "10");

@@ -5,12 +5,14 @@
 package com.mopub.nativeads;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.mopub.common.VisibleForTesting;
+import com.mopub.common.util.MoPubCollections;
 import com.mopub.nativeads.MoPubCustomEventNative.MoPubStaticNativeAd;
 import com.mopub.network.AdResponse;
 import com.mopub.network.ImpressionData;
@@ -70,7 +72,7 @@ public class NativeAd {
 
     public NativeAd(@NonNull final Context context,
             @NonNull final List<String> moPubImpressionTrackerUrls,
-            @NonNull final String moPubClickTrackerUrl,
+            @NonNull final List<String> moPubClickTrackerUrls,
             @NonNull final String adUnitId,
             @NonNull final BaseNativeAd baseNativeAd,
             @NonNull final MoPubAdRenderer moPubAdRenderer) {
@@ -83,9 +85,9 @@ public class NativeAd {
         mImpressionTrackers.addAll(moPubImpressionTrackerUrls);
         mImpressionTrackers.addAll(baseNativeAd.getImpressionTrackers());
 
-        mClickTrackers = new HashSet<String>();
-        mClickTrackers.add(moPubClickTrackerUrl);
-        mClickTrackers.addAll(baseNativeAd.getClickTrackers());
+        mClickTrackers = new HashSet<>();
+        MoPubCollections.addAllNonNull(mClickTrackers, moPubClickTrackerUrls);
+        MoPubCollections.addAllNonNull(mClickTrackers, baseNativeAd.getClickTrackers());
 
         mBaseNativeAd = baseNativeAd;
         mBaseNativeAd.setNativeEventListener(new NativeEventListener() {
@@ -108,7 +110,7 @@ public class NativeAd {
              @NonNull final String adUnitId,
              @NonNull final BaseNativeAd baseNativeAd,
              @NonNull final MoPubAdRenderer moPubAdRenderer){
-        this(context, adResponse.getImpressionTrackingUrls(), adResponse.getClickTrackingUrl(), adUnitId, baseNativeAd, moPubAdRenderer);
+        this(context, adResponse.getImpressionTrackingUrls(), adResponse.getClickTrackingUrls(), adUnitId, baseNativeAd, moPubAdRenderer);
         mImpressionData = adResponse.getImpressionData();
     }
 

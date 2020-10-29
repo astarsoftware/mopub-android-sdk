@@ -6,15 +6,13 @@ package com.mopub.network;
 
 import android.content.Context;
 import android.net.Uri;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.text.TextUtils;
 
 import com.mopub.common.Preconditions;
 import com.mopub.mobileads.MoPubError;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,13 +52,13 @@ class ContentDownloadAnalytics {
             return;
         }
 
-        String url = mAdResponse.getBeforeLoadUrl();
-        if (TextUtils.isEmpty(url)) {
+        final List<String> urls = mAdResponse.getBeforeLoadUrls();
+        if (urls.isEmpty()) {
             return;
         }
 
         mBeforeLoadTime = uptimeMillis();
-        TrackingRequest.makeTrackingHttpRequest(url, context);
+        TrackingRequest.makeTrackingHttpRequest(urls, context);
     }
 
     void reportAfterLoad(@Nullable Context context, @Nullable final MoPubError errorCode) {

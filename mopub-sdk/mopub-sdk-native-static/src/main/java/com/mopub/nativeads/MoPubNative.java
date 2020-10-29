@@ -5,9 +5,10 @@
 package com.mopub.nativeads;
 
 import android.content.Context;
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.text.TextUtils;
 
 import com.mopub.common.AdFormat;
 import com.mopub.common.Constants;
@@ -29,6 +30,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import static com.mopub.common.logging.MoPubLog.AdLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.AdLogEvent.CUSTOM_WITH_THROWABLE;
 import static com.mopub.common.logging.MoPubLog.AdLogEvent.LOAD_ATTEMPTED;
 import static com.mopub.common.logging.MoPubLog.AdLogEvent.LOAD_FAILED;
 import static com.mopub.common.logging.MoPubLog.AdLogEvent.LOAD_SUCCESS;
@@ -39,6 +41,7 @@ import static com.mopub.nativeads.NativeErrorCode.INVALID_REQUEST_URL;
 import static com.mopub.nativeads.NativeErrorCode.INVALID_RESPONSE;
 import static com.mopub.nativeads.NativeErrorCode.NATIVE_RENDERER_CONFIGURATION_ERROR;
 import static com.mopub.nativeads.NativeErrorCode.SERVER_ERROR_RESPONSE_CODE;
+import static com.mopub.nativeads.NativeErrorCode.TOO_MANY_REQUESTS;
 import static com.mopub.nativeads.NativeErrorCode.UNSPECIFIED;
 
 public class MoPubNative {
@@ -73,6 +76,8 @@ public class MoPubNative {
     @NonNull private final AdLoader.Listener mVolleyListener;
     @Nullable private Request mNativeRequest;
     @NonNull AdRendererRegistry mAdRendererRegistry;
+    @Nullable
+    private NativeAd mNativeAd;
 
     public MoPubNative(@NonNull final Context context,
             @NonNull final String adUnitId,
@@ -130,6 +135,10 @@ public class MoPubNative {
         }
         mAdLoader = null;
 
+        if (mNativeAd != null) {
+            mNativeAd.destroy();
+            mNativeAd = null;
+        }
         mMoPubNativeNetworkListener = EMPTY_NETWORK_LISTENER;
     }
 
@@ -235,12 +244,12 @@ public class MoPubNative {
                             mAdLoader.creativeDownloadSuccess();
                         }
 
-                        mMoPubNativeNetworkListener.onNativeLoad(new NativeAd(context,
-                                        response,
-                                        mAdUnitId,
-                                        nativeAd,
-                                        renderer)
-                        );
+                        mNativeAd = new NativeAd(context,
+                                response,
+                                mAdUnitId,
+                                nativeAd,
+                                renderer);
+                        mMoPubNativeNetworkListener.onNativeLoad(mNativeAd);
                     }
 
                     @Override
@@ -265,7 +274,7 @@ public class MoPubNative {
 
     @VisibleForTesting
     void onAdError(@NonNull final VolleyError volleyError) {
-        MoPubLog.log(CUSTOM, "Native ad request failed.", volleyError);
+        MoPubLog.log(CUSTOM_WITH_THROWABLE, "Native ad request failed.", volleyError);
         if (volleyError instanceof MoPubNetworkError) {
             MoPubNetworkError error = (MoPubNetworkError) volleyError;
             switch (error.getReason()) {
@@ -283,6 +292,9 @@ public class MoPubNative {
                     return;
                 case NO_FILL:
                     mMoPubNativeNetworkListener.onNativeFail(EMPTY_AD_RESPONSE);
+                    return;
+                case TOO_MANY_REQUESTS:
+                    mMoPubNativeNetworkListener.onNativeFail(TOO_MANY_REQUESTS);
                     return;
                 case UNSPECIFIED:
                 default:

@@ -5,21 +5,20 @@
 package com.mopub.network;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.net.SSLCertificateSocketFactory;
 import android.os.Build;
 
 import androidx.annotation.Nullable;
 
-import com.mopub.TestSdkHelper;
+import com.mopub.common.test.support.SdkTestRunner;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.robolectric.annotation.Config;
 
 import java.net.InetAddress;
 import java.net.Socket;
@@ -32,16 +31,15 @@ import javax.net.ssl.SSLSocket;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 @PrepareForTest(InetAddressUtils.class)
-@RunWith(PowerMockRunner.class)
+@RunWith(SdkTestRunner.class)
 public class CustomSSLSocketFactoryTest {
 
     private CustomSSLSocketFactory subject;
@@ -52,29 +50,28 @@ public class CustomSSLSocketFactoryTest {
     @SuppressLint("SSLCertificateSocketFactoryCreateSocket")
     @Before
     public void setUp() throws Exception {
-        mockStatic(InetAddressUtils.class);
         mockSSLCertificateSocketFactory = mock(SSLCertificateSocketFactory.class);
         mockSSLSocket = mock(SSLSocketWithSetHostname.class);
-        Mockito.when(mockSSLCertificateSocketFactory.createSocket(any(InetAddress.class),
+        when(mockSSLCertificateSocketFactory.createSocket(any(InetAddress.class),
                 anyInt())).thenReturn(mockSSLSocket);
         InetAddress mockInetAddress = mock(InetAddress.class);
-        PowerMockito.when(InetAddressUtils.getInetAddressByName(anyString())).thenReturn(
-                mockInetAddress);
+        InetAddressUtils.setMockInetAddress(mockInetAddress);
         subject = CustomSSLSocketFactory.getDefault(0);
         subject.setCertificateSocketFactory(mockSSLCertificateSocketFactory);
-        previousSdkVersion = Build.VERSION.SDK_INT;
     }
 
     @After
     public void tearDown() {
-        TestSdkHelper.setReportedSdkLevel(previousSdkVersion);
+        InetAddressUtils.setMockInetAddress(null);
     }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
     @Test
     public void createSocket_withSocketParam_withAutoCloseTrue_shouldCloseOriginalSocket() throws Exception {
         final Socket mockSocket = mock(Socket.class);
         final HostnameVerifier mockHostnameVerifier = mock(HostnameVerifier.class);
-        Mockito.when(mockHostnameVerifier.verify(eq("hostname"), any(SSLSession.class))).thenReturn(true);
+        when(mockHostnameVerifier.verify(eq("hostname"), any(SSLSession.class))).thenReturn(true);
         HttpsURLConnection.setDefaultHostnameVerifier(mockHostnameVerifier);
 
         subject.createSocket(mockSocket, "hostname", 443, true);
@@ -88,11 +85,13 @@ public class CustomSSLSocketFactoryTest {
         verifyNoMoreInteractions(mockSocket);
     }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
     @Test
     public void createSocket_withSocketParam_withAutoCloseFalse_shouldNotCloseOriginalSocket_shouldCallSetHostname() throws Exception {
         final Socket mockSocket = mock(Socket.class);
         final HostnameVerifier mockHostnameVerifier = mock(HostnameVerifier.class);
-        Mockito.when(mockHostnameVerifier.verify(eq("hostname"), any(SSLSession.class))).thenReturn(true);
+        when(mockHostnameVerifier.verify(eq("hostname"), any(SSLSession.class))).thenReturn(true);
         HttpsURLConnection.setDefaultHostnameVerifier(mockHostnameVerifier);
 
         subject.createSocket(mockSocket, "hostname", 443, false);
@@ -110,7 +109,7 @@ public class CustomSSLSocketFactoryTest {
     public void verifyServerName_withValidServerNameIdentification_shouldNotThrowSSLHandshakeException() throws Exception {
         final SSLSocket mockSslSocket = mock(SSLSocket.class);
         final HostnameVerifier mockHostnameVerifier = mock(HostnameVerifier.class);
-        Mockito.when(mockHostnameVerifier.verify(eq("hostname"), any(SSLSession.class))).thenReturn(true);
+        when(mockHostnameVerifier.verify(eq("hostname"), any(SSLSession.class))).thenReturn(true);
         HttpsURLConnection.setDefaultHostnameVerifier(mockHostnameVerifier);
 
         CustomSSLSocketFactory.verifyServerName(mockSslSocket, "hostname");
@@ -120,7 +119,7 @@ public class CustomSSLSocketFactoryTest {
     public void verifyServerName_withInvalidServerNameIdentification_shouldThrowSSLHandshakeException() throws Exception {
         final SSLSocket mockSslSocket = mock(SSLSocket.class);
         final HostnameVerifier mockHostnameVerifier = mock(HostnameVerifier.class);
-        Mockito.when(mockHostnameVerifier.verify(eq("hostname"), any(SSLSession.class))).thenReturn(false);
+        when(mockHostnameVerifier.verify(eq("hostname"), any(SSLSession.class))).thenReturn(false);
         HttpsURLConnection.setDefaultHostnameVerifier(mockHostnameVerifier);
 
         CustomSSLSocketFactory.verifyServerName(mockSslSocket, "hostname");

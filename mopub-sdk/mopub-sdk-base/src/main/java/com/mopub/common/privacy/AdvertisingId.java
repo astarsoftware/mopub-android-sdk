@@ -10,20 +10,11 @@ import android.text.TextUtils;
 import com.mopub.common.Preconditions;
 
 import java.io.Serializable;
-import java.util.Calendar;
-import java.util.TimeZone;
 import java.util.UUID;
 
 public class AdvertisingId implements Serializable {
-    static final long ONE_DAY_MS = 24 * 60 * 60 * 1000;
     private static final String PREFIX_IFA = "ifa:";
     private static final String PREFIX_MOPUB = "mopub:";
-
-    /**
-     * time when mopub generated ID was rotated last time
-     */
-    @NonNull
-    final Calendar mLastRotation;
 
     /**
      * Advertising ID from device, may not always be available.
@@ -33,7 +24,7 @@ public class AdvertisingId implements Serializable {
     final String mAdvertisingId;
 
     /**
-     * virtual device ID, rotated every 24 hours
+     * virtual device ID
      */
     @NonNull
     final String mMopubId;
@@ -45,16 +36,13 @@ public class AdvertisingId implements Serializable {
 
     AdvertisingId(@NonNull String ifaId,
                   @NonNull String mopubId,
-                  boolean limitAdTrackingEnabled,
-                  long rotationTime) {
+                  boolean limitAdTrackingEnabled) {
         Preconditions.checkNotNull(ifaId);
         Preconditions.checkNotNull(mopubId);
 
         mAdvertisingId = ifaId;
         mMopubId = mopubId;
         mDoNotTrack = limitAdTrackingEnabled;
-        mLastRotation = Calendar.getInstance();
-        mLastRotation.setTimeInMillis(rotationTime);
     }
 
     /**
@@ -91,6 +79,16 @@ public class AdvertisingId implements Serializable {
     }
 
     /**
+     * Gets the ifa without the ifa prefix.
+     *
+     * @return The ifa.
+     */
+    @NonNull
+    String getIfa() {
+        return mAdvertisingId;
+    }
+
+    /**
      * @return device Do Not Track settings
      */
     public boolean isDoNotTrack() {
@@ -98,17 +96,9 @@ public class AdvertisingId implements Serializable {
     }
 
     @NonNull
-    static AdvertisingId generateExpiredAdvertisingId() {
-        Calendar time = Calendar.getInstance();
-        String mopubId = generateIdString();
-        return new AdvertisingId("", mopubId, false, time.getTimeInMillis() - ONE_DAY_MS - 1);
-    }
-
-    @NonNull
     static AdvertisingId generateFreshAdvertisingId() {
-        Calendar time = Calendar.getInstance();
-        String mopubId = generateIdString();
-        return new AdvertisingId("", mopubId, false, time.getTimeInMillis());
+        final String mopubId = generateIdString();
+        return new AdvertisingId("", mopubId, false);
     }
 
     @NonNull
@@ -116,18 +106,10 @@ public class AdvertisingId implements Serializable {
         return UUID.randomUUID().toString();
     }
 
-    boolean isRotationRequired() {
-        final Calendar now = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-        final Calendar lastRotation = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-        lastRotation.setTimeInMillis(mLastRotation.getTimeInMillis());
-        return (now.get(Calendar.DAY_OF_YEAR) != lastRotation.get(Calendar.DAY_OF_YEAR)) ||
-                (now.get(Calendar.YEAR) != lastRotation.get(Calendar.YEAR));
-    }
-
     @Override
+    @NonNull
     public String toString() {
         return "AdvertisingId{" +
-                "mLastRotation=" + mLastRotation +
                 ", mAdvertisingId='" + mAdvertisingId + '\'' +
                 ", mMopubId='" + mMopubId + '\'' +
                 ", mDoNotTrack=" + mDoNotTrack +

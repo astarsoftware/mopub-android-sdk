@@ -7,6 +7,7 @@ package com.mopub.network;
 import com.mopub.common.test.support.SdkTestRunner;
 import com.mopub.common.util.ResponseHeader;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -103,5 +104,17 @@ public class HeaderUtilsTest {
 
         subject.remove(ResponseHeader.IMPRESSION_DATA.getKey());
         assertThat(HeaderUtils.extractJsonObjectHeader(subject, ResponseHeader.IMPRESSION_DATA)).isNull();
+    }
+
+    @Test
+    public void extractJsonArrayHeader_shouldReturnJsonArray() throws JSONException {
+        JSONArray testArray = new JSONArray();
+
+        subject.put(ResponseHeader.VIEWABILITY_VERIFICATION.getKey(), testArray);
+        assertThat(HeaderUtils.extractJsonArrayHeader(subject, ResponseHeader.VIEWABILITY_VERIFICATION)).isEqualTo(testArray);
+        assertThat(HeaderUtils.extractJsonArrayHeader(subject, ResponseHeader.ACCEPT_LANGUAGE)).isNull();
+
+        subject.remove(ResponseHeader.VIEWABILITY_VERIFICATION.getKey());
+        assertThat(HeaderUtils.extractJsonArrayHeader(subject, ResponseHeader.VIEWABILITY_VERIFICATION)).isNull();
     }
 }

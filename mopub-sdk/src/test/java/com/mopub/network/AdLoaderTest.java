@@ -36,6 +36,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -137,7 +138,8 @@ public class AdLoaderTest {
         Request<?> request = subject.loadNextAd(null);
 
         assertNull(request);
-        verify(mockListener).onErrorResponse(any(VolleyError.class));
+        verify(mockListener).onErrorResponse(
+                eq(new MoPubNetworkError(MoPubNetworkError.Reason.TOO_MANY_REQUESTS)));
         RequestQueue requestQueue = Networking.getRequestQueue();
         verify(requestQueue, never()).add(any(Request.class));
     }
@@ -186,7 +188,8 @@ public class AdLoaderTest {
         RequestRateTracker.getInstance().registerRateLimit(adUnitId, 1000, "reason");
         subject.loadNextAd(null);
 
-        verify(mockListener).onErrorResponse(any(VolleyError.class));
+        verify(mockListener).onErrorResponse(
+                eq(new MoPubNetworkError(MoPubNetworkError.Reason.TOO_MANY_REQUESTS)));
         assertThat(getPrivateField("mFailed").getBoolean(subject)).isTrue();
     }
 

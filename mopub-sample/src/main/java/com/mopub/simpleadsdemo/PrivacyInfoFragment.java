@@ -5,6 +5,7 @@
 package com.mopub.simpleadsdemo;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,6 +13,8 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,7 +22,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.mopub.common.ClientMetadata;
 import com.mopub.common.MoPub;
+import com.mopub.common.privacy.AdvertisingId;
 import com.mopub.common.privacy.ConsentData;
 import com.mopub.common.privacy.ConsentStatus;
 import com.mopub.common.privacy.PersonalInfoManager;
@@ -158,25 +163,41 @@ public class PrivacyInfoFragment extends Fragment {
         return !(item != null && TextUtils.isEmpty(item.mTitle) && TextUtils.isEmpty(item.mValue));
     }
 
-    private static List<PrivacyItem> readPrivacySettings() {
+    private List<PrivacyItem> readPrivacySettings() {
         final PersonalInfoManager manager = MoPub.getPersonalInformationManager();
-        if (manager == null) {
+        final Context context = getContext();
+        if (manager == null || context == null) {
             return new ArrayList<>();
         }
 
         final ConsentData consentData = manager.getConsentData();
         final ConsentStatus status = manager.getPersonalInfoConsentStatus();
         final Boolean gdprApplies = manager.gdprApplies();
-
+        final AdvertisingId advertisingId = ClientMetadata.getInstance(context).getMoPubIdentifier().getAdvertisingInfo();
         final String gdprAppliesString = (gdprApplies == null || gdprApplies) ? "true" : "false";
+        final String checkmarkUnicode = "\u2705";
+        final String androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
 
         ArrayList<PrivacyItem> list = new ArrayList<>();
+        list.add(new PrivacyItem("", "", "Identifiers"));
+
+        list.add(new PrivacyItem("MoPub ID",
+                String.format("\n%s", advertisingId.getIdentifier(false)),
+                manager.canCollectPersonalInformation() ? "" : checkmarkUnicode));
+        list.add(new PrivacyItem("Advertising ID",
+                String.format("\n%s", advertisingId.getIdentifier(true)),
+                manager.canCollectPersonalInformation() ? checkmarkUnicode : ""));
+        list.add(new PrivacyItem("Android ID", androidId, ""));
+
         list.add(new PrivacyItem("", "", "Allowable Data Collection"));
         list.add(new PrivacyItem("Is GDPR applicable?", gdprAppliesString, ""));
         list.add(new PrivacyItem("Consent Status", status.getValue(), ""));
         list.add(new PrivacyItem("Can Collect PII", manager.canCollectPersonalInformation() ? "true" : "false", ""));
         list.add(new PrivacyItem("Should Show Consent Dialog", manager.shouldShowConsentDialog() ? "true" : "false", ""));
         list.add(new PrivacyItem("Is Whitelisted", status.equals(ConsentStatus.POTENTIAL_WHITELIST) ? "true" : "false", ""));
+
+        list.add(new PrivacyItem("DNT Enabled", String.format("\n%s", advertisingId.isDoNotTrack()), ""));
+
         list.add(new PrivacyItem("", "", "Current Versions"));
         list.add(new PrivacyItem("Current Vendor List Url", "", consentData.getCurrentVendorListLink()));
         list.add(new PrivacyItem("Current Vendor List Version", consentData.getCurrentVendorListVersion(), ""));

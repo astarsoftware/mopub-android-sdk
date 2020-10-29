@@ -8,10 +8,12 @@ import android.content.Context;
 
 import com.google.android.exoplayer2.upstream.cache.Cache;
 import com.google.android.exoplayer2.upstream.cache.SimpleCache;
+import com.mopub.common.test.support.SdkTestRunner;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.io.File;
 
@@ -19,6 +21,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@RunWith(SdkTestRunner.class)
 public class MoPubCacheTest {
     private static final String BASE_CACHE_DIR = "/some_cache_dir";
 

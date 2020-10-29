@@ -24,6 +24,8 @@ public class Constants {
     public static final String GDPR_SYNC_HANDLER = "/m/gdpr_sync";
     public static final String GDPR_CONSENT_HANDLER = "/m/gdpr_consent_dialog";
 
+    public static final String TAS_AUTHORIZED = "authorized";
+    public static final String TAS_DENIED = "denied";
 
     public static final int TEN_SECONDS_MILLIS = 10 * 1000;
     public static final int THIRTY_SECONDS_MILLIS = 30 * 1000;
@@ -38,6 +40,9 @@ public class Constants {
 
     public static final String NATIVE_VIDEO_ID = "native_video_id";
     public static final String NATIVE_VAST_VIDEO_CONFIG = "native_vast_video_config";
+
+    // Android platform
+    public static final String ANDROID_PLATFORM = "android";
 
     // Internal Video Tracking nouns, defined in ad server
     public static final String VIDEO_TRACKING_EVENTS_KEY = "events";
@@ -88,9 +93,7 @@ public class Constants {
     public static final String VAST_CUSTOM_CLOSE_ICON_URL = "custom_close_icon_url";
     public static final String VAST_VIDEO_VIEWABILITY_TRACKER = "video_viewability_tracker";
 
-    public static final String VAST_EXTERNAL_VIEWABILITY_TRACKERS = "external_viewability_trackers";
-    public static final String VAST_AVID_JAVASCRIPT_RESOURCES = "avid_javascript_resources";
-    public static final String VAST_MOAT_IMPRESSION_PIXELS = "moat_impression_pixels";
+    public static final String VIEWABILITY_VERIFICATION_RESOURCES = "viewability-verification-resources";
 
     public static final String VAST_DSP_CREATIVE_ID = "dsp_creative_id";
     public static final String VAST_PRIVACY_ICON_IMAGE_URL = "privacy_icon_image_url";

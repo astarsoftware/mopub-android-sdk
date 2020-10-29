@@ -5,6 +5,7 @@
 package com.mopub.mobileads;
 
 import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -14,11 +15,26 @@ import com.mopub.common.Constants;
 import com.mopub.common.MoPub;
 
 class ConversionUrlGenerator extends BaseUrlGenerator {
+    /**
+     * Whether or not the conversion url is for session tracking (1) or not (0).
+     */
     private static final String SESSION_TRACKER_KEY = "st";
+
+    /**
+     * This is the bundle name on Android.
+     */
     private static final String PACKAGE_NAME_KEY = "id";
+
+    /**
+     * The ad unit used to initialize the SDK. This is not to be confused with AD_UNIT_ID_KEY
+     * in BaseUrlGenerator.
+     */
+    private static final String INITIALIZATION_AD_UNIT_ID_KEY = "adunit";
 
     @NonNull
     private Context mContext;
+    @Nullable
+    private String mAdUnit;
     @Nullable
     private String mCurrentConsentStatus;
     @Nullable
@@ -31,8 +47,9 @@ class ConversionUrlGenerator extends BaseUrlGenerator {
 
     private boolean mSt;
 
-    ConversionUrlGenerator(@NonNull final Context context) {
+    ConversionUrlGenerator(@NonNull final Context context, @Nullable final String adUnit) {
         mContext = context;
+        mAdUnit = adUnit;
     }
 
     public ConversionUrlGenerator withCurrentConsentStatus(
@@ -75,7 +92,13 @@ class ConversionUrlGenerator extends BaseUrlGenerator {
         setAppVersion(clientMetadata.getAppVersion());
         appendAdvertisingInfoTemplates();
 
+        addParam(PLATFORM_KEY, Constants.ANDROID_PLATFORM);
+        addParam(INITIALIZATION_AD_UNIT_ID_KEY, mAdUnit);
         addParam(PACKAGE_NAME_KEY, mContext.getPackageName());
+        addParam(BUNDLE_ID_KEY, mContext.getPackageName());
+        setDeviceInfo(clientMetadata.getDeviceManufacturer(),
+                clientMetadata.getDeviceModel(),
+                clientMetadata.getDeviceProduct());
         if (mSt) {
             addParam(SESSION_TRACKER_KEY, true);
         }

@@ -36,6 +36,7 @@ import com.mopub.common.LocationServiceTest;
 import com.mopub.common.MoPub;
 import com.mopub.common.OnNetworkInitializationFinishedListener;
 import com.mopub.common.SdkConfiguration;
+import com.mopub.common.ViewabilityManager;
 import com.mopub.common.privacy.AdvertisingId;
 import com.mopub.common.privacy.ConsentData;
 import com.mopub.common.privacy.ConsentStatus;
@@ -182,6 +183,7 @@ public class WebViewAdUrlGeneratorTest {
 
         LocationService.clearLastKnownLocation();
         MoPubIdentifierTest.writeAdvertisingInfoToSharedPreferences(context, false);
+        ViewabilityManager.setViewabilityEnabled(true);
     }
 
     @After
@@ -212,6 +214,27 @@ public class WebViewAdUrlGeneratorTest {
         String adUrl = generateMinimumUrlString();
         assertThat(adUrl).startsWith("https://");
     }
+
+    @Test
+    public void generateUrlString_whenViewabilityEnabled_shouldSetViewabilityVendors() {
+        ViewabilityManager.setViewabilityEnabled(true);
+
+        String url = subject.generateUrlString("server.com");
+
+        assertThat(getParameterFromRequestUrl(url, "vv")).isEqualTo("4");
+        assertThat(getParameterFromRequestUrl(url, "vver")).isEqualTo("1.3.4-Mopub");
+    }
+
+    @Test
+    public void generateUrlString_whenViewabilityEnabled_shouldSetViewabilityVendorsToZero() {
+        ViewabilityManager.setViewabilityEnabled(false);
+
+        String url = subject.generateUrlString("server.com");
+
+        assertThat(getParameterFromRequestUrl(url, "vv")).isEqualTo("0");
+        assertThat(getParameterFromRequestUrl(url, "vver")).isEqualTo("1.3.4-Mopub");
+    }
+
 
     @Test
     public void generateAdUrl_shouldRunMultipleTimes() throws Exception{
@@ -840,8 +863,9 @@ public class WebViewAdUrlGeneratorTest {
                     "&ct=" + networkType +
                     "&av=" + Uri.encode(BuildConfig.VERSION_NAME) +
                     (TextUtils.isEmpty(abt) ? "" : "&abt=" + Uri.encode(abt)) +
-                    "&udid=" + PlayServicesUrlRewriter.UDID_TEMPLATE +
+                    "&ifa=" + PlayServicesUrlRewriter.IFA_TEMPLATE +
                     "&dnt=" + PlayServicesUrlRewriter.DO_NOT_TRACK_TEMPLATE +
+                    "&tas=" + PlayServicesUrlRewriter.TAS_TEMPLATE +
                     "&mid=" + PlayServicesUrlRewriter.MOPUB_ID_TEMPLATE +
                     paramIfNotEmpty("gdpr_applies", gdprApplies) +
                     paramIfNotEmpty("force_gdpr_applies", forceGdprApplies) +
@@ -850,8 +874,9 @@ public class WebViewAdUrlGeneratorTest {
                     paramIfNotEmpty("consented_vendor_list_version", consentedVendorListVersion) +
                     paramIfNotEmpty("backoff_ms", backoffMs) +
                     paramIfNotEmpty("backoff_reason", backoffReason) +
-                    "&mr=1" +
-                    "&vv=3";
+                    "&vv=4" +
+                    "&vver=1.3.4-Mopub" +
+                    "&mr=1";
         }
 
         public AdUrlBuilder withAdUnitId(String adUnitId) {

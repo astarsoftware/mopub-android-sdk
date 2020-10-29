@@ -154,15 +154,14 @@ public class LocationService {
      * <li> Location permissions are not requested in the Android manifest file
      * <li> The location providers don't exist
      * <li> Location awareness is disabled in the parent MoPubView
+     * <li> context is null
      * </ul>
      */
     @Nullable
-    public static Location getLastKnownLocation(@NonNull final Context context) {
+    public static Location getLastKnownLocation(@Nullable final Context context) {
         if (!MoPub.canCollectPersonalInformation()) {
             return null;
         }
-
-        Preconditions.checkNotNull(context);
 
         final LocationService locationService = getInstance();
 
@@ -175,6 +174,10 @@ public class LocationService {
 
         if (isLocationFreshEnough()) {
             return locationService.mLastKnownLocation;
+        }
+
+        if (context == null) {
+            return null;
         }
 
         Location location = getLocationFromProvider(context, ValidLocationProvider.GPS);

@@ -123,7 +123,7 @@ public class PersonalInfoManager {
                         // !oldId.isDoNotTrack() && !newId.isDoNotTrack()
 
                         if (!TextUtils.isEmpty(newId.mAdvertisingId) &&
-                                !newId.getIfaWithPrefix().equals(mPersonalInfoData.getUdid()) &&
+                                !newId.getIfa().equals(mPersonalInfoData.getIfa()) &&
                                 ConsentStatus.EXPLICIT_YES.equals(
                                         mPersonalInfoData.getConsentStatus())) {
                             mPersonalInfoData.setLastSuccessfullySyncedConsentStatus(null);
@@ -393,7 +393,7 @@ public class PersonalInfoManager {
     static boolean shouldMakeSyncRequest(final boolean syncRequestInFlight,
             @Nullable final Boolean gdprApplies, final boolean force,
             @Nullable final Long lastSyncRequestTimeMs, final long syncDelay,
-            @Nullable final String udid, final boolean dnt) {
+            @Nullable final String ifa, final boolean dnt) {
         if (syncRequestInFlight) {
             return false;
         }
@@ -406,7 +406,7 @@ public class PersonalInfoManager {
         if (force) {
             return true;
         }
-        if (dnt && TextUtils.isEmpty(udid)) {
+        if (dnt && TextUtils.isEmpty(ifa)) {
             return false;
         }
         if (lastSyncRequestTimeMs == null) {
@@ -433,7 +433,7 @@ public class PersonalInfoManager {
                 force,
                 mLastSyncRequestTimeUptimeMs,
                 mSyncDelayMs,
-                mPersonalInfoData.getUdid(),
+                mPersonalInfoData.getIfa(),
                 advertisingId.isDoNotTrack())) {
             return;
         }
@@ -452,7 +452,7 @@ public class PersonalInfoManager {
         final SyncUrlGenerator syncUrlGenerator = new SyncUrlGenerator(mAppContext,
                 mSyncRequestConsentStatus.getValue());
         syncUrlGenerator.withAdUnitId(mPersonalInfoData.chooseAdUnit())
-                .withUdid(mPersonalInfoData.getUdid())
+                .withConsentedIfa(mPersonalInfoData.getIfa())
                 .withLastChangedMs(mPersonalInfoData.getLastChangedMs())
                 .withLastConsentStatus(mPersonalInfoData.getLastSuccessfullySyncedConsentStatus())
                 .withConsentChangeReason(mPersonalInfoData.getConsentChangeReason())
@@ -537,8 +537,8 @@ public class PersonalInfoManager {
         }
 
         if (ConsentStatus.EXPLICIT_YES.equals(newConsentStatus)) {
-            mPersonalInfoData.setUdid(ClientMetadata.getInstance(
-                    mAppContext).getMoPubIdentifier().getAdvertisingInfo().getIfaWithPrefix());
+            mPersonalInfoData.setIfa(ClientMetadata.getInstance(
+                    mAppContext).getMoPubIdentifier().getAdvertisingInfo().getIfa());
         }
 
         if (ConsentStatus.DNT.equals(newConsentStatus)) {
@@ -614,7 +614,7 @@ public class PersonalInfoManager {
                         false,
                         mLastSyncRequestTimeUptimeMs,
                         mSyncDelayMs,
-                        mPersonalInfoData.getUdid(),
+                        mPersonalInfoData.getIfa(),
                         advertisingId.isDoNotTrack())) {
                     if (mSdkInitializationListener != null) {
                         mSdkInitializationListener.onInitializationFinished();
@@ -698,10 +698,10 @@ public class PersonalInfoManager {
                 }
             }
 
-            // Clear out our cached udid if we have sent it one last time in case limit ad tracking
+            // Clear out our cached IFA if we have sent it one last time in case limit ad tracking
             // is turned on.
             if (!ConsentStatus.EXPLICIT_YES.equals(mSyncRequestConsentStatus)) {
-                mPersonalInfoData.setUdid(null);
+                mPersonalInfoData.setIfa(null);
             }
 
             if (mForceGdprAppliesChangedSending) {

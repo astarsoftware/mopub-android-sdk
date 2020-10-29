@@ -5,12 +5,11 @@
 package com.mopub.common;
 
 /**
- * Keys used in localExtras and serverExtras maps for MoPub custom events.
+ * Keys used in localExtras and serverExtras maps for MoPub base ads.
  */
 public class DataKeys {
     public static final String AD_REPORT_KEY = "mopub-intent-ad-report";
     public static final String HTML_RESPONSE_BODY_KEY = "html-response-body";
-    public static final String CLICKTHROUGH_URL_KEY = "clickthrough-url";
     public static final String CLICK_TRACKING_URL_KEY = "click-tracking-url";
     public static final String CREATIVE_ORIENTATION_KEY = "com_mopub_orientation";
     public static final String VAST_CLICK_EXP_ENABLED_KEY = "com_mopub_vast_click_exp_enabled";
@@ -20,6 +19,7 @@ public class DataKeys {
     public static final String AD_WIDTH = "com_mopub_ad_width";
     public static final String AD_HEIGHT = "com_mopub_ad_height";
     public static final String ADUNIT_FORMAT = "adunit_format";
+    public static final String AD_DATA_KEY = "com_mopub_ad_data";
 
     // Banner imp tracking fields
     public static final String BANNER_IMPRESSION_MIN_VISIBLE_DIPS = "banner-impression-min-pixels";
@@ -43,8 +43,8 @@ public class DataKeys {
     public static final String REWARDED_AD_DURATION_KEY = "rewarded-ad-duration";
     public static final String SHOULD_REWARD_ON_CLICK_KEY = "should-reward-on-click";
 
-    // Viewability fields
-    public static final String EXTERNAL_VIDEO_VIEWABILITY_TRACKERS_KEY = "external-video-viewability-trackers";
+    // OM SDK Viewability Vendors
+    public static final String VIEWABILITY_VENDORS_KEY = "viewability_vendors";
 
     // Advanced bidding fields
     public static final String ADM_KEY = "adm";

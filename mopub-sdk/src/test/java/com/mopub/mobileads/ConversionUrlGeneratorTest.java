@@ -35,6 +35,7 @@ public class ConversionUrlGeneratorTest {
     private static final String CONSENT_STATUS = "consent_status";
     private static final String PRIVACY_VERSION = "privacy_version";
     private static final String VENDOR_LIST_VERSION = "vendor_list_version";
+    private static final String AD_UNIT = "ad_unit";
 
     @Rule
     public PowerMockRule rule = new PowerMockRule();
@@ -52,10 +53,10 @@ public class ConversionUrlGeneratorTest {
         when(ClientMetadata.getInstance(context)).thenReturn(clientMetadata);
     }
 
-    //https://ads.mopub.com/m/open?v=6&av=app_version&udid=mp_tmpl_advertising_id&dnt=mp_tmpl_do_not_track&mid=mp_tmpl_mopub_id&id=com.mopub.mobileads&st=1&nv=5.0.0&current_consent_status=consent_status&consented_vendor_list_version=vendor_list_version&consented_privacy_policy_version=privacy_version&gdpr_applies=0
+    //  https://ads.mopub.com/m/open?v=6&av=5.13.1&ifa=mp_tmpl_advertising_id&dnt=mp_tmpl_do_not_track&tas=mp_tmpl_tas&mid=mp_tmpl_mopub_id&os=android&adunit=b195f8dd8ded45fe847ad89ed1d016da&bundle=com.mopub.simpleadsdemo.test&id=com.mopub.simpleadsdemo.test&dn=unknown%2CAndroid%20SDK%20built%20for%20x86%2Csdk_google_phone_x86&st=1&nv=5.13.1&current_consent_status=unknown&gdpr_applies=0&force_gdpr_applies=0
     @Test
     public void generateUrlString_allParametersSet_shouldReturnValidUrl() {
-        ConversionUrlGenerator subject = new ConversionUrlGenerator(context);
+        ConversionUrlGenerator subject = new ConversionUrlGenerator(context, AD_UNIT);
 
         String url = subject.withGdprApplies(false)
                 .withCurrentConsentStatus(CONSENT_STATUS)
@@ -68,18 +69,25 @@ public class ConversionUrlGeneratorTest {
         assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "v")).isEqualTo("6");
         assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "nv")).isEqualTo(MoPub.SDK_VERSION);
         assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "av")).isEqualTo(APP_VERSION);
-        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "udid")).isEqualTo("mp_tmpl_advertising_id");
+        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "ifa")).isEqualTo("mp_tmpl_advertising_id");
         assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "mid")).isEqualTo("mp_tmpl_mopub_id");
+        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "tas")).isEqualTo("mp_tmpl_tas");
+        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "dnt")).isEqualTo("mp_tmpl_do_not_track");
         assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "st")).isEqualTo("1");
         assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "current_consent_status")).isEqualTo(CONSENT_STATUS);
         assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "gdpr_applies")).isEqualTo("0");
         assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "consented_vendor_list_version")).isEqualTo(VENDOR_LIST_VERSION);
         assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "consented_privacy_policy_version")).isEqualTo(PRIVACY_VERSION);
+        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "id")).isEqualTo("com.mopub.mobileads.test");
+        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "adunit")).isEqualTo(AD_UNIT);
+        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "bundle")).isEqualTo("com.mopub.mobileads.test");
+        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "dn")).isEqualTo("null,null,null");
+        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "os")).isEqualTo("android");
     }
 
     @Test
     public void generateUrlString_allParametersNoSt_shouldReturnValidUrl() {
-        ConversionUrlGenerator subject = new ConversionUrlGenerator(context);
+        ConversionUrlGenerator subject = new ConversionUrlGenerator(context, AD_UNIT);
 
         String url = subject.withGdprApplies(false)
                 .withCurrentConsentStatus(CONSENT_STATUS)
@@ -92,12 +100,19 @@ public class ConversionUrlGeneratorTest {
         assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "v")).isEqualTo("6");
         assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "nv")).isEqualTo(MoPub.SDK_VERSION);
         assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "av")).isEqualTo(APP_VERSION);
-        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "udid")).isEqualTo("mp_tmpl_advertising_id");
+        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "ifa")).isEqualTo("mp_tmpl_advertising_id");
         assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "mid")).isEqualTo("mp_tmpl_mopub_id");
+        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "tas")).isEqualTo("mp_tmpl_tas");
+        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "dnt")).isEqualTo("mp_tmpl_do_not_track");
         assertThat(url.indexOf("&st=")).isEqualTo(-1);
         assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "current_consent_status")).isEqualTo(CONSENT_STATUS);
         assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "gdpr_applies")).isEqualTo("0");
         assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "consented_vendor_list_version")).isEqualTo(VENDOR_LIST_VERSION);
         assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "consented_privacy_policy_version")).isEqualTo(PRIVACY_VERSION);
+        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "id")).isEqualTo("com.mopub.mobileads.test");
+        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "adunit")).isEqualTo(AD_UNIT);
+        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "bundle")).isEqualTo("com.mopub.mobileads.test");
+        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "dn")).isEqualTo("null,null,null");
+        assertThat(NativeUrlGeneratorTest.getParameterFromRequestUrl(url, "os")).isEqualTo("android");
     }
 }

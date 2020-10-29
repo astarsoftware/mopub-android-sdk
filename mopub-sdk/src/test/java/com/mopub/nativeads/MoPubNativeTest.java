@@ -201,4 +201,13 @@ public class MoPubNativeTest {
                 + MoPubErrorCode.NO_CONNECTION.toString());
         verify(mockNetworkListener).onNativeFail(eq(NativeErrorCode.CONNECTION_ERROR));
     }
+
+    @Test
+    public void onAdError_withRateLimiting_shouldLogMoPubErrorCodeTooManyRequests_shouldNotifyListener() {
+        MoPubLog.setLogLevel(MoPubLog.LogLevel.DEBUG);
+
+        subject.onAdError(new MoPubNetworkError(MoPubNetworkError.Reason.TOO_MANY_REQUESTS));
+
+        verify(mockNetworkListener).onNativeFail(eq(NativeErrorCode.TOO_MANY_REQUESTS));
+    }
 }

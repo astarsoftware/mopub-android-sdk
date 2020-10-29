@@ -21,8 +21,6 @@ import com.mopub.common.VisibleForTesting;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.AsyncTasks;
 
-import java.util.Calendar;
-
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
 
 public class MoPubIdentifier {
@@ -67,7 +65,7 @@ public class MoPubIdentifier {
         mIdChangeListener = idChangeListener;
         mAdInfo = readIdFromStorage(mAppContext);
         if (mAdInfo == null) {
-            mAdInfo = AdvertisingId.generateExpiredAdvertisingId();
+            mAdInfo = AdvertisingId.generateFreshAdvertisingId();
         }
         refreshAdvertisingInfo();
     }
@@ -80,9 +78,6 @@ public class MoPubIdentifier {
      */
     @NonNull
     public AdvertisingId getAdvertisingInfo() {
-        if (initialized) {
-            rotateMopubId();
-        }
         final AdvertisingId adInfo = mAdInfo;
         refreshAdvertisingInfo();
         return adInfo;
@@ -97,43 +92,35 @@ public class MoPubIdentifier {
     }
 
     void refreshAdvertisingInfoBackgroundThread() {
-        final long time = Calendar.getInstance().getTimeInMillis();
-
         final AdvertisingId oldInfo = mAdInfo;
         AdvertisingId newInfo;
 
         // try google
         final GpsHelper.AdvertisingInfo googleAdInfo = GpsHelper.fetchAdvertisingInfoSync(mAppContext);
         if (googleAdInfo != null && !TextUtils.isEmpty(googleAdInfo.advertisingId)) {
-            newInfo = new AdvertisingId(googleAdInfo.advertisingId, oldInfo.mMopubId, googleAdInfo.limitAdTracking, oldInfo.mLastRotation.getTimeInMillis());
+            newInfo = new AdvertisingId(googleAdInfo.advertisingId, oldInfo.mMopubId, googleAdInfo.limitAdTracking);
         } else {
             newInfo = getAmazonAdvertisingInfo(mAppContext);
         }
 
         if (newInfo != null) {
-            final String newMoPubId = oldInfo.isRotationRequired() ? AdvertisingId.generateIdString() : oldInfo.mMopubId;
-            final long newRotationTime = oldInfo.isRotationRequired() ? time : oldInfo.mLastRotation.getTimeInMillis();
-
-            setAdvertisingInfo(newInfo.mAdvertisingId, newMoPubId, newInfo.mDoNotTrack, newRotationTime);
+            setAdvertisingInfo(newInfo.mAdvertisingId, oldInfo.mMopubId, newInfo.mDoNotTrack);
+        } else {
+            setAdvertisingInfo(mAdInfo);
         }
-
-        // MoPub
-        rotateMopubId();
     }
 
     @Nullable
     static synchronized AdvertisingId readIdFromStorage(@NonNull final Context appContext) {
         Preconditions.checkNotNull(appContext);
 
-        Calendar now = Calendar.getInstance();
         try {
             final SharedPreferences preferences = SharedPreferencesHelper.getSharedPreferences(appContext, PREF_AD_INFO_GROUP);
             final String ifa_id = preferences.getString(PREF_IFA_IDENTIFIER, "");
             final String mopub_id = preferences.getString(PREF_MOPUB_IDENTIFIER, "");
-            final long time = preferences.getLong(PREF_IDENTIFIER_TIME, now.getTimeInMillis());
             final boolean limitTracking = preferences.getBoolean(PREF_LIMIT_AD_TRACKING, false);
             if (!TextUtils.isEmpty(ifa_id) && !TextUtils.isEmpty(mopub_id)) {
-                return new AdvertisingId(ifa_id, mopub_id, limitTracking, time);
+                return new AdvertisingId(ifa_id, mopub_id, limitTracking);
             }
         } catch (ClassCastException ex) {
             MoPubLog.log(CUSTOM, "Cannot read identifier from shared preferences");
@@ -150,7 +137,6 @@ public class MoPubIdentifier {
         editor.putBoolean(PREF_LIMIT_AD_TRACKING, info.mDoNotTrack);
         editor.putString(PREF_IFA_IDENTIFIER, info.mAdvertisingId);
         editor.putString(PREF_MOPUB_IDENTIFIER, info.mMopubId);
-        editor.putLong(PREF_IDENTIFIER_TIME, info.mLastRotation.getTimeInMillis());
         editor.apply();
     }
 
@@ -167,30 +153,21 @@ public class MoPubIdentifier {
         editor.apply();
     }
 
-    void rotateMopubId() {
-        if (mAdInfo.mAdvertisingId.endsWith("10ca1ad1abe1")) {
-            MoPubLog.setLogLevel(MoPubLog.LogLevel.DEBUG);
-        }
-
-        if (!mAdInfo.isRotationRequired()) {
-            setAdvertisingInfo(mAdInfo);
-            return;
-        }
-
-        setAdvertisingInfo(AdvertisingId.generateFreshAdvertisingId());
-    }
-
-    private void setAdvertisingInfo(@NonNull String advertisingId, @NonNull String mopubId, boolean limitAdTracking, long rotationTime) {
+    private void setAdvertisingInfo(@NonNull String advertisingId, @NonNull String mopubId, boolean limitAdTracking) {
         Preconditions.checkNotNull(advertisingId);
         Preconditions.checkNotNull(mopubId);
 
-        setAdvertisingInfo(new AdvertisingId(advertisingId, mopubId, limitAdTracking, rotationTime));
+        setAdvertisingInfo(new AdvertisingId(advertisingId, mopubId, limitAdTracking));
     }
 
     void setAdvertisingInfo(@NonNull final AdvertisingId newId) {
         AdvertisingId oldId = mAdInfo;
         mAdInfo = newId;
         writeIdToStorage(mAppContext, mAdInfo);
+
+        if (mAdInfo.mAdvertisingId.endsWith("10ca1ad1abe1")) {
+            MoPubLog.setLogLevel(MoPubLog.LogLevel.DEBUG);
+        }
 
         if (!mAdInfo.equals(oldId) || !initialized) {
             notifyIdChangeListener(oldId, mAdInfo);
@@ -246,7 +223,7 @@ public class MoPubIdentifier {
             boolean doNotTrack = limitAdTracking != 0;
             final AdvertisingId oldId = mAdInfo;
             // merge Amazon and MoPub data in one object
-            return new AdvertisingId(advertisingId, oldId.mMopubId, doNotTrack, oldId.mLastRotation.getTimeInMillis());
+            return new AdvertisingId(advertisingId, oldId.mMopubId, doNotTrack);
         }
         return null;
     }

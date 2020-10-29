@@ -30,14 +30,20 @@ public abstract class BaseUrlGenerator {
     protected static final String SDK_VERSION_KEY = "nv";
 
     /**
-     * User ifa or mopub-generated identifier.
+     * User ifa.
      */
-    protected static final String UDID_KEY = "udid";
+    protected static final String IFA_KEY = "ifa";
 
     /**
      * "Do not track." Equal to 1 when limit ad tracking is turned on. Equal to 0 otherwise.
      */
     protected static final String DNT_KEY = "dnt";
+
+    /**
+     * "Tracking Authorization Status." Equal to 'denied' when limit ad tracking is turned on.
+     * Equal to 'authorized' otherwise.
+     */
+    protected static final String TAS_KEY = "tas";
 
     /**
      * Always the mopub-generated identifier.
@@ -48,6 +54,11 @@ public abstract class BaseUrlGenerator {
      * Bundle ID, as in package name.
      */
     protected static final String BUNDLE_ID_KEY = "bundle";
+
+    /**
+     * Platform (ios or android).
+     */
+    protected static final String PLATFORM_KEY = "os";
 
     /**
      * The current consent state.
@@ -181,8 +192,9 @@ public abstract class BaseUrlGenerator {
      * replace these templates with the correct values when the request is processed.
      */
     protected void appendAdvertisingInfoTemplates() {
-        addParam(UDID_KEY, PlayServicesUrlRewriter.UDID_TEMPLATE);
+        addParam(IFA_KEY, PlayServicesUrlRewriter.IFA_TEMPLATE);
         addParam(DNT_KEY, PlayServicesUrlRewriter.DO_NOT_TRACK_TEMPLATE);
+        addParam(TAS_KEY, PlayServicesUrlRewriter.TAS_TEMPLATE);
         addParam(MOPUB_ID_KEY, PlayServicesUrlRewriter.MOPUB_ID_TEMPLATE);
     }
 

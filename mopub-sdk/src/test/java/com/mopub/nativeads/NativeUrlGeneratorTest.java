@@ -24,6 +24,7 @@ import com.mopub.common.AppEngineInfo;
 import com.mopub.common.BaseUrlGenerator;
 import com.mopub.common.LocationService;
 import com.mopub.common.MoPub;
+import com.mopub.common.ViewabilityManager;
 import com.mopub.common.privacy.ConsentStatus;
 import com.mopub.common.privacy.MoPubIdentifierTest;
 import com.mopub.common.privacy.PersonalInfoManager;
@@ -133,6 +134,7 @@ public class NativeUrlGeneratorTest {
                 .setAccessible()
                 .addParam(PersonalInfoManager.class, mockPersonalInfoManager)
                 .execute();
+        ViewabilityManager.setViewabilityEnabled(true);
     }
 
     @After
@@ -170,6 +172,28 @@ public class NativeUrlGeneratorTest {
 
         assertThat(requestParameters.getKeywords()).isEqualTo("keywords");
         assertThat(requestParameters.getUserDataKeywords()).isEqualTo("user_data_keywords");
+    }
+
+    @Test
+    public void generateUrlString_whenViewabilityEnabled_shouldSetViewabilityVendors() {
+        ViewabilityManager.setViewabilityEnabled(true);
+        subject = new NativeUrlGenerator(context);
+
+        String url = subject.generateUrlString("server.com");
+
+        assertThat(getParameterFromRequestUrl(url, "vv")).isEqualTo("4");
+        assertThat(getParameterFromRequestUrl(url, "vver")).isEqualTo("1.3.4-Mopub");
+    }
+
+    @Test
+    public void generateUrlString_whenViewabilityEnabled_shouldSetViewabilityVendorsToZero() {
+        ViewabilityManager.setViewabilityEnabled(false);
+        subject = new NativeUrlGenerator(context);
+
+        String url = subject.generateUrlString("server.com");
+
+        assertThat(getParameterFromRequestUrl(url, "vv")).isEqualTo("0");
+        assertThat(getParameterFromRequestUrl(url, "vver")).isEqualTo("1.3.4-Mopub");
     }
 
     @Test
@@ -381,10 +405,12 @@ public class NativeUrlGeneratorTest {
                         "&sc=" +
                         TEST_DENSITY +
                         "&ct=3&av=" + Uri.encode(BuildConfig.VERSION_NAME) +
-                        "&udid=mp_tmpl_advertising_id&dnt=mp_tmpl_do_not_track" +
+                        "&ifa=mp_tmpl_advertising_id&dnt=mp_tmpl_do_not_track" +
+                        "&tas=mp_tmpl_tas" +
                         "&mid=mp_tmpl_mopub_id" +
                         "&gdpr_applies=0" +
-                        "&current_consent_status=unknown");
+                        "&current_consent_status=unknown" +
+                        "&vv=4&vver=1.3.4-Mopub");
     }
 
     @Test

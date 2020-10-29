@@ -13,6 +13,7 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
 
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.privacy.PersonalInfoManager;
@@ -30,7 +31,7 @@ import static com.mopub.common.logging.MoPubLog.SdkLogEvent.INIT_FINISHED;
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.INIT_STARTED;
 
 public class MoPub {
-    public static final String SDK_VERSION = "5.12.0";
+    public static final String SDK_VERSION = "5.14.0";
 
     public enum LocationAwareness { NORMAL, TRUNCATED, DISABLED }
 
@@ -163,7 +164,7 @@ public class MoPub {
 
     /**
      * Initializes the MoPub SDK. Call this before making any rewarded ads or advanced bidding
-     * requests. This will do the rewarded video custom event initialization any number of times,
+     * requests. This will do the rewarded video base ad initialization any number of times,
      * but the SDK itself can only be initialized once, and the rewarded ads module can only be
      * initialized once.
      *
@@ -187,6 +188,8 @@ public class MoPub {
             MoPubLog.log(CUSTOM, context.getPackageName() +
                     " was built with target SDK version of " + appInfo.targetSdkVersion);
         }
+
+        ViewabilityManager.activate(context.getApplicationContext());
 
         if (context instanceof Activity) {
             final Activity activity = (Activity) context;
@@ -339,10 +342,17 @@ public class MoPub {
         MoPubLifecycleManager.getInstance(activity).onBackPressed(activity);
     }
 
-    public static void disableViewability(@NonNull final ViewabilityVendor vendor) {
-        Preconditions.checkNotNull(vendor);
+    @UiThread
+    public static void disableViewability() {
+        ViewabilityManager.disableViewability();
+    }
 
-        vendor.disable();
+    /**
+     * @deprecated as of 5.14.0. Use {@link #disableViewability()}
+     */
+    @Deprecated
+    public static void disableViewability(@NonNull final ViewabilityVendor vendor) {
+        ViewabilityManager.disableViewability();
     }
 
     @Nullable

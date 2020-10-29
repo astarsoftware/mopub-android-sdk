@@ -7,9 +7,10 @@ package com.mopub.common.privacy;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.text.TextUtils;
 
 import com.mopub.common.ClientMetadata;
 import com.mopub.common.Preconditions;
@@ -41,7 +42,13 @@ class PersonalInfoData implements ConsentData {
     private static final String REACQUIRE_CONSENT_SP_KEY = PERSONAL_INFO_PREFIX + "reacquire_consent";
     private static final String GDPR_APPLIES_SP_KEY = PERSONAL_INFO_PREFIX + "gdpr_applies";
     private static final String FORCE_GDPR_APPLIES_SP_KEY = PERSONAL_INFO_PREFIX + "force_gdpr_applies";
+
+    /**
+     * UDID has been deprecated. This key is for backward compatibility.
+     */
+    @Deprecated
     private static final String UDID_SP_KEY = PERSONAL_INFO_PREFIX + "udid";
+    private static final String IFA_SP_KEY = PERSONAL_INFO_PREFIX + "ifa";
     private static final String LAST_CHANGED_MS_SP_KEY = PERSONAL_INFO_PREFIX + "last_changed_ms";
     private static final String CONSENT_STATUS_BEFORE_DNT_SP_KEY = PERSONAL_INFO_PREFIX + "consent_status_before_dnt";
 
@@ -59,7 +66,7 @@ class PersonalInfoData implements ConsentData {
     @Nullable private ConsentStatus mLastSuccessfullySyncedConsentStatus;
     @Nullable private String mConsentChangeReason;
     private boolean mForceGdprApplies;
-    @Nullable private String mUdid;
+    @Nullable private String mIfa;
     @Nullable private String mLastChangedMs;
     @Nullable private ConsentStatus mConsentStatusBeforeDnt;
 
@@ -131,7 +138,18 @@ class PersonalInfoData implements ConsentData {
             mGdprApplies = Boolean.parseBoolean(gdprAppliesString);
         }
         mForceGdprApplies = sharedPreferences.getBoolean(FORCE_GDPR_APPLIES_SP_KEY, false);
-        mUdid = sharedPreferences.getString(UDID_SP_KEY, null);
+
+        final String udid = sharedPreferences.getString(UDID_SP_KEY, null);
+        if (!TextUtils.isEmpty(udid)) {
+            mIfa = udid.replace("ifa:", "");
+            final SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(IFA_SP_KEY, mIfa);
+            editor.remove(UDID_SP_KEY);
+            editor.apply();
+        } else {
+            mIfa = sharedPreferences.getString(IFA_SP_KEY, null);
+        }
+
         mLastChangedMs = sharedPreferences.getString(LAST_CHANGED_MS_SP_KEY, null);
         final String consentStatusBeforeDnt = sharedPreferences.getString(
                 CONSENT_STATUS_BEFORE_DNT_SP_KEY, null);
@@ -166,7 +184,7 @@ class PersonalInfoData implements ConsentData {
         editor.putString(GDPR_APPLIES_SP_KEY,
                 mGdprApplies == null ? null : mGdprApplies.toString());
         editor.putBoolean(FORCE_GDPR_APPLIES_SP_KEY, mForceGdprApplies);
-        editor.putString(UDID_SP_KEY, mUdid);
+        editor.putString(IFA_SP_KEY, mIfa);
         editor.putString(LAST_CHANGED_MS_SP_KEY, mLastChangedMs);
         editor.putString(CONSENT_STATUS_BEFORE_DNT_SP_KEY,
                 mConsentStatusBeforeDnt == null ? null : mConsentStatusBeforeDnt.name());
@@ -192,7 +210,8 @@ class PersonalInfoData implements ConsentData {
     }
 
     @Nullable
-    String chooseAdUnit() {
+    @Override
+    public String chooseAdUnit() {
         final String adUnitId = mAdUnitId;
         if (!TextUtils.isEmpty(adUnitId)) {
             return adUnitId;
@@ -228,6 +247,7 @@ class PersonalInfoData implements ConsentData {
     }
 
     @Nullable
+    @Override
     public String getCurrentVendorListVersion() {
         return mCurrentVendorListVersion;
     }
@@ -237,11 +257,13 @@ class PersonalInfoData implements ConsentData {
     }
 
     @NonNull
+    @Override
     public String getCurrentVendorListLink() {
         return getCurrentVendorListLink(null);
     }
 
     @NonNull
+    @Override
     public String getCurrentVendorListLink(@Nullable final String language) {
         return replaceLanguageMacro(mCurrentVendorListLink, mAppContext,
                 language);
@@ -252,6 +274,7 @@ class PersonalInfoData implements ConsentData {
     }
 
     @Nullable
+    @Override
     public String getCurrentPrivacyPolicyVersion() {
         return mCurrentPrivacyPolicyVersion;
     }
@@ -261,11 +284,13 @@ class PersonalInfoData implements ConsentData {
     }
 
     @NonNull
+    @Override
     public String getCurrentPrivacyPolicyLink() {
         return getCurrentPrivacyPolicyLink(null);
     }
 
     @NonNull
+    @Override
     public String getCurrentPrivacyPolicyLink(@Nullable final String language) {
         return replaceLanguageMacro(mCurrentPrivacyPolicyLink, mAppContext,
                 language);
@@ -276,6 +301,7 @@ class PersonalInfoData implements ConsentData {
     }
 
     @Nullable
+    @Override
     public String getCurrentVendorListIabFormat() {
         return mCurrentVendorListIabFormat;
     }
@@ -294,6 +320,7 @@ class PersonalInfoData implements ConsentData {
     }
 
     @Nullable
+    @Override
     public String getConsentedVendorListVersion() {
         return mConsentedVendorListVersion;
     }
@@ -303,6 +330,7 @@ class PersonalInfoData implements ConsentData {
     }
 
     @Nullable
+    @Override
     public String getConsentedPrivacyPolicyVersion() {
         return mConsentedPrivacyPolicyVersion;
     }
@@ -313,6 +341,7 @@ class PersonalInfoData implements ConsentData {
     }
 
     @Nullable
+    @Override
     public String getConsentedVendorListIabFormat() {
         return mConsentedVendorListIabFormat;
     }
@@ -357,6 +386,7 @@ class PersonalInfoData implements ConsentData {
         mGdprApplies = gdprApplies;
     }
 
+    @Override
     public boolean isForceGdprApplies() {
         return mForceGdprApplies;
     }
@@ -366,12 +396,12 @@ class PersonalInfoData implements ConsentData {
     }
 
     @Nullable
-    String getUdid() {
-        return mUdid;
+    String getIfa() {
+        return mIfa;
     }
 
-    void setUdid(@Nullable final String udid) {
-        mUdid = udid;
+    void setIfa(@Nullable final String ifa) {
+        mIfa = ifa;
     }
 
     @Nullable

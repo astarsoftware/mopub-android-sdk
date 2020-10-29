@@ -88,32 +88,7 @@ public class MoPubIdentifierTest {
         AdvertisingId idData = subject.getAdvertisingInfo();
         assertThat(idData.mAdvertisingId).isEqualTo(savedId.mAdvertisingId);
         assertThat(idData.mMopubId).isEqualTo(savedId.mMopubId);
-        assertThat(idData.isRotationRequired()).isEqualTo(savedId.isRotationRequired());
         assertThat(idData.isDoNotTrack()).isEqualTo(savedId.isDoNotTrack());
-    }
-
-    @Test
-    public void constructor_withExpiredOldId_withNoAmazon_withNoGoogle_shouldCallOnIdChanged() throws Exception {
-        AdvertisingId savedId = writeExpiredAdvertisingInfoToSharedPreferences(context, false);
-
-        ArgumentCaptor<AdvertisingId> oldIdClientCaptor = ArgumentCaptor.forClass(AdvertisingId.class);
-        ArgumentCaptor<AdvertisingId> newIdClientCaptor = ArgumentCaptor.forClass(AdvertisingId.class);
-
-        subject = new MoPubIdentifier(context, idChangeListener);
-
-        ShadowLooper.runUiThreadTasks();
-        verify(idChangeListener).onIdChanged(oldIdClientCaptor.capture(), newIdClientCaptor.capture());
-
-        AdvertisingId oldId = oldIdClientCaptor.getValue();
-        AdvertisingId newId = newIdClientCaptor.getValue();
-
-        assertThat(oldId.mMopubId).isEqualTo(savedId.mMopubId);
-        assertThat(oldId.mAdvertisingId).isEqualTo(savedId.mAdvertisingId);
-        assertThat(oldId.isDoNotTrack()).isEqualTo(savedId.isDoNotTrack());
-
-        assertThat(newId.isDoNotTrack()).isFalse();
-        assertThat(newId.mAdvertisingId).isEmpty();
-        assertThat(newId.getIdWithPrefix(false)).contains("mopub:");
     }
 
     @Test
@@ -134,21 +109,6 @@ public class MoPubIdentifierTest {
         reset(idChangeListener);
         subject.refreshAdvertisingInfoBackgroundThread();
         verify(idChangeListener, never()).onIdChanged(any(AdvertisingId.class), any(AdvertisingId.class));
-    }
-
-    @Test
-    public void constructor_withExpiredId_withNoListenerSet_shouldNotCrash_shouldRotateMopubId() throws Exception {
-        AdvertisingId savedId = writeExpiredAdvertisingInfoToSharedPreferences(context, true);
-
-        subject = new MoPubIdentifier(context);
-        ShadowLooper.runUiThreadTasks();
-        subject.setIdChangeListener(null);
-        AdvertisingId newId = subject.getAdvertisingInfo();
-
-        assertThat(newId.mMopubId).isNotEqualTo(savedId.mMopubId);
-        assertThat(newId.mAdvertisingId).isNotEqualTo(savedId.mAdvertisingId);
-        assertThat(newId.isDoNotTrack()).isFalse();
-        assertThat(newId.isRotationRequired()).isFalse();
     }
 
     @Test
@@ -238,8 +198,7 @@ public class MoPubIdentifierTest {
         final long time = Calendar.getInstance().getTimeInMillis();
         AdvertisingId adConfig = new AdvertisingId(TEST_IFA_ID,
                 TEST_MOPUB_ID,
-                true,
-                time);
+                true);
 
         // save to shared preferences
         new Reflection.MethodBuilder(null, "writeIdToStorage")
@@ -260,13 +219,12 @@ public class MoPubIdentifierTest {
         assertThat(adConfig2.mAdvertisingId).isEqualTo(TEST_IFA_ID);
         assertThat(adConfig2.mMopubId).isEqualTo(TEST_MOPUB_ID);
         assertThat(adConfig2.mDoNotTrack).isTrue();
-        assertThat(adConfig2.mLastRotation.getTimeInMillis()).isEqualTo(time);
     }
 
     @Test
     public void setAdvertisingInfo_whenCalledTwice_shouldCallInitializationListenerOnce_validateSavedAdvertisingIds() throws Exception {
-        final AdvertisingId adId1 = new AdvertisingId("ifa1", "mopub1", false, Calendar.getInstance().getTimeInMillis());
-        final AdvertisingId adId2 = new AdvertisingId("ifa2", "mopub2", false, Calendar.getInstance().getTimeInMillis());
+        final AdvertisingId adId1 = new AdvertisingId("ifa1", "mopub1", false);
+        final AdvertisingId adId2 = new AdvertisingId("ifa2", "mopub2", false);
 
         writeAdvertisingInfoToSharedPreferences(context, false);
         subject = new MoPubIdentifier(context);
@@ -293,147 +251,7 @@ public class MoPubIdentifierTest {
     }
 
     @Test
-    public void rotateMopubId_withExpiredOldId_shouldRotateMoPubId() {
-        subject = new MoPubIdentifier(context);
-        AdvertisingId originalId = AdvertisingId.generateExpiredAdvertisingId();
-        subject.setAdvertisingInfo(originalId);
-        subject.setIdChangeListener(idChangeListener);
-        ArgumentCaptor<AdvertisingId> oldIdClientCaptor = ArgumentCaptor.forClass(AdvertisingId.class);
-        ArgumentCaptor<AdvertisingId> newIdClientCaptor = ArgumentCaptor.forClass(AdvertisingId.class);
-
-        subject.rotateMopubId();
-
-        verify(idChangeListener).onIdChanged(oldIdClientCaptor.capture(), newIdClientCaptor.capture());
-        AdvertisingId oldId = oldIdClientCaptor.getValue();
-        AdvertisingId newId = newIdClientCaptor.getValue();
-        assertThat(newId.isRotationRequired()).isFalse();
-        assertThat(originalId.equals(oldId)).isTrue();
-    }
-
-    @Test
-    public void rotateMopubId_withNotExpiredOldId_shouldNotRotateMoPubId() {
-        subject = new MoPubIdentifier(context);
-        AdvertisingId oldId = AdvertisingId.generateFreshAdvertisingId();
-        subject.setAdvertisingInfo(oldId);
-        subject.setIdChangeListener(idChangeListener);
-
-        subject.rotateMopubId();
-
-        verify(idChangeListener, never()).onIdChanged(any(AdvertisingId.class), any(AdvertisingId.class));
-        AdvertisingId newId = subject.getAdvertisingInfo();
-        assertThat(newId.isRotationRequired()).isFalse();
-        assertThat(oldId.equals(newId)).isTrue();
-    }
-
-    @Test
-    public void refreshAdvertisingInfoBackgroundThread_withExpiredId_withGoogle_withNoAmazon_shouldRotateMoPubId() {
-        AdvertisingId expiredId = AdvertisingId.generateExpiredAdvertisingId();
-        subject = new MoPubIdentifier(context);
-        setupGooglePlayService(context, true);
-        ArgumentCaptor<AdvertisingId> oldIdClientCaptor = ArgumentCaptor.forClass(AdvertisingId.class);
-        ArgumentCaptor<AdvertisingId> newIdClientCaptor = ArgumentCaptor.forClass(AdvertisingId.class);
-        subject.setAdvertisingInfo(expiredId);
-        subject.setIdChangeListener(idChangeListener);
-
-        subject.refreshAdvertisingInfoBackgroundThread();
-
-        verify(idChangeListener).onIdChanged(oldIdClientCaptor.capture(), newIdClientCaptor.capture());
-        AdvertisingId oldId = oldIdClientCaptor.getValue();
-        AdvertisingId newId = newIdClientCaptor.getValue();
-        assertThat(oldId.equals(expiredId)).isTrue();
-        assertThat(oldId.mMopubId.equals(newId.mMopubId)).isFalse(); // rotation
-        assertThat(newId.mAdvertisingId.equals(GOOGLE_AD_ID)).isTrue();
-        assertThat(newId.mDoNotTrack).isTrue();
-        assertThat(newId.isRotationRequired()).isFalse();
-    }
-
-    @Test
-    public void refreshAdvertisingInfoBackgroundThread_withExpiredId_withNoGoogle_withNoAmazon_shouldRotateMoPubId() {
-        AdvertisingId originalId = AdvertisingId.generateExpiredAdvertisingId();
-        subject = new MoPubIdentifier(context);
-        subject.setAdvertisingInfo(originalId);
-        subject.setIdChangeListener(idChangeListener);
-        ArgumentCaptor<AdvertisingId> oldIdClientCaptor = ArgumentCaptor.forClass(AdvertisingId.class);
-        ArgumentCaptor<AdvertisingId> newIdClientCaptor = ArgumentCaptor.forClass(AdvertisingId.class);
-
-        subject.refreshAdvertisingInfoBackgroundThread();
-
-        ShadowLooper.runUiThreadTasks();
-        verify(idChangeListener).onIdChanged(oldIdClientCaptor.capture(), newIdClientCaptor.capture());
-        AdvertisingId oldId = oldIdClientCaptor.getValue();
-        AdvertisingId newId = newIdClientCaptor.getValue();
-        assertThat(newId.isRotationRequired()).isFalse();
-        assertThat(originalId.equals(oldId)).isTrue();
-    }
-
-    @Test
-    public void refreshAdvertisingInfoBackgroundThread_withNotExpiredId_withGoogle_withNoAmazon_shouldNotRotateMoPubId() {
-        AdvertisingId freshId = AdvertisingId.generateFreshAdvertisingId();
-        subject = new MoPubIdentifier(context);
-        setupGooglePlayService(context, true);
-        ArgumentCaptor<AdvertisingId> oldIdClientCaptor = ArgumentCaptor.forClass(AdvertisingId.class);
-        ArgumentCaptor<AdvertisingId> newIdClientCaptor = ArgumentCaptor.forClass(AdvertisingId.class);
-        subject.setAdvertisingInfo(freshId);
-        subject.setIdChangeListener(idChangeListener);
-
-        subject.refreshAdvertisingInfoBackgroundThread();
-
-        verify(idChangeListener).onIdChanged(oldIdClientCaptor.capture(), newIdClientCaptor.capture());
-        AdvertisingId oldId = oldIdClientCaptor.getValue();
-        AdvertisingId newId = newIdClientCaptor.getValue();
-        assertThat(oldId.equals(freshId)).isTrue();
-        assertThat(oldId.mMopubId.equals(newId.mMopubId)).isTrue(); // no rotation
-        assertThat(newId.mAdvertisingId.equals(GOOGLE_AD_ID)).isTrue();
-        assertThat(newId.mDoNotTrack).isTrue();
-        assertThat(newId.isRotationRequired()).isFalse();
-    }
-
-    @Test
-    public void refreshAdvertisingInfoBackgroundThread_withExpiredId_withAmazon_withNoGoogle_shouldRotateMoPubId() {
-        AdvertisingId expiredId = AdvertisingId.generateExpiredAdvertisingId();
-        subject = new MoPubIdentifier(context);
-        setupAmazonAdvertisingInfo(true);
-        ArgumentCaptor<AdvertisingId> oldIdClientCaptor = ArgumentCaptor.forClass(AdvertisingId.class);
-        ArgumentCaptor<AdvertisingId> newIdClientCaptor = ArgumentCaptor.forClass(AdvertisingId.class);
-        subject.setAdvertisingInfo(expiredId);
-        subject.setIdChangeListener(idChangeListener);
-
-        subject.refreshAdvertisingInfoBackgroundThread();
-
-        verify(idChangeListener).onIdChanged(oldIdClientCaptor.capture(), newIdClientCaptor.capture());
-        AdvertisingId oldId = oldIdClientCaptor.getValue();
-        AdvertisingId newId = newIdClientCaptor.getValue();
-        assertThat(oldId.equals(expiredId)).isTrue();
-        assertThat(oldId.mMopubId.equals(newId.mMopubId)).isFalse(); // rotation
-        assertThat(newId.mAdvertisingId.equals(AMAZON_AD_ID)).isTrue();
-        assertThat(newId.mDoNotTrack).isTrue();
-        assertThat(newId.isRotationRequired()).isFalse();
-    }
-
-    @Test
-    public void refreshAdvertisingInfoBackgroundThread_withNotExpiredId_withAmazon_withNoGoogle_shouldNotRotateMoPubId() {
-        AdvertisingId freshId = AdvertisingId.generateFreshAdvertisingId();
-        subject = new MoPubIdentifier(context);
-        setupAmazonAdvertisingInfo(true);
-        ArgumentCaptor<AdvertisingId> oldIdClientCaptor = ArgumentCaptor.forClass(AdvertisingId.class);
-        ArgumentCaptor<AdvertisingId> newIdClientCaptor = ArgumentCaptor.forClass(AdvertisingId.class);
-        subject.setAdvertisingInfo(freshId);
-        subject.setIdChangeListener(idChangeListener);
-
-        subject.refreshAdvertisingInfoBackgroundThread();
-
-        verify(idChangeListener).onIdChanged(oldIdClientCaptor.capture(), newIdClientCaptor.capture());
-        AdvertisingId oldId = oldIdClientCaptor.getValue();
-        AdvertisingId newId = newIdClientCaptor.getValue();
-        assertThat(oldId.equals(freshId)).isTrue();
-        assertThat(oldId.mMopubId.equals(newId.mMopubId)).isTrue(); // no rotation
-        assertThat(newId.mAdvertisingId.equals(AMAZON_AD_ID)).isTrue();
-        assertThat(newId.mDoNotTrack).isTrue();
-        assertThat(newId.isRotationRequired()).isFalse();
-    }
-
-    @Test
-    public void rotateMoPubId_withDebugGAID_shouldSetLogLevelToDebug() throws Exception {
+    public void setAdvertisingInfo_withDebugGAID_shouldSetLogLevelToDebug() throws Exception {
         // Set log level to none and get value from MoPubLog
         MoPubLog.setLogLevel(MoPubLog.LogLevel.NONE);
         final MoPubLog.LogLevel beforeLogLevel = MoPubLog.getLogLevel();
@@ -454,7 +272,7 @@ public class MoPubIdentifierTest {
     }
 
     @Test
-    public void rotateMoPubId_withoutDebugGAID_shouldNotSetLogLevel() throws Exception {
+    public void setAdvertisingInfo_withoutDebugGAID_shouldNotSetLogLevel() throws Exception {
         // Set log level to none and get value from MoPubLog
         MoPubLog.setLogLevel(MoPubLog.LogLevel.NONE);
         final MoPubLog.LogLevel beforeLogLevel = MoPubLog.getLogLevel();
@@ -512,16 +330,10 @@ public class MoPubIdentifierTest {
         return writeAdvertisingInfoToSharedPreferences(context, doNotTrack, time);
     }
 
-    private static AdvertisingId writeExpiredAdvertisingInfoToSharedPreferences(Context context, boolean doNotTrack) throws Exception {
-        final long time = Calendar.getInstance().getTimeInMillis() - AdvertisingId.ONE_DAY_MS * 2;
-        return writeAdvertisingInfoToSharedPreferences(context, doNotTrack, time);
-    }
-
     private static AdvertisingId writeAdvertisingInfoToSharedPreferences(Context context, boolean doNotTrack, long time) throws Exception {
         AdvertisingId adConfig = new AdvertisingId(TEST_IFA_ID,
                 TEST_MOPUB_ID,
-                doNotTrack,
-                time);
+                doNotTrack);
 
         // save to shared preferences
         new Reflection.MethodBuilder(null, "writeIdToStorage")

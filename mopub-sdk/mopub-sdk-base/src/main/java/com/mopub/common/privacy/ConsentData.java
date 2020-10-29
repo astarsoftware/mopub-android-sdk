@@ -79,6 +79,12 @@ public interface ConsentData {
     String getConsentedVendorListIabFormat();
 
     /**
+     * Returns the most valid ad unit used to initialize MoPub.
+     */
+    @Nullable
+    String chooseAdUnit();
+
+    /**
      * Whether GDPR rules have been forced to apply by either the publisher or by MoPub. In
      * general, publishers should not need to directly access this.
      *

@@ -17,6 +17,7 @@ public class MoPubNetworkError extends VolleyError {
         BAD_HEADER_DATA,
         BAD_BODY,
         TRACKING_FAILURE,
+        TOO_MANY_REQUESTS,
         UNSPECIFIED
     }
 
@@ -66,5 +67,30 @@ public class MoPubNetworkError extends VolleyError {
     @Nullable
     public Integer getRefreshTimeMillis() {
         return mRefreshTimeMillis;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        MoPubNetworkError that = (MoPubNetworkError) o;
+
+        if (mReason != that.mReason) {
+            return false;
+        }
+        return mRefreshTimeMillis != null ?
+                mRefreshTimeMillis.equals(that.mRefreshTimeMillis) : that.mRefreshTimeMillis == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = mReason.hashCode();
+        result = 31 * result + (mRefreshTimeMillis != null ? mRefreshTimeMillis.hashCode() : 0);
+        return result;
     }
 }

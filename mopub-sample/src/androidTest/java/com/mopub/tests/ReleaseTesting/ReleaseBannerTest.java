@@ -3,44 +3,118 @@
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 package com.mopub.tests.ReleaseTesting;
-import androidx.test.filters.LargeTest;
+
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.LargeTest;
 
 import com.mopub.framework.models.AdLabels;
-import com.mopub.framework.pages.AdDetailPage;
-import com.mopub.framework.pages.AdListPage;
+import com.mopub.simpleadsdemo.R;
 import com.mopub.tests.base.MoPubBaseTestCase;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static androidx.test.espresso.Espresso.onData;
-import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static org.hamcrest.Matchers.hasToString;
-import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assert.*;
+import static com.mopub.framework.base.BasePage.clickCellOnList;
+import static com.mopub.framework.base.BasePage.pressBack;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class ReleaseBannerTest extends MoPubBaseTestCase {
 
-    //Test Variable
-    private static final String TITLE = "RT - Banner HTML";
-
-    //
-    // This test will be changed, just a placeholder for execution purposes.
-    //
     @Test
-    public void release_dummyTest(){
-        onData(hasToString(startsWith(TITLE)))
-                .inAdapterView(withId(android.R.id.list))
-                .perform(click());
+    public void release_portraitBannerImage_shouldLoadBannerCenteredHorizontally_shouldShowMoPubBrowser() {
+        clickCellOnList(BannerTestAdUnits.IMAGE.getAdName());
+        adDetailPage.pressLoadAdButton();
+        inLineAdDidLoad();
+        adDetailPage.changeOrientationTo(PORTRAIT_ORIENTATION);
+        isAlignedInLine();
+        hasClickthrough(R.id.banner_mopubview);
+    }
 
-        final AdDetailPage adDetailPage = new AdDetailPage();
+    @Test
+    public void release_landscapeBannerImage_shouldLoadBannerCenteredHorizontally_shouldShowMoPubBrowser() {
+        clickCellOnList(BannerTestAdUnits.IMAGE.getAdName());
+        adDetailPage.pressLoadAdButton();
+        inLineAdDidLoad();
+        adDetailPage.changeOrientationTo(LANDSCAPE_ORIENTATION);
+        isAlignedInLine();
+        hasClickthrough(R.id.banner_mopubview);
+    }
 
-        System.out.println("This is tested in Release");
+    @Test
+    public void release_portraitBannerHTML_shouldLoadBannerCenteredHorizontally_shouldShowMoPubBrowser() {
+        clickCellOnList(BannerTestAdUnits.HTML.getAdName());
+        adDetailPage.pressLoadAdButton();
+        inLineAdDidLoad();
+        adDetailPage.changeOrientationTo(PORTRAIT_ORIENTATION);
+        isAlignedInLine();
+        hasClickthrough(R.id.banner_mopubview);
+    }
 
-        assertTrue(true);
+    @Test
+    public void release_landscapeBannerHTML_shouldLoadBannerCenteredHorizontally_shouldShowMoPubBrowser() {
+        clickCellOnList(BannerTestAdUnits.HTML.getAdName());
+        adDetailPage.pressLoadAdButton();
+        inLineAdDidLoad();
+        adDetailPage.changeOrientationTo(LANDSCAPE_ORIENTATION);
+        isAlignedInLine();
+        hasClickthrough(R.id.banner_mopubview);
+    }
+
+    @Test
+    public void release_mraidDeviceOrientation_shouldExpand_shouldShowMoPubBrowser() throws InterruptedException {
+        clickCellOnList(BannerTestAdUnits.MRAID_DEVICE.getAdName());
+        adDetailPage.pressLoadAdButton();
+        inLineAdDidLoad();
+        isAlignedInLine();
+        hasMraidClickthrough();
+        pressBack();
+        adDetailPage.changeOrientationTo(LANDSCAPE_ORIENTATION);
+        checkChangeOnRotation(LANDSCAPE_ORIENTATION);
+    }
+
+    @Test
+    public void release_mraidLandscapeOrientation_shouldExpand_shouldShowMoPubBrowser() throws InterruptedException {
+        // Test specific setup to validate it auto rotates when Mraid expands
+        adDetailPage.changeOrientationTo(PORTRAIT_ORIENTATION);
+        clickCellOnList(BannerTestAdUnits.MRAID_LANDSCAPE.getAdName());
+        adDetailPage.pressLoadAdButton();
+        inLineAdDidLoad();
+        isAlignedInLine();
+        hasMraidClickthrough();
+        pressBack();
+        checkMraidElementChangeOrientationOnExpand(LANDSCAPE_ORIENTATION);
+    }
+
+    @Test
+    public void release_mraidPortraitOrientation_shouldExpand_shouldShowMoPubBrowser() throws InterruptedException {
+        // Test specific setup to validate it will auto rotates when Mraid expands
+        adDetailPage.changeOrientationTo(LANDSCAPE_ORIENTATION);
+        clickCellOnList(BannerTestAdUnits.MRAID_PORTRIAT.getAdName());
+        adDetailPage.pressLoadAdButton();
+        inLineAdDidLoad();
+        isAlignedInLine();
+        hasMraidClickthrough();
+        pressBack();
+        checkMraidElementChangeOrientationOnExpand(PORTRAIT_ORIENTATION);
+    }
+
+
+    private enum BannerTestAdUnits {
+        HTML(AdLabels.BANNER_HTML),
+        IMAGE(AdLabels.BANNER_IMAGE),
+        MRAID_DEVICE(AdLabels.BANNER_MRAID_DEVICE),
+        MRAID_LANDSCAPE(AdLabels.BANNER_MRAID_LANDSCAPE),
+        MRAID_PORTRIAT(AdLabels.BANNER_MRAID_PORTRAIT);
+
+        private final String label;
+
+        BannerTestAdUnits(final String adType) {
+            this.label = adType;
+        }
+
+        public String getAdName() {
+            return label;
+        }
     }
 }

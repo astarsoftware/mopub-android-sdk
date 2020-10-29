@@ -12,14 +12,17 @@ import androidx.annotation.Nullable;
 import com.mopub.common.Constants;
 import com.mopub.common.DataKeys;
 import com.mopub.common.Preconditions;
+import com.mopub.common.ViewabilityVendor;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.MoPubErrorCode;
 import com.mopub.nativeads.factories.CustomEventNativeFactory;
 import com.mopub.network.AdResponse;
 
 import java.util.Map;
+import java.util.Set;
 
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
+import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM_WITH_THROWABLE;
 import static com.mopub.mobileads.MoPubErrorCode.NETWORK_TIMEOUT;
 
 final class CustomEventNativeAdapter {
@@ -79,7 +82,12 @@ final class CustomEventNativeAdapter {
             localExtras.put(DataKeys.JSON_BODY_KEY, adResponse.getJsonBody());
         }
 
-        localExtras.put(DataKeys.CLICK_TRACKING_URL_KEY, adResponse.getClickTrackingUrl());
+        localExtras.put(DataKeys.CLICK_TRACKING_URL_KEY, adResponse.getClickTrackingUrls());
+
+        final Set<ViewabilityVendor> viewabilityVendors = adResponse.getViewabilityVendors();
+        if (viewabilityVendors != null) {
+            localExtras.put(DataKeys.VIEWABILITY_VENDORS_KEY, viewabilityVendors);
+        }
 
         // Custom event classes can be developed by any third party and may not be tested.
         // We catch all exceptions here to prevent crashes from untested code.
@@ -128,10 +136,10 @@ final class CustomEventNativeAdapter {
 
     void stopLoading() {
         try {
-            if (customEventNative != null)
+            if (customEventNative != null && mCompleted)
                 customEventNative.onInvalidate();
         } catch (Exception e) {
-            MoPubLog.log(CUSTOM,  e.toString());
+            MoPubLog.log(CUSTOM_WITH_THROWABLE,  "", e);
         }
         invalidate();
     }
@@ -140,7 +148,14 @@ final class CustomEventNativeAdapter {
         if (!mCompleted) {
             mCompleted = true;
             mHandler.removeCallbacks(mTimeout);
-            customEventNative = null;
+            if (customEventNative != null) {
+                try {
+                    customEventNative.onInvalidate();
+                } catch (Exception e) {
+                    MoPubLog.log(CUSTOM,  e.toString());
+                }
+                customEventNative = null;
+            }
         }
     }
 }

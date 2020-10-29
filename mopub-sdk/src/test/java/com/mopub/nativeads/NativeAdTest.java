@@ -69,7 +69,7 @@ public class NativeAdTest {
 
         subject = new NativeAd(activity,
                 Arrays.asList("moPubImpressionTrackerUrl1", "moPubImpressionTrackerUrl2"),
-                "moPubClickTrackerUrl",
+                Arrays.asList("moPubClickTrackerUrl1", "moPubClickTrackerUrl2"),
                 "adunit_id",
                 mockBaseNativeAd,
                 mockRenderer
@@ -81,19 +81,22 @@ public class NativeAdTest {
     public void constructor_shouldSetNativeEventListener() {
         reset(mockBaseNativeAd);
         subject = new NativeAd(activity, Collections.singletonList("moPubImpressionTrackerUrl"),
-                "moPubClickTrackerUrl", "adunit_id", mockBaseNativeAd, mockRenderer);
+                Arrays.asList("moPubClickTrackerUrl1", "moPubClickTrackerUrl2"), "adunit_id",
+                mockBaseNativeAd, mockRenderer);
         verify(mockBaseNativeAd).setNativeEventListener(any(NativeEventListener.class));
     }
 
     @Test
     public void constructor_shouldMergeMoPubClickTrackerWithBaseNativeAdClickTrackers() {
         reset(mockRequestQueue);
-        subject = new NativeAd(activity, Collections.singletonList(""), "moPubClickTrackerUrl", "",
+        subject = new NativeAd(activity, Collections.singletonList(""),
+                Arrays.asList("moPubClickTrackerUrl1", "moPubClickTrackerUrl2"), "",
                 mockBaseNativeAd, mockRenderer);
 
         subject.handleClick(null);
 
-        verify(mockRequestQueue).add(argThat(isUrl("moPubClickTrackerUrl")));
+        verify(mockRequestQueue).add(argThat(isUrl("moPubClickTrackerUrl1")));
+        verify(mockRequestQueue).add(argThat(isUrl("moPubClickTrackerUrl2")));
         verify(mockRequestQueue).add(argThat(isUrl("clkUrl")));
     }
 
@@ -212,7 +215,8 @@ public class NativeAdTest {
     @Test
     public void handleClick_shouldTrackClicksOnce() {
         subject.handleClick(mockView);
-        verify(mockRequestQueue).add(argThat(isUrl("moPubClickTrackerUrl")));
+        verify(mockRequestQueue).add(argThat(isUrl("moPubClickTrackerUrl1")));
+        verify(mockRequestQueue).add(argThat(isUrl("moPubClickTrackerUrl2")));
         verify(mockRequestQueue).add(argThat(isUrl("clkUrl")));
         verify(mockEventListener).onClick(mockView);
 
@@ -235,7 +239,7 @@ public class NativeAdTest {
 
     private AdResponse mockAdResponse() {
         AdResponse response = mock(AdResponse.class);
-        when(response.getClickTrackingUrl()).thenReturn("moPubClickTrackerUrl");
+        when(response.getClickTrackingUrls()).thenReturn(Arrays.asList("moPubClickTrackerUrl1", "moPubClickTrackerUrl2"));
         when(response.getImpressionTrackingUrls())
                 .thenReturn(Arrays.asList("moPubImpressionTrackerUrl1", "moPubImpressionTrackerUrl2"));
         when(response.getImpressionData()).thenReturn(mockImpressionData);

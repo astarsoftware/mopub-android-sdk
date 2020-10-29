@@ -8,6 +8,7 @@ import android.app.Activity;
 
 import com.mopub.common.AdType;
 import com.mopub.common.DataKeys;
+import com.mopub.common.ViewabilityVendor;
 import com.mopub.common.test.support.SdkTestRunner;
 import com.mopub.nativeads.test.support.TestCustomEventNativeFactory;
 import com.mopub.network.AdResponse;
@@ -15,10 +16,14 @@ import com.mopub.network.AdResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -47,8 +52,8 @@ public class CustomEventNativeAdapterTest {
 
         testAdResponse = new AdResponse.Builder()
                 .setAdType(AdType.STATIC_NATIVE)
-                .setCustomEventClassName("com.mopub.nativeads.MoPubCustomEventNative")
-                .setClickTrackingUrl("clicktrackingurl")
+                .setBaseAdClassName("com.mopub.nativeads.MoPubCustomEventNative")
+                .setClickTrackingUrls(Collections.singletonList("clicktrackingurl"))
                 .setResponseBody("body")
                 .setServerExtras(serverExtras)
                 .build();
@@ -63,7 +68,7 @@ public class CustomEventNativeAdapterTest {
     @Test
     public void loadNativeAd_withValidInput_shouldCallLoadNativeAdOnTheCustomEvent() {
         Map<String, Object> expectedLocalExtras = new HashMap<>();
-        expectedLocalExtras.put(DataKeys.CLICK_TRACKING_URL_KEY, "clicktrackingurl");
+        expectedLocalExtras.put(DataKeys.CLICK_TRACKING_URL_KEY, Collections.singletonList("clicktrackingurl"));
 
         subject.loadNativeAd(context, localExtras, testAdResponse);
 
@@ -75,7 +80,7 @@ public class CustomEventNativeAdapterTest {
     @Test
     public void loadNativeAd_withInvalidClassName_shouldNotifyListenerOfOnNativeAdFailedAndReturn() {
         testAdResponse = testAdResponse.toBuilder()
-                .setCustomEventClassName("com.mopub.baaad.invalidinvalid123143")
+                .setBaseAdClassName("com.mopub.baaad.invalidinvalid123143")
                 .build();
 
         subject.loadNativeAd(context, localExtras, testAdResponse);
@@ -96,5 +101,27 @@ public class CustomEventNativeAdapterTest {
         verify(mCustomEventNative).loadNativeAd(eq(context), any(CustomEventNative.CustomEventNativeListener.class), eq(localExtras), eq(new HashMap<String, String>()));
         verify(mCustomEventNativeListener, never()).onNativeAdFailed(any(NativeErrorCode.class));
         verify(mCustomEventNativeListener, never()).onNativeAdLoaded(any(BaseNativeAd.class));
+    }
+    @Test
+    public void loadNativeAd_withViewabilityVendors_shouldAddToLocalExtras() {
+        final HashSet<ViewabilityVendor> vendors = new HashSet<>();
+        testAdResponse = testAdResponse.toBuilder()
+                .setServerExtras(null)
+                .setViewabilityVendors(vendors)
+                .build();
+
+        subject.loadNativeAd(context, localExtras, testAdResponse);
+
+        assertEquals(vendors, localExtras.get(DataKeys.VIEWABILITY_VENDORS_KEY));
+    }
+
+    @Test
+    public void stopLoading_withValidCustomEventNative_shouldInvalidateCustomEventNative() {
+        subject.loadNativeAd(context, localExtras, testAdResponse);
+        Mockito.reset(mCustomEventNative);
+
+        subject.stopLoading();
+
+        verify(mCustomEventNative).onInvalidate();
     }
 }

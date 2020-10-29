@@ -9,20 +9,19 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.mopub.common.AdReport;
 import com.mopub.common.Constants;
 import com.mopub.common.test.support.SdkTestRunner;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
 import org.robolectric.shadows.ShadowWebView;
 
 import static android.webkit.WebSettings.PluginState;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -30,8 +29,6 @@ import static org.mockito.Mockito.verify;
 @RunWith(SdkTestRunner.class)
 public class BaseHtmlWebViewTest {
 
-    @Mock
-    AdReport mockAdReport;
     private BaseHtmlWebView subject;
     private MotionEvent touchDown;
     private MotionEvent touchUp;
@@ -40,10 +37,15 @@ public class BaseHtmlWebViewTest {
     @Before
     public void setUp() throws Exception {
         testActivity = Robolectric.buildActivity(Activity.class).create().get();
-        subject = new BaseHtmlWebView(testActivity, mockAdReport);
+        subject = new BaseHtmlWebView(testActivity);
 
         touchDown = createMotionEvent(MotionEvent.ACTION_DOWN);
         touchUp = createMotionEvent(MotionEvent.ACTION_UP);
+    }
+
+    @Test
+    public void baseHtmlWebView_derivesFromBaseWebViewViewability() {
+        assertTrue(subject instanceof BaseWebViewViewability);
     }
 
     @Test

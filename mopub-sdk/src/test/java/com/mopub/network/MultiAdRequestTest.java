@@ -59,7 +59,7 @@ public class MultiAdRequestTest {
                     "x-banner-impression-min-ms": "",
                     "x-banner-impression-min-pixels": "",
                     "x-browser-agent": -1,
-                    "x-clickthrough": "clickthrough_url",
+                    "clicktrackers": "clickthrough_url",
                     "x-creativeid": "d06f9bde98134f76931cdf04951b60dd",
                     "x-custom-event-class-data": "",
                     "x-custom-event-class-name": "",
@@ -83,7 +83,6 @@ public class MultiAdRequestTest {
                     "x-rewarded-video-currency-name": "",
                     "x-vastvideoplayer": "",
                     "x-video-trackers": "",
-                    "x-video-viewability-trackers": "",
                     "x-width": 320
                 }
             }

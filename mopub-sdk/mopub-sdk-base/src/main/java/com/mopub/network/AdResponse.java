@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 
 import com.mopub.common.MoPub.BrowserAgent;
 import com.mopub.common.Preconditions;
+import com.mopub.common.ViewabilityVendor;
 import com.mopub.common.util.DateAndTime;
 
 import org.json.JSONObject;
@@ -17,6 +18,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 public class AdResponse implements Serializable {
@@ -50,14 +52,14 @@ public class AdResponse implements Serializable {
 
     @Nullable
     private final ImpressionData mImpressionData;
-    @Nullable
-    private final String mClickTrackingUrl;
+    @NonNull
+    private final List<String> mClickTrackingUrls;
     @NonNull
     private final List<String> mImpressionTrackingUrls;
     @Nullable
     private final String mFailoverUrl;
-    @Nullable
-    private final String mBeforeLoadUrl;
+    @NonNull
+    private final List<String> mBeforeLoadUrls;
     @NonNull
     private final List<String> mAfterLoadUrls;
     @NonNull
@@ -76,6 +78,10 @@ public class AdResponse implements Serializable {
     @Nullable
     private final Integer mRefreshTimeMillis;
     @Nullable
+    private final String mBannerImpressionMinVisibleDips;
+    @Nullable
+    private final String mBannerImpressionMinVisibleMs;
+    @Nullable
     private final String mDspCreativeId;
 
     @Nullable
@@ -84,7 +90,7 @@ public class AdResponse implements Serializable {
     private final JSONObject mJsonBody;
 
     @Nullable
-    private final String mCustomEventClassName;
+    private final String mBaseAdClassName;
     @Nullable
     private final BrowserAgent mBrowserAgent;
     @NonNull
@@ -93,6 +99,9 @@ public class AdResponse implements Serializable {
     private final long mTimestamp;
 
     private final boolean mAllowCustomClose;
+
+    @Nullable
+    private final Set<ViewabilityVendor> mViewabilityVendors;
 
     private AdResponse(@NonNull Builder builder) {
 
@@ -110,10 +119,10 @@ public class AdResponse implements Serializable {
         mShouldRewardOnClick = builder.shouldRewardOnClick;
 
         mImpressionData = builder.impressionData;
-        mClickTrackingUrl = builder.clickTrackingUrl;
+        mClickTrackingUrls = builder.clickTrackingUrls;
         mImpressionTrackingUrls = builder.impressionTrackingUrls;
         mFailoverUrl = builder.failoverUrl;
-        mBeforeLoadUrl = builder.beforeLoadUrl;
+        mBeforeLoadUrls = builder.beforeLoadUrls;
         mAfterLoadUrls = builder.afterLoadUrls;
         mAfterLoadSuccessUrls = builder.afterLoadSuccessUrls;
         mAfterLoadFailUrls = builder.afterLoadFailUrls;
@@ -122,14 +131,17 @@ public class AdResponse implements Serializable {
         mHeight = builder.height;
         mAdTimeoutDelayMillis = builder.adTimeoutDelayMillis;
         mRefreshTimeMillis = builder.refreshTimeMillis;
+        mBannerImpressionMinVisibleDips = builder.bannerImpressionMinVisibleDips;
+        mBannerImpressionMinVisibleMs = builder.bannerImpressionMinVisibleMs;
         mDspCreativeId = builder.dspCreativeId;
         mResponseBody = builder.responseBody;
         mJsonBody = builder.jsonBody;
-        mCustomEventClassName = builder.customEventClassName;
+        mBaseAdClassName = builder.customEventClassName;
         mBrowserAgent = builder.browserAgent;
         mServerExtras = builder.serverExtras;
         mTimestamp = DateAndTime.now().getTime();
         mAllowCustomClose = builder.allowCustomClose;
+        mViewabilityVendors = builder.viewabilityVendors;
     }
 
     public boolean hasJson() {
@@ -205,9 +217,9 @@ public class AdResponse implements Serializable {
         return mImpressionData;
     }
 
-    @Nullable
-    public String getClickTrackingUrl() {
-        return mClickTrackingUrl;
+    @NonNull
+    public List<String> getClickTrackingUrls() {
+        return mClickTrackingUrls;
     }
 
     @NonNull
@@ -221,9 +233,9 @@ public class AdResponse implements Serializable {
         return mFailoverUrl;
     }
 
-    @Nullable
-    public String getBeforeLoadUrl() {
-        return mBeforeLoadUrl;
+    @NonNull
+    public List<String> getBeforeLoadUrls() {
+        return mBeforeLoadUrls;
     }
 
     @NonNull
@@ -270,13 +282,29 @@ public class AdResponse implements Serializable {
     }
 
     @Nullable
+    public String getImpressionMinVisibleDips() {
+        return mBannerImpressionMinVisibleDips;
+    }
+
+    @Nullable
+    public String getImpressionMinVisibleMs() {
+        return mBannerImpressionMinVisibleMs;
+    }
+
+    @Nullable
     public String getDspCreativeId() {
         return mDspCreativeId;
     }
 
     @Nullable
+    @Deprecated
     public String getCustomEventClassName() {
-        return mCustomEventClassName;
+        return getBaseAdClassName();
+    }
+
+    @Nullable
+    public String getBaseAdClassName() {
+        return mBaseAdClassName;
     }
 
     @Nullable
@@ -296,6 +324,11 @@ public class AdResponse implements Serializable {
         return mAllowCustomClose;
     }
 
+    @Nullable
+    public Set<ViewabilityVendor> getViewabilityVendors() {
+        return mViewabilityVendors;
+    }
+
     public Builder toBuilder() {
         return new Builder()
                 .setAdType(mAdType)
@@ -307,24 +340,28 @@ public class AdResponse implements Serializable {
                 .setRewardedVideoCompletionUrl(mRewardedVideoCompletionUrl)
                 .setRewardedDuration(mRewardedDuration)
                 .setShouldRewardOnClick(mShouldRewardOnClick)
+                .setAllowCustomClose(mAllowCustomClose)
                 .setImpressionData(mImpressionData)
-                .setClickTrackingUrl(mClickTrackingUrl)
+                .setClickTrackingUrls(mClickTrackingUrls)
                 .setImpressionTrackingUrls(mImpressionTrackingUrls)
                 .setFailoverUrl(mFailoverUrl)
-                .setBeforeLoadUrl(mBeforeLoadUrl)
+                .setBeforeLoadUrls(mBeforeLoadUrls)
                 .setAfterLoadUrls(mAfterLoadUrls)
                 .setAfterLoadSuccessUrls(mAfterLoadSuccessUrls)
                 .setAfterLoadFailUrls(mAfterLoadFailUrls)
                 .setDimensions(mWidth, mHeight)
                 .setAdTimeoutDelayMilliseconds(mAdTimeoutDelayMillis)
                 .setRefreshTimeMilliseconds(mRefreshTimeMillis)
+                .setBannerImpressionMinVisibleDips(mBannerImpressionMinVisibleDips)
+                .setBannerImpressionMinVisibleMs(mBannerImpressionMinVisibleMs)
                 .setDspCreativeId(mDspCreativeId)
                 .setResponseBody(mResponseBody)
                 .setJsonBody(mJsonBody)
-                .setCustomEventClassName(mCustomEventClassName)
+                .setBaseAdClassName(mBaseAdClassName)
                 .setBrowserAgent(mBrowserAgent)
                 .setAllowCustomClose(mAllowCustomClose)
-                .setServerExtras(mServerExtras);
+                .setServerExtras(mServerExtras)
+                .setViewabilityVendors(mViewabilityVendors);
     }
 
     public static class Builder {
@@ -342,10 +379,10 @@ public class AdResponse implements Serializable {
         private boolean shouldRewardOnClick;
 
         private ImpressionData impressionData;
-        private String clickTrackingUrl;
+        private List<String> clickTrackingUrls = new ArrayList<>();
         private List<String> impressionTrackingUrls = new ArrayList<>();
         private String failoverUrl;
-        private String beforeLoadUrl;
+        private List<String> beforeLoadUrls = new ArrayList<>();
         private List<String> afterLoadUrls = new ArrayList<>();
         private List<String> afterLoadSuccessUrls = new ArrayList<>();
         private List<String> afterLoadFailUrls = new ArrayList<>();
@@ -355,6 +392,8 @@ public class AdResponse implements Serializable {
         private Integer height;
         private Integer adTimeoutDelayMillis;
         private Integer refreshTimeMillis;
+        private String bannerImpressionMinVisibleDips;
+        private String bannerImpressionMinVisibleMs;
         private String dspCreativeId;
 
         private String responseBody;
@@ -366,6 +405,8 @@ public class AdResponse implements Serializable {
         private Map<String, String> serverExtras = new TreeMap<>();
 
         private boolean allowCustomClose = false;
+
+        private Set<ViewabilityVendor> viewabilityVendors = null;
 
         public Builder setAdType(@Nullable final String adType) {
             this.adType = adType;
@@ -430,8 +471,10 @@ public class AdResponse implements Serializable {
             return this;
         }
 
-        public Builder setClickTrackingUrl(@Nullable final String clickTrackingUrl) {
-            this.clickTrackingUrl = clickTrackingUrl;
+        public Builder setClickTrackingUrls(@NonNull final List<String> clickTrackingUrls) {
+            Preconditions.checkNotNull(clickTrackingUrls);
+
+            this.clickTrackingUrls = clickTrackingUrls;
             return this;
         }
 
@@ -447,8 +490,10 @@ public class AdResponse implements Serializable {
             return this;
         }
 
-        public Builder setBeforeLoadUrl(@Nullable final String beforeLoadUrl) {
-            this.beforeLoadUrl = beforeLoadUrl;
+        public Builder setBeforeLoadUrls(@NonNull final List<String> beforeLoadUrls) {
+            Preconditions.checkNotNull(beforeLoadUrls);
+
+            this.beforeLoadUrls = beforeLoadUrls;
             return this;
         }
 
@@ -492,6 +537,16 @@ public class AdResponse implements Serializable {
             return this;
         }
 
+        public Builder setBannerImpressionMinVisibleDips(@Nullable final String bannerImpressionMinVisibleDips) {
+            this.bannerImpressionMinVisibleDips = bannerImpressionMinVisibleDips;
+            return this;
+        }
+
+        public Builder setBannerImpressionMinVisibleMs(@Nullable final String bannerImpressionMinVisibleMs) {
+            this.bannerImpressionMinVisibleMs = bannerImpressionMinVisibleMs;
+            return this;
+        }
+
         public Builder setDspCreativeId(@Nullable final String dspCreativeId) {
             this.dspCreativeId = dspCreativeId;
             return this;
@@ -507,7 +562,7 @@ public class AdResponse implements Serializable {
             return this;
         }
 
-        public Builder setCustomEventClassName(@Nullable final String customEventClassName) {
+        public Builder setBaseAdClassName(@Nullable final String customEventClassName) {
             this.customEventClassName = customEventClassName;
             return this;
         }
@@ -526,8 +581,13 @@ public class AdResponse implements Serializable {
             return this;
         }
 
-        Builder setAllowCustomClose(final boolean allow) {
+        public Builder setAllowCustomClose(final boolean allow) {
             allowCustomClose = allow;
+            return this;
+        }
+
+        public Builder setViewabilityVendors(@Nullable final Set<ViewabilityVendor> viewabilityVendors) {
+            this.viewabilityVendors = viewabilityVendors;
             return this;
         }
 

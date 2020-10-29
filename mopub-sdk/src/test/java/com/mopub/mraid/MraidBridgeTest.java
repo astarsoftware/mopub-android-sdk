@@ -9,7 +9,6 @@ import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebSettings;
 import android.webkit.WebViewClient;
 
-import com.mopub.common.AdReport;
 import com.mopub.common.CloseableLayout;
 import com.mopub.common.Constants;
 import com.mopub.common.test.support.SdkTestRunner;
@@ -51,8 +50,6 @@ public class MraidBridgeTest {
     private MraidNativeCommandHandler mockNativeCommandHandler;
     @Mock
     private MraidBridgeListener mockBridgeListener;
-    @Mock
-    private AdReport mockAdReport;
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private MraidWebView mockBannerWebView;
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
@@ -72,10 +69,10 @@ public class MraidBridgeTest {
     public void setUp() {
         activity = Robolectric.buildActivity(Activity.class).create().get();
 
-        subjectBanner = new MraidBridge(mockAdReport, PlacementType.INLINE, mockNativeCommandHandler);
+        subjectBanner = new MraidBridge(PlacementType.INLINE, mockNativeCommandHandler, false);
         subjectBanner.setMraidBridgeListener(mockBridgeListener);
 
-        subjectInterstitial = new MraidBridge(mockAdReport, PlacementType.INTERSTITIAL, mockNativeCommandHandler);
+        subjectInterstitial = new MraidBridge(PlacementType.INTERSTITIAL, mockNativeCommandHandler, false);
         subjectInterstitial.setMraidBridgeListener(mockBridgeListener);
     }
 
@@ -116,6 +113,7 @@ public class MraidBridgeTest {
         bannerWebViewClientCaptor.getValue().onPageFinished(mockBannerWebView, "fake://url");
 
         verify(mockBridgeListener).onPageLoaded();
+        verify(mockBannerWebView).setPageLoaded();
     }
 
     @Test
@@ -263,7 +261,7 @@ public class MraidBridgeTest {
     public void runCommand_requiresClick_notClicked_shouldThrowException()
             throws MraidCommandException {
         attachWebViews();
-        subjectBanner = new MraidBridge(mockAdReport, PlacementType.INLINE);
+        subjectBanner = new MraidBridge(PlacementType.INLINE, false);
         subjectBanner.attachView(mockBannerWebView);
         subjectBanner.setClicked(false);
         Map<String, String> params = new HashMap<>();
@@ -319,7 +317,10 @@ public class MraidBridgeTest {
     @Test
     public void runCommand_useCustomClose_withShouldUseCustomCloseTrue_shouldPassTrue()
             throws MraidCommandException {
-        when(mockAdReport.shouldAllowCustomClose()).thenReturn(true);
+        subjectBanner = new MraidBridge(PlacementType.INLINE, mockNativeCommandHandler, true);
+        subjectBanner.setMraidBridgeListener(mockBridgeListener);
+        subjectInterstitial = new MraidBridge(PlacementType.INTERSTITIAL, mockNativeCommandHandler, true);
+        subjectInterstitial.setMraidBridgeListener(mockBridgeListener);
         attachWebViews();
         subjectBanner.setClicked(true);
         Map<String, String> params = new HashMap<>();
@@ -333,7 +334,10 @@ public class MraidBridgeTest {
     @Test
     public void runCommand_useCustomClose_withShouldUseCustomCloseFalse_shouldPassFalse()
             throws MraidCommandException {
-        when(mockAdReport.shouldAllowCustomClose()).thenReturn(true);
+        subjectBanner = new MraidBridge(PlacementType.INLINE, mockNativeCommandHandler, true);
+        subjectBanner.setMraidBridgeListener(mockBridgeListener);
+        subjectInterstitial = new MraidBridge(PlacementType.INTERSTITIAL, mockNativeCommandHandler, true);
+        subjectInterstitial.setMraidBridgeListener(mockBridgeListener);
         attachWebViews();
         subjectBanner.setClicked(true);
         Map<String, String> params = new HashMap<>();
@@ -347,7 +351,6 @@ public class MraidBridgeTest {
     @Test
     public void runCommand_useCustomClose_withShouldUseCustomCloseTrue_withAllowCustomCloseFalse_shouldPassFalse()
             throws MraidCommandException {
-        when(mockAdReport.shouldAllowCustomClose()).thenReturn(false);
         attachWebViews();
         subjectBanner.setClicked(true);
         Map<String, String> params = new HashMap<>();
@@ -361,7 +364,10 @@ public class MraidBridgeTest {
     @Test
     public void runCommand_resize_withAllowCustomClose_shouldCallListener()
             throws MraidCommandException {
-        when(mockAdReport.shouldAllowCustomClose()).thenReturn(true);
+        subjectBanner = new MraidBridge(PlacementType.INLINE, mockNativeCommandHandler, true);
+        subjectBanner.setMraidBridgeListener(mockBridgeListener);
+        subjectInterstitial = new MraidBridge(PlacementType.INTERSTITIAL, mockNativeCommandHandler, true);
+        subjectInterstitial.setMraidBridgeListener(mockBridgeListener);
         attachWebViews();
         subjectBanner.setClicked(true);
         Map<String, String> params = new HashMap<>();
@@ -379,7 +385,6 @@ public class MraidBridgeTest {
     @Test
     public void runCommand_resize_withoutAllowCustomClose_shouldCallListener()
             throws MraidCommandException {
-        when(mockAdReport.shouldAllowCustomClose()).thenReturn(false);
         attachWebViews();
         subjectBanner.setClicked(true);
         Map<String, String> params = new HashMap<>();
@@ -397,7 +402,10 @@ public class MraidBridgeTest {
     @Test
     public void runCommand_expand_withAllowCustomClose_shouldCallListener()
             throws MraidCommandException {
-        when(mockAdReport.shouldAllowCustomClose()).thenReturn(true);
+        subjectBanner = new MraidBridge(PlacementType.INLINE, mockNativeCommandHandler, true);
+        subjectBanner.setMraidBridgeListener(mockBridgeListener);
+        subjectInterstitial = new MraidBridge(PlacementType.INTERSTITIAL, mockNativeCommandHandler, true);
+        subjectInterstitial.setMraidBridgeListener(mockBridgeListener);
         attachWebViews();
         subjectBanner.setClicked(true);
         Map<String, String> params = new HashMap<>();
@@ -411,7 +419,6 @@ public class MraidBridgeTest {
     @Test
     public void runCommand_expand_withoutAllowCustomClose_shouldCallListener()
             throws MraidCommandException {
-        when(mockAdReport.shouldAllowCustomClose()).thenReturn(false);
         attachWebViews();
         subjectBanner.setClicked(true);
         Map<String, String> params = new HashMap<>();
@@ -425,7 +432,10 @@ public class MraidBridgeTest {
     @Test
     public void runCommand_expand_withUrl_withAllowCustomClose_shouldCallListener()
             throws MraidCommandException {
-        when(mockAdReport.shouldAllowCustomClose()).thenReturn(true);
+        subjectBanner = new MraidBridge(PlacementType.INLINE, mockNativeCommandHandler, true);
+        subjectBanner.setMraidBridgeListener(mockBridgeListener);
+        subjectInterstitial = new MraidBridge(PlacementType.INTERSTITIAL, mockNativeCommandHandler, true);
+        subjectInterstitial.setMraidBridgeListener(mockBridgeListener);
         attachWebViews();
         subjectBanner.setClicked(true);
         Map<String, String> params = new HashMap<>();
@@ -443,7 +453,6 @@ public class MraidBridgeTest {
     @Test
     public void runCommand_expand_withUrl_withoutAllowCustomClose_shouldCallListener()
             throws MraidCommandException {
-        when(mockAdReport.shouldAllowCustomClose()).thenReturn(false);
         attachWebViews();
         subjectBanner.setClicked(true);
         Map<String, String> params = new HashMap<>();

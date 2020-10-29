@@ -3,64 +3,53 @@
 // http://www.mopub.com/legal/sdk-license-agreement/
 
 apply plugin: 'com.android.library'
-apply plugin: 'com.novoda.bintray-release'
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'maven-publish'
 
 def siteUrl = 'https://github.com/mopub/mopub-android-sdk'
 def gitUrl = 'https://github.com/mopub/mopub-android-sdk.git'
+def issuesUrl = 'https://github.com/mopub/mopub-android-sdk/issues'
 def bintrayRepo = 'mopub-android-sdk'
 def bintrayUserOrg = 'mopub'
 // Put your credentials (bintray.user, bintray.apikey) in ~/.gradle/gradle.properties
 
-if (JavaVersion.current().isJava8Compatible()) {
-    allprojects {
-        tasks.withType(Javadoc) {
-            // The javadoc task in Java 8 is too strict and throws unnecessary syntax errors
-            // if our comments fail to abide by the new standard.
-            options.addStringOption('Xdoclint:none', '-quiet')
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    archiveClassifier.set('sources')
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                artifact sourcesJar
+
+                groupId = project.group
+                artifactId = project.ext.projectName
+                version = project.version
+            }
         }
     }
-}
 
-android.libraryVariants.all { variant ->
-    def name = variant.buildType.name
-    def task = project.tasks.create "jar${name.capitalize()}", Jar
-
-    task.dependsOn variant.javaCompile
-    task.from variant.javaCompile.destinationDir
-    artifacts.add('archives', task)
-}
-
-android.libraryVariants.all { variant ->
-    task("generate${variant.name.capitalize()}Javadoc", type: Javadoc) {
-        title = project.ext.displayName
-        description "Generates Javadoc for $variant.name."
-        source = variant.javaCompile.source
-        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-        classpath += configurations.compile
-
-        options {
-            links "http://docs.oracle.com/javase/7/docs/api/"
-            linksOffline "https://developer.android.com/reference","${android.sdkDirectory}/docs/reference"
+    bintray {
+        user = project.hasProperty("bintray.user") ? project.getProperty("bintray.user") : ""
+        key = project.hasProperty("bintray.apikey") ? project.getProperty("bintray.apikey") : ""
+        publications = ['release']
+        pkg {
+            repo = bintrayRepo
+            name = project.ext.uploadName
+            userOrg = bintrayUserOrg
+            vcsUrl = gitUrl
+            websiteUrl = siteUrl
+            issueTrackerUrl = issuesUrl
+            desc = project.description
         }
-
-        exclude '**/BuildConfig.java'
-        exclude '**/R.java'
+        dryRun = false
+        publish = true
     }
-}
-
-publish {
-    repoName = bintrayRepo
-    userOrg = bintrayUserOrg
-    groupId = project.group
-    artifactId = project.ext.projectName
-    uploadName = project.ext.uploadName
-    publishVersion = project.version
-    desc = project.description
-    website = siteUrl
-    repository = gitUrl
-
-    bintrayUser = project.hasProperty("bintray.user") ? project.getProperty("bintray.user") : ""
-    bintrayKey = project.hasProperty("bintray.apikey") ? project.getProperty("bintray.apikey") : ""
-
-    dryRun = false
 }

@@ -6,6 +6,7 @@
     <!-- This is added as a workaround for the manifest merger duplicating exoplayer
          and play services permissions. -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <uses-feature
         android:name="android.hardware.bluetooth"
@@ -13,6 +14,9 @@
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false"  />
     <uses-feature
         android:name="android.hardware.microphone"
         android:required="false" />
@@ -49,6 +53,9 @@
                     android:scheme="mopub" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".qrcode.BarcodeCaptureActivity"
+            android:label="Read QR Code"/>
 
         <!-- Google Ads -->
         <!-- note: this is the sample app id from Google's documentation -->

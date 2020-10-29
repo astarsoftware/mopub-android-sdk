@@ -94,7 +94,7 @@ public class AdLoaderRewardedVideoTest {
 
         //validation for all functions in AdLoaderRewardedVideo
         assertThat(subject.getFailurl()).isNull();
-        assertThat(subject.getClickUrl()).isNull();
+        assertThat(subject.getClickUrls()).isEmpty();
         assertThat(subject.getImpressionUrls()).isEmpty();
         assertThat(subject.getLastDeliveredResponse()).isNull();
     }
@@ -120,7 +120,7 @@ public class AdLoaderRewardedVideoTest {
 
         //validation for all functions in AdLoaderRewardedVideo
         assertThat(subject.getFailurl()).isEqualTo(serverJson.getString(ResponseHeader.FAIL_URL.getKey()));
-        assertThat(subject.getClickUrl()).isEqualTo(firstAdMetadata.getString(ResponseHeader.CLICK_TRACKING_URL.getKey()));
+        assertThat(subject.getClickUrls().get(0)).isEqualTo(firstAdMetadata.getString(ResponseHeader.CLICK_TRACKING_URL.getKey()));
         assertThat(subject.getImpressionUrls().get(0)).isEqualTo(firstAdMetadata.getString(ResponseHeader.IMPRESSION_URL.getKey()));
         assertThat(subject.getLastDeliveredResponse()).isNotNull();
     }
@@ -247,7 +247,7 @@ public class AdLoaderRewardedVideoTest {
                 "        \"x-banner-impression-min-pixels\": \"\",\n" +
                 "        \"x-before-load-url\": \"\",\n" +
                 "        \"x-browser-agent\": -1,\n" +
-                "        \"x-clickthrough\": \"click-url\",\n" +
+                "        \"clicktrackers\": \"click-url\",\n" +
                 "        \"x-creativeid\": \"4652bd83d89a40c5a4e276dbf101499f\",\n" +
                 "        \"x-custom-event-class-data\": \"\",\n" +
                 "        \"x-custom-event-class-name\": \"\",\n" +
@@ -271,7 +271,6 @@ public class AdLoaderRewardedVideoTest {
                 "        \"x-rewarded-video-currency-name\": \"Coins\",\n" +
                 "        \"x-vastvideoplayer\": \"\",\n" +
                 "        \"x-video-trackers\": \"\",\n" +
-                "        \"x-video-viewability-trackers\": \"\",\n" +
                 "        \"x-width\": -1\n" +
                 "      }\n" +
                 "    }\n" +

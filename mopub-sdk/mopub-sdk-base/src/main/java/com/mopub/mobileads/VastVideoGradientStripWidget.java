@@ -13,7 +13,6 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.mopub.common.logging.MoPubLog;
-import com.mopub.common.util.DeviceUtils;
 import com.mopub.common.util.Dips;
 import com.mopub.mobileads.resource.DrawableConstants;
 
@@ -23,15 +22,17 @@ public class VastVideoGradientStripWidget extends ImageView {
     private int mVisibilityForCompanionAd;
     private boolean mHasCompanionAd;
     private boolean mIsVideoComplete;
+    private boolean mAlwaysVisibleDuringVideo;
 
     public VastVideoGradientStripWidget(@NonNull final Context context,
             @NonNull final GradientDrawable.Orientation gradientOrientation,
             final boolean hasCompanionAd, final int visibilityForCompanionAd, final int layoutVerb,
-            final int layoutAnchor) {
+            final int layoutAnchor, final boolean alwaysVisibleDuringVideo) {
         super(context);
 
         mVisibilityForCompanionAd = visibilityForCompanionAd;
         mHasCompanionAd = hasCompanionAd;
+        mAlwaysVisibleDuringVideo = alwaysVisibleDuringVideo;
 
         final GradientDrawable gradientDrawable = new GradientDrawable(gradientOrientation,
                 new int[] {DrawableConstants.GradientStrip.START_COLOR,
@@ -68,6 +69,11 @@ public class VastVideoGradientStripWidget extends ImageView {
                 setVisibility(View.GONE);
             }
 
+            return;
+        }
+
+        if (mAlwaysVisibleDuringVideo) {
+            setVisibility(View.VISIBLE);
             return;
         }
 

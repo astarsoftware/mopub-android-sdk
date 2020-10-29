@@ -38,6 +38,11 @@ public class SyncUrlGenerator extends BaseUrlGenerator {
     private static final String CACHED_VENDOR_LIST_IAB_HASH_KEY = "cached_vendor_list_iab_hash";
 
     /**
+     * User consented ifa key.
+     */
+    protected static final String CONSENT_IFA_KEY = "consent_ifa";
+
+    /**
      * Any other server data that the server wants for the SDK to hang on to.
      */
     private static final String EXTRAS_KEY = "extras";
@@ -49,7 +54,7 @@ public class SyncUrlGenerator extends BaseUrlGenerator {
 
     @NonNull private final Context mContext;
     @Nullable private String mAdUnitId;
-    @Nullable private String mUdid;
+    @Nullable private String mConsentedIfa;
     @Nullable private String mLastChangedMs;
     @Nullable private String mLastConsentStatus;
     @NonNull private final String mCurrentConsentStatus;
@@ -76,8 +81,8 @@ public class SyncUrlGenerator extends BaseUrlGenerator {
         return this;
     }
 
-    public SyncUrlGenerator withUdid(@Nullable final String udid) {
-        mUdid = udid;
+    public SyncUrlGenerator withConsentedIfa(@Nullable final String consentedIfa) {
+        mConsentedIfa = consentedIfa;
         return this;
     }
 
@@ -151,7 +156,7 @@ public class SyncUrlGenerator extends BaseUrlGenerator {
         addParam(CONSENTED_PRIVACY_POLICY_VERSION_KEY, mConsentedPrivacyPolicyVersion);
         addParam(CACHED_VENDOR_LIST_IAB_HASH_KEY, mCachedVendorListIabHash);
         addParam(EXTRAS_KEY, mExtras);
-        addParam(UDID_KEY, mUdid);
+        addParam(CONSENT_IFA_KEY, mConsentedIfa);
         addParam(GDPR_APPLIES, mGdprApplies);
         addParam(FORCE_GDPR_APPLIES, mForceGdprApplies);
         addParam(FORCED_GDPR_APPLIES_CHANGED, mForceGdprAppliesChanged);

@@ -23,11 +23,14 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(SdkTestRunner.class)
 public class ContentDownloadAnalyticsTest {
+    private static final List<String> BEFORE_LOAD_URLS = Arrays.asList("beforeload1", "beforeload2");
+
     private static final List<String> AFTER_LOAD_URLS =
             Arrays.asList("https://ads.mopub.com/m/load?load_duration_ms=%%LOAD_DURATION_MS%%&load_result=%%LOAD_RESULT%%");
 
@@ -50,7 +53,7 @@ public class ContentDownloadAnalyticsTest {
     @Before
     public void setup() {
         activity = Robolectric.buildActivity(Activity.class).create().get();
-        when(mockAdResponse.getBeforeLoadUrl()).thenReturn("before_load_url");
+        when(mockAdResponse.getBeforeLoadUrls()).thenReturn(BEFORE_LOAD_URLS);
         when(mockAdResponse.getAfterLoadUrls()).thenReturn(AFTER_LOAD_URLS);
         when(mockAdResponse.getAfterLoadSuccessUrls()).thenReturn(AFTER_LOAD_SUCCESS_URLS);
         when(mockAdResponse.getAfterLoadFailUrls()).thenReturn(AFTER_LOAD_FAIL_URLS);
@@ -64,10 +67,12 @@ public class ContentDownloadAnalyticsTest {
         subject.reportBeforeLoad(activity);
 
         assertThat(subject.mBeforeLoadTime).isNotZero();
-        ArgumentCaptor<MoPubRequest> reqeustCaptor = ArgumentCaptor.forClass(MoPubRequest.class);
-        verify(mockRequestQueue).add(reqeustCaptor.capture());
-        MoPubRequest moPubRequest = reqeustCaptor.getValue();
-        assertThat(moPubRequest.getOriginalUrl()).isEqualTo("before_load_url");
+        ArgumentCaptor<MoPubRequest> requestCaptor = ArgumentCaptor.forClass(MoPubRequest.class);
+        verify(mockRequestQueue, times(2)).add(requestCaptor.capture());
+        MoPubRequest moPubRequest = requestCaptor.getAllValues().get(0);
+        assertThat(moPubRequest.getOriginalUrl()).isEqualTo("beforeload1");
+        moPubRequest = requestCaptor.getAllValues().get(1);
+        assertThat(moPubRequest.getOriginalUrl()).isEqualTo("beforeload2");
     }
 
     @Test
@@ -111,7 +116,7 @@ public class ContentDownloadAnalyticsTest {
 
     @Test
     public void reportAfterLoad_withEmptyUrl_shouldNotSendRequest(){
-        when(mockInvalidAdResponse.getBeforeLoadUrl()).thenReturn("before_load_url");
+        when(mockInvalidAdResponse.getBeforeLoadUrls()).thenReturn(BEFORE_LOAD_URLS);
         subject = new ContentDownloadAnalytics(mockInvalidAdResponse);
         subject.reportBeforeLoad(activity);
         reset(mockRequestQueue);
@@ -123,7 +128,7 @@ public class ContentDownloadAnalyticsTest {
 
     @Test
     public void reportAfterLoadSuccess_withEmptyUrl_shouldNotSendRequest(){
-        when(mockInvalidAdResponse.getBeforeLoadUrl()).thenReturn("before_load_url");
+        when(mockInvalidAdResponse.getBeforeLoadUrls()).thenReturn(BEFORE_LOAD_URLS);
         subject = new ContentDownloadAnalytics(mockInvalidAdResponse);
         subject.reportBeforeLoad(activity);
         reset(mockRequestQueue);
@@ -135,7 +140,7 @@ public class ContentDownloadAnalyticsTest {
 
     @Test
     public void reportAfterLoadFail_withEmptyUrl_shouldNotSendRequest(){
-        when(mockInvalidAdResponse.getBeforeLoadUrl()).thenReturn("before_load_url");
+        when(mockInvalidAdResponse.getBeforeLoadUrls()).thenReturn(BEFORE_LOAD_URLS);
         subject = new ContentDownloadAnalytics(mockInvalidAdResponse);
         subject.reportBeforeLoad(activity);
         reset(mockRequestQueue);

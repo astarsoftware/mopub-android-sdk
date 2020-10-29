@@ -10,6 +10,9 @@ import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.WindowManager;
 import android.webkit.WebView;
@@ -23,6 +26,8 @@ import com.mopub.mobileads.util.WebViews;
 public class BaseWebView extends WebView {
     private static boolean sDeadlockCleared = false;
     protected boolean mIsDestroyed;
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    protected boolean delayDestroy = false;
 
     public BaseWebView(Context context) {
         /*
@@ -61,6 +66,15 @@ public class BaseWebView extends WebView {
         // Even after removing from the parent, WebViewClassic can leak because of a static
         // reference from HTML5VideoViewProcessor. Removing children fixes this problem.
         removeAllViews();
+
+        if (delayDestroy) {
+            handler.postDelayed(this::delayedDestroy, 1000);
+        } else {
+            super.destroy();
+        }
+    }
+
+    private void delayedDestroy() {
         super.destroy();
     }
 
@@ -125,8 +139,8 @@ public class BaseWebView extends WebView {
         }
     }
 
+    @Deprecated
     @VisibleForTesting
-    @Deprecated // for testing
     void setIsDestroyed(boolean isDestroyed) {
         mIsDestroyed = isDestroyed;
     }

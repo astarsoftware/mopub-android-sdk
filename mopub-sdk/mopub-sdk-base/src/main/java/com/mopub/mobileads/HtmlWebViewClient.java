@@ -5,20 +5,17 @@
 package com.mopub.mobileads;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import androidx.annotation.NonNull;
 
 import com.mopub.common.UrlAction;
 import com.mopub.common.UrlHandler;
 
 import java.util.EnumSet;
 
-import static com.mopub.mobileads.MoPubErrorCode.UNSPECIFIED;
-
 class HtmlWebViewClient extends WebViewClient {
-    static final String MOPUB_FINISH_LOAD = "mopub://finishLoad";
-    static final String MOPUB_FAIL_LOAD = "mopub://failLoad";
 
     private final EnumSet<UrlAction> SUPPORTED_URL_ACTIONS = EnumSet.of(
             UrlAction.HANDLE_MOPUB_SCHEME,
@@ -33,17 +30,16 @@ class HtmlWebViewClient extends WebViewClient {
 
     private final Context mContext;
     private final String mDspCreativeId;
-    private final HtmlWebViewListener mHtmlWebViewListener;
+    private BaseHtmlWebView.BaseWebViewListener mBaseWebViewListener;
     private final BaseHtmlWebView mHtmlWebView;
-    private final String mClickthroughUrl;
 
-    HtmlWebViewClient(HtmlWebViewListener htmlWebViewListener,
-            BaseHtmlWebView htmlWebView, String clickthrough, String dspCreativeId) {
-        mHtmlWebViewListener = htmlWebViewListener;
+    HtmlWebViewClient(BaseHtmlWebView htmlWebView,
+                      BaseHtmlWebView.BaseWebViewListener baseWebViewListener,
+                      String dspCreativeId) {
         mHtmlWebView = htmlWebView;
-        mClickthroughUrl = clickthrough;
         mDspCreativeId = dspCreativeId;
         mContext = htmlWebView.getContext();
+        mBaseWebViewListener = baseWebViewListener;
     }
 
     @Override
@@ -56,7 +52,9 @@ class HtmlWebViewClient extends WebViewClient {
                     public void urlHandlingSucceeded(@NonNull String url,
                             @NonNull UrlAction urlAction) {
                         if (mHtmlWebView.wasClicked()) {
-                            mHtmlWebViewListener.onClicked();
+                            if (mBaseWebViewListener != null) {
+                                mBaseWebViewListener.onClicked();
+                            }
                             mHtmlWebView.onResetUserClick();
                         }
                     }
@@ -69,22 +67,35 @@ class HtmlWebViewClient extends WebViewClient {
                 .withMoPubSchemeListener(new UrlHandler.MoPubSchemeListener() {
                     @Override
                     public void onFinishLoad() {
-                        mHtmlWebViewListener.onLoaded(mHtmlWebView);
+                        // Called when window.location="mopub://finishLoad"
+                        mHtmlWebView.setPageLoaded();
+                        if (mBaseWebViewListener != null) {
+                            mBaseWebViewListener.onLoaded(mHtmlWebView);
+                        }
                     }
 
                     @Override
                     public void onClose() {
-                        mHtmlWebViewListener.onCollapsed();
+                        if (mBaseWebViewListener != null) {
+                            mBaseWebViewListener.onClose();
+                        }
                     }
 
                     @Override
                     public void onFailLoad() {
+                        // Called when window.location="mopub://failLoad"
                         mHtmlWebView.stopLoading();
-                        mHtmlWebViewListener.onFailed(UNSPECIFIED);
+                        if (mBaseWebViewListener != null) {
+                            mBaseWebViewListener.onFailedToLoad(MoPubErrorCode.HTML_LOAD_ERROR);
+                        }
                     }
 
                     @Override
-                    public void onCrash() { }
+                    public void onCrash() {
+                        if (mBaseWebViewListener != null) {
+                            mBaseWebViewListener.onFailed();
+                        }
+                    }
                 })
                 .build().handleUrl(mContext, url, mHtmlWebView.wasClicked());
         return true;

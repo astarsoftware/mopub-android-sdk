@@ -6,7 +6,7 @@
     android:background="@android:color/white"
     android:textDirection="locale">
 
-    <com.facebook.ads.AdIconView
+    <com.facebook.ads.MediaView
         android:id="@+id/native_icon"
         android:layout_width="64dp"
         android:layout_height="64dp"

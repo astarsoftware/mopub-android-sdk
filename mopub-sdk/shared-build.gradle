@@ -15,19 +15,29 @@ repositories {
 }
 
 project.group = 'com.mopub'
-project.version = '5.12.0'
+project.version = '5.14.0'
 
 android {
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        freeCompilerArgs = ['-Xjvm-default=enable']
+        jvmTarget = '1.8'
+    }
+
     compileSdkVersion rootProject.ext.compileSdkVersion
     lintOptions { abortOnError false }
 
     defaultConfig {
-		versionCode 79
-		versionName version
-		minSdkVersion rootProject.ext.minSdkVersion
-		targetSdkVersion rootProject.ext.targetSdkVersion
-		consumerProguardFiles project(':ThirdParty:Java:Android:MoPub:mopub-sdk').file('proguard.txt')
-	}
+        versionCode 82
+        versionName version
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        consumerProguardFiles project(':ThirdParty:Java:Android:MoPub:mopub-sdk').file('proguard.txt')
+    }
 
     sourceSets {
         main {

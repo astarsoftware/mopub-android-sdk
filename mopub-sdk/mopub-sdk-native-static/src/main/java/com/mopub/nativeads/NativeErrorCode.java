@@ -17,6 +17,7 @@ public enum NativeErrorCode implements MoPubError {
     UNEXPECTED_RESPONSE_CODE("Received unexpected response code from server."),
     SERVER_ERROR_RESPONSE_CODE("Server returned erroneous response code."),
     CONNECTION_ERROR("Network is unavailable."),
+    TOO_MANY_REQUESTS("Too many failed requests have been made. Please try again later."),
     UNSPECIFIED("Unspecified error occurred."),
 
     NETWORK_INVALID_REQUEST("Third-party network received invalid request."),

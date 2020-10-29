@@ -17,12 +17,15 @@ import androidx.annotation.Nullable;
 
 import com.mopub.common.MoPubHttpUrlConnection;
 import com.mopub.common.Preconditions;
+import com.mopub.common.ViewabilityVendor;
 import com.mopub.common.VisibleForTesting;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.Dips;
 import com.mopub.common.util.Streams;
 import com.mopub.common.util.Strings;
 import com.mopub.network.Networking;
+
+import org.w3c.dom.Node;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -32,10 +35,8 @@ import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.ERROR_WITH_THROWABLE;
@@ -243,6 +244,7 @@ public class VastXmlManagerAggregator extends AsyncTask<String, Void, VastVideoC
                 }
                 populateVideoViewabilityTracker(vastWrapperXmlManager, vastVideoConfig);
                 populateViewabilityMetadata(vastWrapperXmlManager, vastVideoConfig);
+                populateAdVerificationsOmid(vastWrapperXmlManager.mNode, vastVideoConfig);
 
                 final List<VastCompanionAdXmlManager> companionAdXmlManagers =
                         vastWrapperXmlManager.getCompanionAdXmlManagers();
@@ -331,6 +333,7 @@ public class VastXmlManagerAggregator extends AsyncTask<String, Void, VastVideoC
                 vastVideoConfig.addErrorTrackers(errorTrackers);
                 populateVideoViewabilityTracker(vastInLineXmlManager, vastVideoConfig);
                 populateViewabilityMetadata(vastInLineXmlManager, vastVideoConfig);
+                populateAdVerificationsOmid(vastInLineXmlManager.mNode, vastVideoConfig);
 
                 return vastVideoConfig;
             }
@@ -374,14 +377,17 @@ public class VastXmlManagerAggregator extends AsyncTask<String, Void, VastVideoC
                     vastExtensionParentXmlManager.getVastExtensionXmlManagers();
             for (VastExtensionXmlManager vastExtensionXmlManager : vastExtensionXmlManagers) {
                 if (vastExtensionXmlManager != null) {
-                    final Set<String> avid = vastExtensionXmlManager.getAvidJavaScriptResources();
-                    vastVideoConfig.addAvidJavascriptResources(avid);
-
-                    final Set<String> moat = vastExtensionXmlManager.getMoatImpressionPixels();
-                    vastVideoConfig.addMoatImpressionPixels(moat);
+                    populateAdVerificationsOmid(vastExtensionXmlManager.mExtensionNode, vastVideoConfig);
                 }
             }
         }
+    }
+
+    private void populateAdVerificationsOmid(@NonNull final Node adVerificationsParent,
+                                             @NonNull VastVideoConfig vastVideoConfig) {
+        final VastAdVerificationsParser adVerificationNodes = new VastAdVerificationsParser(adVerificationsParent);
+        final Set<ViewabilityVendor> vendors = adVerificationNodes.getViewabilityVendors();
+        vastVideoConfig.addViewabilityVendors(vendors);
     }
 
     /**
@@ -437,7 +443,7 @@ public class VastXmlManagerAggregator extends AsyncTask<String, Void, VastVideoC
         vastVideoConfig.addClickTrackers(linearXmlManager.getClickTrackers());
 
         // Only set the skip offset if we haven't set it already in one of the redirects
-        if (vastVideoConfig.getSkipOffsetString() == null) {
+        if (vastVideoConfig.getSkipOffset() == null) {
             vastVideoConfig.setSkipOffset(linearXmlManager.getSkipOffset());
         }
 
