@@ -131,7 +131,7 @@ public class MraidBridgeTest {
         subjectBanner.setContentHtml("test-html");
 
         verify(mockBannerWebView).loadDataWithBaseURL(
-                "http://" + Constants.HOST + "/", "test-html", "text/html", "UTF-8", null);
+                "https://" + Constants.HOST + "/", "test-html", "text/html", "UTF-8", null);
     }
 
     @Test
@@ -208,8 +208,8 @@ public class MraidBridgeTest {
         assertThat(result).isTrue();
 
         reset(mockBridgeListener);
-        result = subjectBanner.handleShouldOverrideUrl("http://www.mopub.com/");
-        verify(mockBridgeListener).onOpen(new URI("http://www.mopub.com/"));
+        result = subjectBanner.handleShouldOverrideUrl("https://www.mopub.com/");
+        verify(mockBridgeListener).onOpen(new URI("https://www.mopub.com/"));
         assertThat(result).isTrue();
 
         reset(mockBridgeListener);

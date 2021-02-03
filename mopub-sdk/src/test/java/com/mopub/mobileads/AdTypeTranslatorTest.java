@@ -104,13 +104,6 @@ public class AdTypeTranslatorTest {
     }
 
     @Test
-    public void getBaseAdClassName_withNativeVideoFormat_shouldBeMoPubNativeVideo() {
-        baseAdClassName = AdTypeTranslator.getBaseAdClassName(AdFormat.NATIVE, AdType.VIDEO_NATIVE, null, headers);
-
-        assertThat(baseAdClassName).isEqualTo("com.mopub.nativeads.MoPubCustomEventVideoNative");
-    }
-
-    @Test
     public void getBaseAdClassName_whenInvalidAdTypeAndInvalidFullAdType_shouldReturnNull() {
         baseAdClassName = AdTypeTranslator.getBaseAdClassName(AdFormat.BANNER, "garbage", "garbage",
                 headers);

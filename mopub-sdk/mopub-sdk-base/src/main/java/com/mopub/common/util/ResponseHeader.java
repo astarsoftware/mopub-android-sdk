@@ -48,11 +48,6 @@ public enum ResponseHeader {
     IMPRESSION_VISIBLE_MS("x-impression-visible-ms"),
     IMPRESSION_MIN_VISIBLE_PX("x-native-impression-min-px"),
 
-    // Native Video fields
-    PLAY_VISIBLE_PERCENT("x-play-visible-percent"),
-    PAUSE_VISIBLE_PERCENT("x-pause-visible-percent"),
-    MAX_BUFFER_MS("x-max-buffer-ms"),
-
     // Rewarded Ad fields
     REWARDED_VIDEO_CURRENCY_NAME("x-rewarded-video-currency-name"),
     REWARDED_VIDEO_CURRENCY_AMOUNT("x-rewarded-video-currency-amount"),

@@ -210,7 +210,5 @@ public class MoPubStaticNativeAdRendererTest {
         assertThat(subject.supports(new StaticNativeAd() {})).isTrue();
         assertThat(subject.supports(mock(MoPubStaticNativeAd.class))).isTrue();
         assertThat(subject.supports(mock(BaseNativeAd.class))).isFalse();
-        assertThat(subject.supports(mock(MoPubCustomEventVideoNative.MoPubVideoNativeAd.class)))
-                .isFalse();
     }
 }

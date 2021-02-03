@@ -59,10 +59,10 @@ public class MoPubRequestUtilsTest {
     }
 
     @Test
-    public void isMoPubRequest_withHttpMoPubUrl_shouldReturnTrue() {
+    public void isMoPubRequest_withHttpMoPubUrl_shouldReturnFalse() {
         final boolean result = MoPubRequestUtils.isMoPubRequest("http://ads.mopub.com/m/imp");
 
-        assertThat(result).isTrue();
+        assertThat(result).isFalse();
     }
 
     @Test

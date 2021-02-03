@@ -39,7 +39,7 @@ public class VastWebView extends BaseWebView {
     }
 
     void loadData(String data) {
-        loadDataWithBaseURL(Networking.getBaseUrlScheme() + "://" + Constants.HOST + "/",
+        loadDataWithBaseURL(Networking.getScheme() + "://" + Constants.HOST + "/",
                 data, "text/html", "utf-8", null);
     }
 

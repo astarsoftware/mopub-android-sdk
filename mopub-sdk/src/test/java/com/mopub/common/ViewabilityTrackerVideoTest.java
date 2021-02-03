@@ -68,7 +68,7 @@ public class ViewabilityTrackerVideoTest {
     @Test
     public void createVastVideoTracker_withValidParameters_returnsViewabilityTracker() {
         ViewabilityManager.activate(activity);
-        final ViewabilityVendor.Builder builder = new ViewabilityVendor.Builder("http://js.com");
+        final ViewabilityVendor.Builder builder = new ViewabilityVendor.Builder("https://js.com");
 
         final ViewabilityTracker tracker = ViewabilityTrackerVideo.createVastVideoTracker(
                 mockView,

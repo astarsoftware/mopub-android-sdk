@@ -16,35 +16,41 @@ import com.mopub.common.util.Dips;
 import com.mopub.common.util.Numbers;
 
 public class RadialCountdownDrawable extends BaseWidgetDrawable {
+    @NonNull private final Paint mBackgroundPaint;
     @NonNull private final Paint mCirclePaint;
     @NonNull private final Paint mArcPaint;
     @NonNull private final Paint mTextPaint;
     @NonNull private Rect mTextRect;
 
+    private final int mCircleStrokeWidth;
     private int mInitialCountdownMilliseconds;
     private int mSecondsRemaining;
     private float mSweepAngle;
 
     public RadialCountdownDrawable(@NonNull final Context context) {
-        final int circleStrokeWidth = Dips.dipsToIntPixels(
-                DrawableConstants.RadialCountdown.CIRCLE_STROKE_WIDTH_DIPS, context);
-        final float textSizePixels = Dips.dipsToFloatPixels(
-                DrawableConstants.RadialCountdown.TEXT_SIZE_SP, context);
+        mCircleStrokeWidth = Dips.dipsToIntPixels(DrawableConstants.RadialCountdown.CIRCLE_STROKE_WIDTH_DIPS, context);
+        final float textSizePixels = Dips.dipsToFloatPixels(DrawableConstants.RadialCountdown.TEXT_SIZE_SP, context);
+
+        // Background
+        mBackgroundPaint = new Paint();
+        mBackgroundPaint.setColor(DrawableConstants.RadialCountdown.BACKGROUND_COLOR);
+        mBackgroundPaint.setStyle(DrawableConstants.RadialCountdown.BACKGROUND_STYLE);
+        mBackgroundPaint.setAntiAlias(true);
 
         // Unfilled progress
         mCirclePaint = new Paint();
-        mCirclePaint.setColor(DrawableConstants.RadialCountdown.BACKGROUND_COLOR);
-        mCirclePaint.setAlpha(DrawableConstants.RadialCountdown.BACKGROUND_ALPHA);
-        mCirclePaint.setStyle(DrawableConstants.RadialCountdown.BACKGROUND_STYLE);
-        mCirclePaint.setStrokeWidth(circleStrokeWidth);
+        mCirclePaint.setColor(DrawableConstants.RadialCountdown.PROGRESS_CIRCLE_COLOR);
+        mCirclePaint.setAlpha(DrawableConstants.RadialCountdown.PROGRESS_CIRCLE_ALPHA);
+        mCirclePaint.setStyle(DrawableConstants.RadialCountdown.PROGRESS_CIRCLE_STYLE);
+        mCirclePaint.setStrokeWidth(mCircleStrokeWidth);
         mCirclePaint.setAntiAlias(true);
 
         // Filled progress
         mArcPaint = new Paint();
-        mArcPaint.setColor(DrawableConstants.RadialCountdown.PROGRESS_COLOR);
-        mArcPaint.setAlpha(DrawableConstants.RadialCountdown.PROGRESS_ALPHA);
-        mArcPaint.setStyle(DrawableConstants.RadialCountdown.PROGRESS_STYLE);
-        mArcPaint.setStrokeWidth(circleStrokeWidth);
+        mArcPaint.setColor(DrawableConstants.RadialCountdown.PROGRESS_ARC_COLOR);
+        mArcPaint.setAlpha(DrawableConstants.RadialCountdown.PROGRESS_ARC_ALPHA);
+        mArcPaint.setStyle(DrawableConstants.RadialCountdown.PROGRESS_ARC_STYLE);
+        mArcPaint.setStrokeWidth(mCircleStrokeWidth);
         mArcPaint.setAntiAlias(true);
 
         // Countdown number text
@@ -62,7 +68,10 @@ public class RadialCountdownDrawable extends BaseWidgetDrawable {
         final int centerX = getBounds().centerX();
         final int centerY = getBounds().centerY();
         final int radius = Math.min(centerX, centerY);
+        // stroke position is center by default so we need to offset the background radius by stroke width / 2
+        final int backgroundRadius = radius + (mCircleStrokeWidth / 2);
 
+        canvas.drawCircle(centerX, centerY, backgroundRadius, mBackgroundPaint);
         canvas.drawCircle(centerX, centerY, radius, mCirclePaint);
 
         final String secondsRemainingText = String.valueOf(mSecondsRemaining);

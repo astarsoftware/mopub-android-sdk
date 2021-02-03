@@ -190,14 +190,14 @@ public class IntentsTest {
     }
 
     @Test
-    public void intentForNativeBrowserScheme_whenBrowserAgentSetToNative_whenSchemeIsHttpOrHttps_shouldProperlyHandleEncodedUrls() throws UrlParseException {
+    public void intentForNativeBrowserScheme_whenBrowserAgentSetToNative_whenSchemeIsHttps_shouldProperlyHandleEncodedUrls() throws UrlParseException {
         MoPub.setBrowserAgent(BrowserAgent.NATIVE);
 
         Intent intent;
 
-        intent = Intents.intentForNativeBrowserScheme(Uri.parse("http://www.example.com"));
+        intent = Intents.intentForNativeBrowserScheme(Uri.parse("https://www.example.com"));
         assertThat(intent.getAction()).isEqualTo(Intent.ACTION_VIEW);
-        assertThat(intent.getDataString()).isEqualTo("http://www.example.com");
+        assertThat(intent.getDataString()).isEqualTo("https://www.example.com");
 
         intent = Intents.intentForNativeBrowserScheme(Uri.parse("https://www.example.com/?query=1&two=2"));
         assertThat(intent.getAction()).isEqualTo(Intent.ACTION_VIEW);
@@ -209,7 +209,7 @@ public class IntentsTest {
     }
 
     @Test(expected = UrlParseException.class)
-    public void intentForNativeBrowserScheme_whenBrowserAgentSetToNative_whenSchemeNotMoPubNativeBrowserOrHttpOrHttps_shouldThrowException() throws UrlParseException {
+    public void intentForNativeBrowserScheme_whenBrowserAgentSetToNative_whenSchemeNotMoPubNativeBrowserOrHttps_shouldThrowException() throws UrlParseException {
         MoPub.setBrowserAgent(BrowserAgent.NATIVE);
 
         Intents.intentForNativeBrowserScheme(Uri.parse("foo://www.example.com"));
@@ -319,7 +319,7 @@ public class IntentsTest {
         final String storeUrl = "amzn://apps/android?p=com.mopub.simpleadsdemo";
 
         // resolvable Amazon Store url
-        final String amazonStoreUrl = "http://www.amazon.com/gp/mas/dl/android?p=com.mopub.simpleadsdemo";
+        final String amazonStoreUrl = "https://www.amazon.com/gp/mas/dl/android?p=com.mopub.simpleadsdemo";
         makeUrlResolvable(amazonStoreUrl);
 
         // use unresolvable "market://" url, but should start browser activity with resolvable Play Store url

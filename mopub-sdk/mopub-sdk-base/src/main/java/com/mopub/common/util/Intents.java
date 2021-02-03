@@ -41,7 +41,7 @@ public class Intents {
     static {
         Map<String, String> tempMap = new HashMap<>();
         tempMap.put("market", "https://play.google.com/store/apps/details?%s");
-        tempMap.put("amzn", "http://www.amazon.com/gp/mas/dl/android?%s");
+        tempMap.put("amzn", "https://www.amazon.com/gp/mas/dl/android?%s");
         STORE_SCHEME_TO_URL_MAP = Collections.unmodifiableMap(tempMap);
     }
 
@@ -110,7 +110,7 @@ public class Intents {
         if (!UrlAction.OPEN_NATIVE_BROWSER.shouldTryHandlingUrl(uri)) {
             String supportedSchemes = "mopubnativebrowser://";
             if (getBrowserAgent() == BrowserAgent.NATIVE) {
-                supportedSchemes += ", http://, or https://";
+                supportedSchemes += ", https://";
             }
             throw new UrlParseException("URI does not have " + supportedSchemes + " scheme.");
         }
@@ -307,8 +307,7 @@ public class Intents {
             } else {
                 final Uri fallbackUri = Uri.parse(fallbackUrl);
                 final String fallbackScheme = fallbackUri.getScheme();
-                if (Constants.HTTP.equalsIgnoreCase(fallbackScheme)
-                        || Constants.HTTPS.equalsIgnoreCase(fallbackScheme)) {
+                if (Constants.HTTPS.equalsIgnoreCase(fallbackScheme)) {
                     showMoPubBrowserForUrl(context, fallbackUri, null);
                 } else {
                     launchApplicationUrl(context, fallbackUri);

@@ -91,7 +91,7 @@ public class BaseHtmlWebView extends BaseWebViewViewability {
     }
 
     void loadHtmlResponse(String htmlResponse) {
-        loadDataWithBaseURL(Networking.getBaseUrlScheme() + "://" + Constants.HOST + "/", htmlResponse,
+        loadDataWithBaseURL(Networking.getScheme() + "://" + Constants.HOST + "/", htmlResponse,
                 "text/html", "utf-8", null);
     }
 

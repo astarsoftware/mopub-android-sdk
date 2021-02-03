@@ -20,7 +20,6 @@ import com.mopub.exceptions.UrlParseException;
 import java.net.URISyntaxException;
 import java.util.List;
 
-import static com.mopub.common.Constants.HTTP;
 import static com.mopub.common.Constants.HTTPS;
 import static com.mopub.common.MoPub.getBrowserAgent;
 import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
@@ -112,7 +111,7 @@ public enum UrlAction {
         public boolean shouldTryHandlingUrl(@NonNull final Uri uri) {
             final String scheme = uri.getScheme();
 
-            if (HTTP.equalsIgnoreCase(scheme) || HTTPS.equalsIgnoreCase(scheme)) {
+            if (HTTPS.equalsIgnoreCase(scheme)) {
                 return getBrowserAgent() == BrowserAgent.NATIVE;
             }
 
@@ -162,7 +161,7 @@ public enum UrlAction {
         @Override
         public boolean shouldTryHandlingUrl(@NonNull final Uri uri) {
             final String scheme = uri.getScheme();
-            return (HTTP.equalsIgnoreCase(scheme) || HTTPS.equalsIgnoreCase(scheme));
+            return (HTTPS.equalsIgnoreCase(scheme));
         }
 
         @Override

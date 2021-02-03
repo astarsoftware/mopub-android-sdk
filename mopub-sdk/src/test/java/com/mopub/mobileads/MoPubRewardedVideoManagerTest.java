@@ -1467,7 +1467,7 @@ public class
                 "        \"x-format\": \"\",\n" +
                 "        \"x-fulladtype\": \"vast\",\n" +
                 "        \"x-height\": -1,\n" +
-                "        \"x-imptracker\": \"http://ads-staging.mopub.com/m/imp?appid=&cid=4652bd83d89a40c5a4e276dbf101499f&city=San%20Francisco&ckv=2&country_code=US&cppck=6A575&dev=Android%20SDK%20built%20for%20x86&exclude_adgroups=b4148ea9ed7b4003b9d7c1e61036e0b1&id=920b6145fb1546cf8b5cf2ac34638bb7&is_ab=0&is_mraid=0&os=Android&osv=8.0.0&req=5e3d79f17abb48468d95fde17e82f7f6&reqt=1519938200.0&rev=0.000050&udid=ifa%3Abd9022e4-5ced-4af2-8cba-dd15ffa715ee&video_type=\",\n" +
+                "        \"x-imptracker\": \"https://ads.mopub.com/m/imp?appid=&cid=4652bd83d89a40c5a4e276dbf101499f&city=San%20Francisco&ckv=2&country_code=US&cppck=6A575&dev=Android%20SDK%20built%20for%20x86&exclude_adgroups=b4148ea9ed7b4003b9d7c1e61036e0b1&id=920b6145fb1546cf8b5cf2ac34638bb7&is_ab=0&is_mraid=0&os=Android&osv=8.0.0&req=5e3d79f17abb48468d95fde17e82f7f6&reqt=1519938200.0&rev=0.000050&udid=ifa%3Abd9022e4-5ced-4af2-8cba-dd15ffa715ee&video_type=\",\n" +
                 "        \"x-interceptlinks\": \"\",\n" +
                 "        \"x-nativeparams\": \"\",\n" +
                 "        \"x-networktype\": \"\",\n" +

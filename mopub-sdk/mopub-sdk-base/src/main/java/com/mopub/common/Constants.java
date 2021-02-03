@@ -12,7 +12,6 @@ public class Constants {
         HOST = "ads.mopub.com";
     }
 
-    public static final String HTTP = "http";
     public static final String HTTPS = "https";
     public static final String INTENT_SCHEME = "intent";
 

@@ -61,7 +61,7 @@ public class VastWebViewTest {
 
         ShadowWebView.LoadDataWithBaseURL lastLoadData
                 = Shadows.shadowOf(subject).getLastLoadDataWithBaseURL();
-        assertThat(lastLoadData.baseUrl).isEqualTo("http://" + Constants.HOST + "/");
+        assertThat(lastLoadData.baseUrl).isEqualTo("https://" + Constants.HOST + "/");
         assertThat(lastLoadData.data).isEqualTo(data);
         assertThat(lastLoadData.mimeType).isEqualTo("text/html");
         assertThat(lastLoadData.encoding).isEqualTo("utf-8");

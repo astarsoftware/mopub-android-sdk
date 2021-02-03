@@ -182,7 +182,7 @@ describe('MRAID', function() {
         spyOn(BRIDGE, 'executeNativeCall');
         errorSpy = jasmine.createSpy();
         MRAID.addEventListener(MRAID.EVENTS.ERROR, errorSpy);
-        MRAID.playVideo("http://early.bird");
+        MRAID.playVideo("https://early.bird");
       });
 
       afterEach(function() {
@@ -220,14 +220,14 @@ describe('MRAID', function() {
       beforeEach(function() {
         BRIDGE.fireChangeEvent({viewable: true});
         spyOn(BRIDGE, 'executeNativeCall');
-        MRAID.playVideo('http://www.youtube.com/watch?v=nGYVjRrBhWo');
+        MRAID.playVideo('https://www.youtube.com/watch?v=nGYVjRrBhWo');
       });
 
       it('tells the SDK to play a video with the url', function() {
         expect(BRIDGE.executeNativeCall).toHaveBeenCalledWith([
           'playVideo',
           'uri',
-          'http://www.youtube.com/watch?v=nGYVjRrBhWo'
+          'https://www.youtube.com/watch?v=nGYVjRrBhWo'
         ]);
       });
     });
@@ -240,7 +240,7 @@ describe('MRAID', function() {
         spyOn(BRIDGE, 'executeNativeCall');
         errorSpy = jasmine.createSpy();
         MRAID.addEventListener(MRAID.EVENTS.ERROR, errorSpy);
-        MRAID.storePicture("http://dummyimage.com/600x400/000/fff");
+        MRAID.storePicture("https://dummyimage.com/600x400/000/fff");
       });
 
       afterEach(function() {
@@ -278,14 +278,14 @@ describe('MRAID', function() {
       beforeEach(function() {
         BRIDGE.fireChangeEvent({viewable: true});
         spyOn(BRIDGE, 'executeNativeCall');
-        MRAID.storePicture("http://dummyimage.com/600x400/000/fff");
+        MRAID.storePicture("https://dummyimage.com/600x400/000/fff");
       });
 
       it('tells the SDK to store a picture with the url', function() {
         expect(BRIDGE.executeNativeCall).toHaveBeenCalledWith([
          'storePicture',
           'uri',
-          'http://dummyimage.com/600x400/000/fff'
+          'https://dummyimage.com/600x400/000/fff'
         ]);
       });
     });
@@ -358,12 +358,12 @@ describe('MRAID', function() {
         });
         spyOn(MRAID, 'getState').andReturn('default');
         spyOn(BRIDGE, 'executeNativeCall');
-        MRAID.expand('http://url.com');
+        MRAID.expand('https://url.com');
       });
 
       it('applies args to bridge correctly', function() {
         expect(BRIDGE.executeNativeCall).toHaveBeenCalledWith([
-          'expand', 'shouldUseCustomClose', false, 'url', 'http://url.com'
+          'expand', 'shouldUseCustomClose', false, 'url', 'https://url.com'
         ]);
       });
     });

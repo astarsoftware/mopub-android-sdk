@@ -30,7 +30,7 @@ The MoPub SDK is available via:
     }
 
     dependencies {
-        implementation('com.mopub:mopub-sdk:5.14.0@aar') {
+        implementation('com.mopub:mopub-sdk:5.15.0@aar') {
             transitive = true
         }
     }
@@ -51,22 +51,17 @@ The MoPub SDK is available via:
         // ... other project dependencies
 
         // For banners
-        implementation('com.mopub:mopub-sdk-banner:5.14.0@aar') {
+        implementation('com.mopub:mopub-sdk-banner:5.15.0@aar') {
             transitive = true
         }
         
         // For interstitials and rewarded ads
-        implementation('com.mopub:mopub-sdk-fullscreen:5.14.0@aar') {
+        implementation('com.mopub:mopub-sdk-fullscreen:5.15.0@aar') {
             transitive = true
         }
 
         // For native static (images).
-        implementation('com.mopub:mopub-sdk-native-static:5.14.0@aar') {
-            transitive = true
-        }
-
-        // For native video. This will automatically also include native static
-        implementation('com.mopub:mopub-sdk-native-video:5.14.0@aar') {
+        implementation('com.mopub:mopub-sdk-native-static:5.15.0@aar') {
             transitive = true
         }
     }
@@ -95,19 +90,11 @@ The MoPub SDK is available via:
 Please view the [changelog](https://github.com/mopub/mopub-android-sdk/blob/master/CHANGELOG.md) for a complete list of additions, fixes, and enhancements in the latest release.
 
 - **Features**
-  - Add beta support for OMSDK version 1.3.4.
-  - Certify MoPub Android SDK for Android 11 (API level 30).
-  - Add `MoPubErrorCode.TOO_MANY_REQUESTS` to notify of making too many unsuccessful requests in a short period of time.
-  - Add Pangle as a supported network.
-  - Remove Mintegral as a supported network.
-
-- **Bug Fixes**
-  - Banner pause should not restart refresh timer.
-  - Address a null pointer exception when some ads expire.
-  - Address a destroyed ad causing a null pointer in certain situations.
-  - Address having multiple close buttons.
-  - Put banner and interstitial callbacks on the main thread. This should address some race conditions when showing an ad immediately after the load finishes.
-  - Other minor bugs.
+  - Update countdown animation background color to black for better visibility.
+  - Enforce HTTPS for base URLs.
+  - Remove native video support.
+  - Add support for Snap Audience Network.
+  - Update sample app dependency on `com.google.android.gms:play-services-base` from version 17.3.0 to 17.5.0.
 
 ## Requirements
 
@@ -123,7 +110,7 @@ Please view the [changelog](https://github.com/mopub/mopub-android-sdk/blob/mast
 - androidx.media2:media2-player (**Added in 5.11.0**)
 - com.mopub:omsdk-android:1.3.4 (**Added in 5.14.0**)
 - MoPub Volley Library (mopub-volley-2.1.0.jar - available on JCenter) (**Updated in 5.6.0**)
-- **Recommended** Google Play Services (com.google.android.gms:play-services-ads-identifier:17.0.0 and com.google.android.gms:play-services-base:17.3.0) (**Updated in 5.14.0**)
+- **Recommended** Google Play Services (com.google.android.gms:play-services-ads-identifier:17.0.0 and com.google.android.gms:play-services-base:17.5.0) (**Updated in 5.15.0**)
 - If you are integrating with v5.6.0 or later of the MoPub SDK, specify the `sourceCompatibility` and `targetCompatibility` as below to prevent compilation errors with ExoPlayer 2.9.5 and later:
 
     ```groovy

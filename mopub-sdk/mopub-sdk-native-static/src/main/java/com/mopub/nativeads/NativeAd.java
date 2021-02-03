@@ -142,7 +142,7 @@ public class NativeAd {
      * Returns the {@link BaseNativeAd} object for this {@link NativeAd}. This object is created by
      * a {@link CustomEventNative} subclass after a successful ad request and is specific to the ad
      * source. If it comes from the MoPub Exchange or is a directly-served ad it will be of the type
-     * {@link MoPubStaticNativeAd} or MoPubVideoNativeAd. If it is returned by a mediated ad
+     * {@link MoPubStaticNativeAd}. If it is returned by a mediated ad
      * network it may have another type.
      */
     @NonNull

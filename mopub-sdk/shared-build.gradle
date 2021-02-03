@@ -15,7 +15,7 @@ repositories {
 }
 
 project.group = 'com.mopub'
-project.version = '5.14.0'
+project.version = '5.15.0'
 
 android {
     compileOptions {
@@ -32,7 +32,7 @@ android {
     lintOptions { abortOnError false }
 
     defaultConfig {
-        versionCode 82
+        versionCode 83
         versionName version
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
@@ -61,11 +61,20 @@ android {
             // connected tests instead.
             returnDefaultValues = true
 
+            def _maxParallelForks = "${System.env.MAX_PARALLEL_FORKS}"
+
             // Test JVM settings since we have a lot of classes loaded.
             all {
                 jvmArgs '-XX:MaxPermSize=4096m', '-Xmx8192m', '-noverify'
                 forkEvery 200
-                maxParallelForks Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+                if (_maxParallelForks
+                        && !_maxParallelForks.allWhitespace
+                        && _maxParallelForks.toString() != "null"
+                        && _maxParallelForks.isInteger()) {
+                    maxParallelForks Integer.parseInt(_maxParallelForks)
+                } else {
+                    maxParallelForks Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+                }
             }
         }
     }

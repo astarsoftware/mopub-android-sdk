@@ -1,3 +1,11 @@
+## Version 5.15.0 (November 18, 2020)
+- **Features**
+  - Update countdown animation background color to black for better visibility.
+  - Enforce HTTPS for base URLs.
+  - Remove native video support.
+  - Add support for Snap Audience Network.
+  - Update sample app dependency on `com.google.android.gms:play-services-base` from version 17.3.0 to 17.5.0.
+
 ## Version 5.14.0 (October 1, 2020)
 - **Features**
   - Add beta support for OMSDK version 1.3.4.

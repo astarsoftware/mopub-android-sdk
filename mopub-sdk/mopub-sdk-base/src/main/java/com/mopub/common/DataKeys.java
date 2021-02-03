@@ -30,12 +30,6 @@ public class DataKeys {
     public static final String IMPRESSION_VISIBLE_MS = "impression-visible-ms";
     public static final String IMPRESSION_MIN_VISIBLE_PX = "impression-min-visible-px";
 
-    // Native Video fields
-    public static final String PLAY_VISIBLE_PERCENT = "play-visible-percent";
-    public static final String PAUSE_VISIBLE_PERCENT = "pause-visible-percent";
-    public static final String MAX_BUFFER_MS = "max-buffer-ms";
-    public static final String EVENT_DETAILS = "event-details";
-
     // Rewarded Ad fields
     public static final String REWARDED_AD_CURRENCY_NAME_KEY = "rewarded-ad-currency-name";
     public static final String REWARDED_AD_CURRENCY_AMOUNT_STRING_KEY = "rewarded-ad-currency-value-string";

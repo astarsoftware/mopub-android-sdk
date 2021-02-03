@@ -78,7 +78,7 @@ public class ViewabilityManager {
 
     static void disableViewability() {
         sViewabilityEnabled = false;
-        MoPubLog.log(CUSTOM, "Viewability has been disabled");
+        MoPubLog.log(CUSTOM, "OMSDK Viewability has been disabled");
     }
 
     public static boolean isViewabilityEnabled() {

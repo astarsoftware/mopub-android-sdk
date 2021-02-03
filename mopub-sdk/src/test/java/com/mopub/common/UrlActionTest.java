@@ -73,8 +73,6 @@ public class UrlActionTest {
     public void openNativeBrowser_shouldBeCaseInsensitive() throws Exception {
         assertUrlActionMatching(OPEN_NATIVE_BROWSER, "mopubnativebrowser:", true);
         assertUrlActionMatching(OPEN_NATIVE_BROWSER, "MoPuBnAtIvEbRoWsEr:", true);
-        assertUrlActionMatching(OPEN_NATIVE_BROWSER, "http:", false);
-        assertUrlActionMatching(OPEN_NATIVE_BROWSER, "HtTp:", false);
         assertUrlActionMatching(OPEN_NATIVE_BROWSER, "https:", false);
         assertUrlActionMatching(OPEN_NATIVE_BROWSER, "HtTpS:", false);
     }
@@ -84,8 +82,6 @@ public class UrlActionTest {
         MoPub.setBrowserAgent(BrowserAgent.NATIVE);
         assertUrlActionMatching(OPEN_NATIVE_BROWSER, "mopubnativebrowser:", true);
         assertUrlActionMatching(OPEN_NATIVE_BROWSER, "MoPuBnAtIvEbRoWsEr:", true);
-        assertUrlActionMatching(OPEN_NATIVE_BROWSER, "http:", true);
-        assertUrlActionMatching(OPEN_NATIVE_BROWSER, "HtTp:", true);
         assertUrlActionMatching(OPEN_NATIVE_BROWSER, "https:", true);
         assertUrlActionMatching(OPEN_NATIVE_BROWSER, "HtTpS:", true);
     }
@@ -106,8 +102,6 @@ public class UrlActionTest {
 
     @Test
     public void openInAppBrowser_shouldBeCaseInsensitive() throws Exception {
-        assertUrlActionMatching(OPEN_IN_APP_BROWSER, "http:", true);
-        assertUrlActionMatching(OPEN_IN_APP_BROWSER, "HtTp:", true);
         assertUrlActionMatching(OPEN_IN_APP_BROWSER, "https:", true);
         assertUrlActionMatching(OPEN_IN_APP_BROWSER, "HtTpS:", true);
     }

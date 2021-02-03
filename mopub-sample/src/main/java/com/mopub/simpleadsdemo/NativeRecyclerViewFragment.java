@@ -21,11 +21,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.mopub.nativeads.FacebookAdRenderer;
 import com.mopub.nativeads.GooglePlayServicesAdRenderer;
-import com.mopub.nativeads.MediaViewBinder;
+import com.mopub.nativeads.GooglePlayServicesViewBinder;
 import com.mopub.nativeads.MoPubNativeAdPositioning;
 import com.mopub.nativeads.MoPubRecyclerAdapter;
 import com.mopub.nativeads.MoPubStaticNativeAdRenderer;
-import com.mopub.nativeads.MoPubVideoNativeAdRenderer;
 import com.mopub.nativeads.PangleAdRenderer;
 import com.mopub.nativeads.PangleAdViewBinder;
 import com.mopub.nativeads.RequestParameters;
@@ -94,18 +93,6 @@ public class NativeRecyclerViewFragment extends Fragment {
                         .build()
         );
 
-        // Set up a renderer for a video native ad.
-        MoPubVideoNativeAdRenderer moPubVideoNativeAdRenderer = new MoPubVideoNativeAdRenderer(
-                new MediaViewBinder.Builder(R.layout.video_ad_list_item)
-                        .titleId(R.id.native_title)
-                        .textId(R.id.native_text)
-                        .mediaLayoutId(R.id.native_media_layout)
-                        .iconImageId(R.id.native_icon_image)
-                        .callToActionId(R.id.native_cta)
-                        .privacyInformationIconImageId(R.id.native_privacy_information_icon_image)
-                        .sponsoredTextId(R.id.native_sponsored_text_view)
-                        .build());
-
         // Set up a renderer for Facebook video ads.
         final FacebookAdRenderer facebookAdRenderer = new FacebookAdRenderer(
                 new FacebookAdRenderer.FacebookViewBinder.Builder(R.layout.native_ad_fan_list_item)
@@ -119,7 +106,7 @@ public class NativeRecyclerViewFragment extends Fragment {
 
         // Set up a renderer for AdMob ads.
         final GooglePlayServicesAdRenderer googlePlayServicesAdRenderer = new GooglePlayServicesAdRenderer(
-                new MediaViewBinder.Builder(R.layout.video_ad_list_item)
+                new GooglePlayServicesViewBinder.Builder(R.layout.admob_video_ad_list_item)
                         .titleId(R.id.native_title)
                         .textId(R.id.native_text)
                         .mediaLayoutId(R.id.native_media_layout)
@@ -156,7 +143,6 @@ public class NativeRecyclerViewFragment extends Fragment {
         mRecyclerAdapter.registerAdRenderer(googlePlayServicesAdRenderer);
         mRecyclerAdapter.registerAdRenderer(facebookAdRenderer);
         mRecyclerAdapter.registerAdRenderer(moPubStaticNativeAdRenderer);
-        mRecyclerAdapter.registerAdRenderer(moPubVideoNativeAdRenderer);
 
         mRecyclerView.setAdapter(mRecyclerAdapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));

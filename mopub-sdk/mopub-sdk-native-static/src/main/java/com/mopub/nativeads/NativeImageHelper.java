@@ -105,6 +105,11 @@ public class NativeImageHelper {
             return;
         }
 
+        if (!Preconditions.NoThrow.checkNotNull(imageView.getContext(),
+                "Cannot load image into ImageView with null context")) {
+            return;
+        }
+
         if (!Preconditions.NoThrow.checkNotNull(url, "Cannot load image with null url")) {
             imageView.setImageDrawable(null);
             return;

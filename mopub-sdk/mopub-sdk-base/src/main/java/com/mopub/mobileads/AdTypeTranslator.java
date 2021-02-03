@@ -27,8 +27,6 @@ public class AdTypeTranslator {
         // MoPub-specific base ads/custom events.
         MOPUB_NATIVE("mopub_native",
                 "com.mopub.nativeads.MoPubCustomEventNative", true),
-        MOPUB_VIDEO_NATIVE("mopub_video_native",
-                "com.mopub.nativeads.MoPubCustomEventVideoNative", true),
         MOPUB_INLINE("mopub_inline", "com.mopub.mobileads.MoPubInline",
                 true),
         MOPUB_FULLSCREEN("fullscreen", "com.mopub.mobileads.MoPubFullscreen", true),
@@ -98,8 +96,6 @@ public class AdTypeTranslator {
                 return extractHeader(headers, ResponseHeader.CUSTOM_EVENT_NAME);
             case AdType.STATIC_NATIVE:
                 return BaseAdType.MOPUB_NATIVE.toString();
-            case AdType.VIDEO_NATIVE:
-                return BaseAdType.MOPUB_VIDEO_NATIVE.toString();
             case AdType.INTERSTITIAL:
                 if ("admob_full".equals(fullAdType)) {
                     return BaseAdType.fromString(fullAdType + INTERSTITIAL_SUFFIX).toString();

@@ -197,7 +197,7 @@ public class MraidBridge {
         }
 
         mHasLoaded = false;
-        mMraidWebView.loadDataWithBaseURL(Networking.getBaseUrlScheme() + "://" + Constants.HOST + "/",
+        mMraidWebView.loadDataWithBaseURL(Networking.getScheme() + "://" + Constants.HOST + "/",
                 htmlData, "text/html", "UTF-8", null);
     }
 

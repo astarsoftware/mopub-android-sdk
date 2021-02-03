@@ -6,7 +6,6 @@ package com.mopub.mobileads;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -21,7 +20,6 @@ import com.mopub.common.IntentActions;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.common.util.DeviceUtils;
 import com.mopub.common.util.Intents;
-import com.mopub.common.util.Reflection;
 import com.mopub.mraid.MraidVideoViewController;
 
 import java.io.Serializable;
@@ -32,9 +30,6 @@ import static com.mopub.common.logging.MoPubLog.SdkLogEvent.CUSTOM;
 import static com.mopub.mobileads.BaseBroadcastReceiver.broadcastAction;
 
 public class MraidVideoPlayerActivity extends BaseVideoPlayerActivity implements BaseVideoViewController.BaseVideoViewControllerListener {
-    private static final String NATIVE_VIDEO_VIEW_CONTROLLER =
-            "com.mopub.nativeads.NativeVideoViewController";
-
     @Nullable private BaseVideoViewController mBaseVideoController;
     private long mBroadcastIdentifier;
 
@@ -128,24 +123,6 @@ public class MraidVideoPlayerActivity extends BaseVideoPlayerActivity implements
             return new VastVideoViewController(this, getIntent().getExtras(), savedInstanceState, mBroadcastIdentifier, this);
         } else if ("mraid".equals(clazz)) {
             return new MraidVideoViewController(this, getIntent().getExtras(), savedInstanceState, this);
-        } else if ("native".equals(clazz)) {
-            final Class[] constructorParameterClasses = { Context.class, Bundle.class, Bundle.class,
-                    BaseVideoViewController.BaseVideoViewControllerListener.class };
-            final Object[] constructorParameterValues =
-                    { this, getIntent().getExtras(), savedInstanceState, this };
-
-            if (!Reflection.classFound(NATIVE_VIDEO_VIEW_CONTROLLER)) {
-                throw new IllegalStateException("Missing native video module");
-            }
-
-            try {
-                return Reflection.instantiateClassWithConstructor(NATIVE_VIDEO_VIEW_CONTROLLER,
-                        BaseVideoViewController.class,
-                        constructorParameterClasses,
-                        constructorParameterValues);
-            } catch (Exception e) {
-                throw new IllegalStateException("Missing native video module");
-            }
         } else {
             throw new IllegalStateException("Unsupported video type: " + clazz);
         }

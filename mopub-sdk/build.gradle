@@ -5,11 +5,12 @@
 apply from: 'shared-build.gradle'
 
 dependencies {
+
 	api project(':ThirdParty:Java:Android:MoPub:mopub-sdk:mopub-sdk-base')
 	api project(':ThirdParty:Java:Android:MoPub:mopub-sdk:mopub-sdk-banner')
 	api project(':ThirdParty:Java:Android:MoPub:mopub-sdk:mopub-sdk-fullscreen')
 
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13.1'
     testImplementation 'org.robolectric:robolectric:4.3'
     testImplementation 'org.robolectric:shadows-httpclient:4.3'
     testImplementation 'com.squareup:fest-android:1.0.7'
